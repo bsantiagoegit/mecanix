@@ -10,9 +10,10 @@ Instrucciones para Claude Code en este repo. La fuente de verdad ampliada vive e
 4. `docs/domain/state-machine.md` — ciclo de vida de una orden de trabajo.
 5. `docs/domain/actors-and-roles.md` — quién hace qué, matriz de permisos.
 6. `docs/domain/business-rules.md` — reglas transversales (`RT-NN`).
-7. `.ai/AGENTS.md` — orden de implementación y reglas de trabajo completas.
-8. `.ai/CONVENTIONS.md` — nombres, estructura de feature, commits, reglas TypeScript.
-9. `.ai/WORKFLOW.md` — pasos concretos para implementar un caso de uso o tocar el modelo de datos.
+7. `docs/domain/conceptual-model/` — entidades, atributos y relaciones (ERD) antes de tocar el modelo de datos.
+8. `.ai/AGENTS.md` — orden de implementación y reglas de trabajo completas.
+9. `.ai/CONVENTIONS.md` — nombres, estructura de feature, commits, reglas TypeScript.
+10. `.ai/WORKFLOW.md` — pasos concretos para implementar un caso de uso o tocar el modelo de datos.
 
 ## Reglas duras (no negociables)
 

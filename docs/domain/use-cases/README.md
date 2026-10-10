@@ -85,6 +85,6 @@ Todas las referencias cruzadas usan estos IDs. No inventes IDs nuevos sin actual
 - [Actores y roles](../actors-and-roles.md)
 - [Diagrama de estados](../state-machine.md)
 - [Reglas de negocio](../business-rules.md)
-- [Modelo conceptual](../conceptual-model.md) _(pendiente)_
+- [Modelo conceptual](../conceptual-model/README.md)
 
 _Casos de Uso Priorizados v1.2 — Documento vivo. Próxima revisión al cierre del modelo conceptual._

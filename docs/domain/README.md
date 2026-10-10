@@ -10,7 +10,7 @@ Si algo en el código contradice estos documentos, el código está mal.
 3. [`state-machine.md`](./state-machine.md) — Ciclo de vida de una orden.
 4. [`business-rules.md`](./business-rules.md) — Reglas transversales.
 5. [`use-cases/`](./use-cases/) — Qué se construye, feature por feature.
-6. [`conceptual-model.md`](./conceptual-model.md) — Entidades y relaciones (ERD).
+6. [`conceptual-model/`](./conceptual-model/) — Entidades y relaciones (ERD).
 
 ## Convenciones de referencia
 
@@ -24,4 +24,4 @@ Si algo en el código contradice estos documentos, el código está mal.
 - Glosario: v2 (estable)
 - Casos de uso: v1.2 (estable, pendiente validación con taller)
 - Diagrama de estados: v1 (estable)
-- Modelo conceptual: pendiente
+- Modelo conceptual: v1.0 (estable, pendiente validación del modelo relacional PostgreSQL)
