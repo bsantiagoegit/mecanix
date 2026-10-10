@@ -6,11 +6,13 @@ Instrucciones para Claude Code en este repo. La fuente de verdad ampliada vive e
 
 1. `.ai/CONTEXT.md` — dominio condensado (actores, flujo principal, estados, stack).
 2. `docs/domain/glossary.md` — lenguaje ubicuo. No inventar términos.
-3. `docs/domain/use-cases/` — qué se construye (índice en `use-cases.md` dentro de esa carpeta, un archivo por feature).
+3. `docs/domain/use-cases/` — qué se construye (índice en `README.md` dentro de esa carpeta, un archivo por feature).
 4. `docs/domain/state-machine.md` — ciclo de vida de una orden de trabajo.
-5. `.ai/AGENTS.md` — orden de implementación y reglas de trabajo completas.
-6. `.ai/CONVENTIONS.md` — nombres, estructura de feature, commits, reglas TypeScript.
-7. `.ai/WORKFLOW.md` — pasos concretos para implementar un caso de uso o tocar el modelo de datos.
+5. `docs/domain/actors-and-roles.md` — quién hace qué, matriz de permisos.
+6. `docs/domain/business-rules.md` — reglas transversales (`RT-NN`).
+7. `.ai/AGENTS.md` — orden de implementación y reglas de trabajo completas.
+8. `.ai/CONVENTIONS.md` — nombres, estructura de feature, commits, reglas TypeScript.
+9. `.ai/WORKFLOW.md` — pasos concretos para implementar un caso de uso o tocar el modelo de datos.
 
 ## Reglas duras (no negociables)
 
