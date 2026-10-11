@@ -7,7 +7,7 @@ Este directorio contiene las **decisiones técnicas** del proyecto. Complementa 
 1. `data-model/` — Modelo relacional PostgreSQL. Empieza por [`data-model/README.md`](./data-model/README.md).
 2. `security/` — Estrategia de RLS, autenticación, autorización. Empieza por [`security/README.md`](./security/README.md).
 3. `storage/` — Estrategia de Supabase Storage. Empieza por [`storage/README.md`](./storage/README.md).
-4. `frontend.md` — Arquitectura Angular. _(pendiente)_
+4. `frontend/` — Arquitectura Angular. Empieza por [`frontend/README.md`](./frontend/README.md).
 5. `state-management.md` — Estrategia de estado (NgRx + signals). _(pendiente)_
 6. `pwa-offline.md` — Estrategia PWA y offline. _(pendiente)_
 7. `adr/` — Architecture Decision Records. Empieza por [`adr/README.md`](./adr/README.md).
@@ -20,7 +20,7 @@ Este directorio contiene las **decisiones técnicas** del proyecto. Complementa 
 | `security/`           | 1.0     | ✅ Estable   |
 | `storage/`            | 1.1     | ✅ Estable   |
 | `adr/`                | 1.0     | ✅ Estable   |
-| `frontend.md`         | —       | ⏳ Pendiente |
+| `frontend/`           | 1.1     | ✅ Estable   |
 | `state-management.md` | —       | ⏳ Pendiente |
 | `pwa-offline.md`      | —       | ⏳ Pendiente |
 
