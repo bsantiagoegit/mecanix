@@ -5,7 +5,7 @@ Este directorio contiene las **decisiones técnicas** del proyecto. Complementa 
 ## Orden de lectura
 
 1. [`data-model/`](./data-model/) — Modelo relacional PostgreSQL. Tablas, columnas, tipos, constraints, índices.
-2. `security.md` — Estrategia de RLS, autenticación, autorización. _(pendiente)_
+2. [`security/`](./security/) — Estrategia de RLS, autenticación, autorización.
 3. `storage.md` — Estrategia de Supabase Storage. _(pendiente)_
 4. `frontend.md` — Arquitectura Angular. _(pendiente)_
 5. `state-management.md` — Estrategia de estado (NgRx + signals). _(pendiente)_
@@ -17,7 +17,7 @@ Este directorio contiene las **decisiones técnicas** del proyecto. Complementa 
 | Documento        | Versión | Estado        |
 | ----------------- | ------- | -------------- |
 | `data-model/`     | 1.0     | ✅ Estable     |
-| `security.md`     | —       | ⏳ Pendiente   |
+| `security/`       | 1.0     | ✅ Estable     |
 | `storage.md`      | —       | ⏳ Pendiente   |
 | `frontend.md`     | —       | ⏳ Pendiente   |
 | `state-management.md` | — | ⏳ Pendiente   |
