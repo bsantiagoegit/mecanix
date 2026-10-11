@@ -25,7 +25,7 @@ CREATE TABLE photos (
   ),
   CONSTRAINT photos_size_positive CHECK (size_bytes > 0),
   CONSTRAINT photos_mime_valid CHECK (
-    mime_type IN ('image/jpeg', 'image/png', 'image/webp', 'image/heic')
+    mime_type IN ('image/jpeg', 'image/png', 'image/webp')
   )
 );
 

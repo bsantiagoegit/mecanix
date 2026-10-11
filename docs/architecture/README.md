@@ -4,9 +4,9 @@ Este directorio contiene las **decisiones técnicas** del proyecto. Complementa 
 
 ## Orden de lectura
 
-1. [`data-model/`](./data-model/) — Modelo relacional PostgreSQL. Tablas, columnas, tipos, constraints, índices.
-2. [`security/`](./security/) — Estrategia de RLS, autenticación, autorización.
-3. `storage.md` — Estrategia de Supabase Storage. _(pendiente)_
+1. `data-model/` — Modelo relacional PostgreSQL. Empieza por [`data-model/README.md`](./data-model/README.md).
+2. `security/` — Estrategia de RLS, autenticación, autorización. Empieza por [`security/README.md`](./security/README.md).
+3. `storage/` — Estrategia de Supabase Storage. Empieza por [`storage/README.md`](./storage/README.md).
 4. `frontend.md` — Arquitectura Angular. _(pendiente)_
 5. `state-management.md` — Estrategia de estado (NgRx + signals). _(pendiente)_
 6. `pwa-offline.md` — Estrategia PWA y offline. _(pendiente)_
@@ -14,15 +14,15 @@ Este directorio contiene las **decisiones técnicas** del proyecto. Complementa 
 
 ## Estado actual
 
-| Documento        | Versión | Estado        |
-| ----------------- | ------- | -------------- |
-| `data-model/`     | 1.0     | ✅ Estable     |
-| `security/`       | 1.0     | ✅ Estable     |
-| `storage.md`      | —       | ⏳ Pendiente   |
-| `frontend.md`     | —       | ⏳ Pendiente   |
-| `state-management.md` | — | ⏳ Pendiente   |
-| `pwa-offline.md`  | —       | ⏳ Pendiente   |
-| `adr/`            | —       | ⏳ Pendiente   |
+| Documento             | Versión | Estado       |
+| --------------------- | ------- | ------------ |
+| `data-model/`         | 1.0     | ✅ Estable   |
+| `security/`           | 1.0     | ✅ Estable   |
+| `storage/`            | 1.1     | ✅ Estable   |
+| `frontend.md`         | —       | ⏳ Pendiente |
+| `state-management.md` | —       | ⏳ Pendiente |
+| `pwa-offline.md`      | —       | ⏳ Pendiente |
+| `adr/`                | —       | ⏳ Pendiente |
 
 ## Relación con docs/domain
 
@@ -39,4 +39,4 @@ Si hay conflicto entre ambos, `docs/domain/` gana. El código se adapta al domin
 
 ---
 
-_Arquitectura v1.0 — Documento vivo._
+_Arquitectura v1.1 — Documento vivo._
