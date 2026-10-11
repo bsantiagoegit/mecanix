@@ -18,7 +18,7 @@ Instrucciones para Claude Code en este repo. La fuente de verdad ampliada vive e
 ## Reglas duras (no negociables)
 
 - NO inventar términos: usa `docs/domain/glossary.md`.
-- NO modificar la base de datos sin actualizar `docs/architecture/data-model.md`.
+- NO modificar la base de datos sin actualizar `docs/architecture/data-model/`.
 - NO añadir dependencias sin un ADR en `docs/architecture/adr/`.
 - NO usar NgRx para estado local — usa signals. NgRx solo para estado global.
 - NO llamar a Supabase desde componentes — usa data services.
