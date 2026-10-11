@@ -50,6 +50,7 @@ CREATE TABLE vehicles (
   vin           text,
   transmission  text,
   has_key       boolean NOT NULL DEFAULT true,
+  key_code      text,
   notes         text,
   created_at    timestamptz NOT NULL DEFAULT now(),
   updated_at    timestamptz NOT NULL DEFAULT now(),
@@ -64,6 +65,8 @@ CREATE INDEX idx_vehicles_vin ON vehicles(workshop_id, vin)
   WHERE vin IS NOT NULL AND deleted_at IS NULL;
 CREATE INDEX idx_vehicles_workshop_active ON vehicles(workshop_id) WHERE deleted_at IS NULL;
 ```
+
+> **Nota sobre `key_code`**: la clave del vehículo (código numérico o alfanumérico para el inmovilizador). Nullable: solo se llena si `has_key = true`. Es del vehículo, no de la orden. Todos los roles activos del taller pueden verla (ver [D-DS-17](../../../design/decisions.md)).
 
 ---
 

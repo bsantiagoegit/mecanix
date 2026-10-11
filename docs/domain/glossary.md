@@ -76,6 +76,9 @@ Identificador público del vehículo. Puede cambiar en algunos casos (transferen
 **VIN (Vehicle Identification Number)**
 Número de identificación único del vehículo a nivel mundial. Opcional en el MVP porque no todos los talleres lo registran.
 
+**Clave del vehículo (Vehicle Key Code)**
+Código numérico o alfanumérico del inmovilizador del vehículo. Se registra una vez al crear el vehículo y persiste entre visitas. Es del vehículo, no de la orden. Si el vehículo no tiene inmovilizador, `has_key = false` y `key_code` queda en `NULL`. Todos los roles activos del taller pueden verla.
+
 **Estado de ingreso (Vehicle Intake)** ✏️
 Registro del estado del vehículo al momento de recibirlo. Incluye: descripción de rayones/golpes/abolladuras (texto + fotos), estado de llantas, estado de vidrios, pertenencias dentro del vehículo, observaciones generales. **No incluye nivel de combustible.** **Fotos obligatorias (mínimo 4, configurable por taller).** Es histórico: no se modifica después de creado. Cada orden tiene su propio intake.
 
@@ -161,14 +164,14 @@ Vista de métricas para el dueño del SaaS. Ejemplos: talleres activos, usuarios
 
 ## F. Estados y transiciones
 
-| Entidad | Estados |
-|---|---|
-| Orden de trabajo | `draft`, `received`, `inspecting`, `awaiting_approval`, `approved`, `in_progress`, `awaiting_parts`, `completed`, `delivered`, `cancelled` |
-| Cotización | `draft`, `sent`, `partially_approved`, `approved`, `rejected`, `expired` |
-| Reparación | `recommended`, `approved`, `rejected`, `in_progress`, `completed`, `cancelled` |
-| Repuesto / Insumo | `requested`, `received`, `installed`, `returned`, `pending`, `cancelled` |
-| Usuario en taller | `active`, `inactive`, `invited` |
-| Taller | `active`, `suspended`, `deleted` (soft delete, 90 días de retención, purga automática programada) |
+| Entidad           | Estados                                                                                                                                    |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Orden de trabajo  | `draft`, `received`, `inspecting`, `awaiting_approval`, `approved`, `in_progress`, `awaiting_parts`, `completed`, `delivered`, `cancelled` |
+| Cotización        | `draft`, `sent`, `partially_approved`, `approved`, `rejected`, `expired`                                                                   |
+| Reparación        | `recommended`, `approved`, `rejected`, `in_progress`, `completed`, `cancelled`                                                             |
+| Repuesto / Insumo | `requested`, `received`, `installed`, `returned`, `pending`, `cancelled`                                                                   |
+| Usuario en taller | `active`, `inactive`, `invited`                                                                                                            |
+| Taller            | `active`, `suspended`, `deleted` (soft delete, 90 días de retención, purga automática programada)                                          |
 
 ---
 
@@ -218,5 +221,5 @@ Vista de métricas para el dueño del SaaS. Ejemplos: talleres activos, usuarios
 
 ---
 
-*Glosario del Dominio v2.0 — Sistema de Gestión para Taller Mecánico Automotriz*
-*Documento vivo. Próxima revisión al cierre del modelo de datos.*
+_Glosario del Dominio v2.0 — Sistema de Gestión para Taller Mecánico Automotriz_
+_Documento vivo. Próxima revisión al cierre del modelo de datos._
