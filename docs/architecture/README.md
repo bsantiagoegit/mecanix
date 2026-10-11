@@ -9,20 +9,20 @@ Este directorio contiene las **decisiones técnicas** del proyecto. Complementa 
 3. `storage/` — Estrategia de Supabase Storage. Empieza por [`storage/README.md`](./storage/README.md).
 4. `frontend/` — Arquitectura Angular. Empieza por [`frontend/README.md`](./frontend/README.md).
 5. `state-management/` — Estrategia de estado (NgRx + signals). Empieza por [`state-management/README.md`](./state-management/README.md).
-6. `pwa-offline.md` — Estrategia PWA y offline. _(pendiente)_
+6. `pwa-offline/` — Estrategia PWA y offline. Empieza por [`pwa-offline/README.md`](./pwa-offline/README.md).
 7. `adr/` — Architecture Decision Records. Empieza por [`adr/README.md`](./adr/README.md).
 
 ## Estado actual
 
-| Documento           | Versión | Estado       |
-| ------------------- | ------- | ------------ |
-| `data-model/`       | 1.0     | ✅ Estable   |
-| `security/`         | 1.0     | ✅ Estable   |
-| `storage/`          | 1.1     | ✅ Estable   |
-| `adr/`              | 1.0     | ✅ Estable   |
-| `frontend/`         | 1.1     | ✅ Estable   |
-| `state-management/` | 1.0     | ✅ Estable   |
-| `pwa-offline.md`    | —       | ⏳ Pendiente |
+| Documento           | Versión | Estado     |
+| ------------------- | ------- | ---------- |
+| `data-model/`       | 1.0     | ✅ Estable |
+| `security/`         | 1.0     | ✅ Estable |
+| `storage/`          | 1.1     | ✅ Estable |
+| `adr/`              | 1.0     | ✅ Estable |
+| `frontend/`         | 1.1     | ✅ Estable |
+| `state-management/` | 1.0     | ✅ Estable |
+| `pwa-offline/`      | 1.0     | ✅ Estable |
 
 ## Relación con docs/domain
 
