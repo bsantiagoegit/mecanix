@@ -22,6 +22,7 @@ Transformar el modelo conceptual en un **esquema relacional concreto** para Post
 
 ## Contenido
 
+- [`decisions.md`](./decisions.md) — Decisiones transversales (D-T-01 a D-T-10).
 - [`tables/`](./tables/README.md) — Definición de las 27 tablas (DDL completo: columnas, tipos, constraints, índices), agrupadas por área del dominio.
 - [`triggers.md`](./triggers.md) — Triggers: `updated_at` automático, numeración de orden, historial de transiciones, garantía automática.
 
@@ -41,50 +42,6 @@ Transformar el modelo conceptual en un **esquema relacional concreto** para Post
 | Auditoría    | `created_at`, `updated_at`, `created_by`, `updated_by` | En todas las tablas mutables                                |
 | FKs          | `ON DELETE` explícito                                  | Default (`NO ACTION`) es confuso                            |
 | Multi-tenant | `workshop_id` en toda tabla de negocio                 | RLS sin JOIN                                                |
-
----
-
-## Decisiones transversales
-
-### D-T-01: UUID v4 como PK
-
-Todas las tablas de negocio usan `uuid` con `gen_random_uuid()`. Excepción: `roles` usa `text` como PK (catálogo cerrado).
-
-### D-T-02: `timestamptz`
-
-Todos los timestamps son `timestamptz`. Ecuador es UTC-5, Supabase corre UTC. Con `timestamptz` no hay ambigüedad.
-
-### D-T-03: `text` sin límite arbitrario
-
-PostgreSQL trata `text` y `varchar(n)` igual en rendimiento. Los límites reales se validan con `CHECK`.
-
-### D-T-04: `numeric(12,2)` para dinero
-
-Exacto, hasta 9,999,999,999.99. Suficiente para un taller.
-
-### D-T-05: `jsonb` solo en metadata
-
-`jsonb` se usa solo en `work_order_status_history.metadata`. El resto de datos va en columnas.
-
-### D-T-06: Soft delete selectivo
-
-Soft delete en `workshops`, `customers`, `vehicles`. Las órdenes y entidades relacionadas no se eliminan; se cancelan con estado + motivo.
-
-### D-T-07: Auditoría básica
-
-Todas las tablas mutables tienen `created_at`, `updated_at`. `created_by` y `updated_by` donde aplique.
-
-### D-T-08: CHECK constraints para enums
-
-`text` + `CHECK (col IN (...))`. Más flexible que `CREATE TYPE ... AS ENUM`.
-
-### D-T-09: `ON DELETE` explícito
-
-Cada FK especifica `RESTRICT`, `CASCADE` o `SET NULL` según corresponda.
-
-### D-T-10: `workshop_id` en tablas de negocio
-
-Todas las tablas de negocio tienen `workshop_id uuid NOT NULL REFERENCES workshops(id)`. Excepción: `users` (global), `roles` (catálogo global).
 
 ---
 
