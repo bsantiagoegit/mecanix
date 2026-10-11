@@ -2,7 +2,7 @@
 
 **Sistema de Gestión para Taller Mecánico Automotriz — SaaS Multi-Tenant**
 
-- **Versión:** 1.1
+- **Versión:** 1.2
 - **Fecha:** Octubre 2026
 
 ---
@@ -22,6 +22,7 @@ src/
 │   │   ├── auth/
 │   │   ├── workshops/
 │   │   ├── catalogs/                  ← catálogos globales (roles, estados, tipos)
+│   │   ├── theme/                     ← tema claro/oscuro/sistema
 │   │   ├── supabase/
 │   │   ├── errors/
 │   │   ├── interceptors/
@@ -75,6 +76,7 @@ src/
 | `auth/`         | Store de sesión, guard, service de Supabase Auth                            |
 | `workshops/`    | Store del taller activo, service de talleres                                |
 | `catalogs/`     | Store de catálogos globales (roles, estados de orden, tipos de item)        |
+| `theme/`        | Servicio de tema (claro/oscuro/sistema)                                     |
 | `supabase/`     | Singleton del cliente Supabase                                              |
 | `errors/`       | Tipos de error de dominio (`DataError`, `NotFoundError`, `ValidationError`) |
 | `interceptors/` | Interceptors HTTP funcionales                                               |
@@ -218,6 +220,20 @@ core/catalogs/               ← catálogos globales (estado global)
 - `approval-channels`: in_person, phone, whatsapp, email.
 - `repair-statuses`: recommended, approved, rejected, cancelled.
 
+**Caso especial: `theme`**
+
+El tema no es un slice de NgRx. Vive como un servicio con signal.
+
+```
+core/theme/
+├── theme.service.ts ← signal + setTheme() + effect()
+└── theme.model.ts ← tipo Theme = 'light' | 'dark' | 'system'
+```
+
+**Razón**: el tema es un solo valor (string). No justifica NgRx. Un servicio con signal es suficiente.
+
+**Persistencia**: `localStorage` con clave `theme`.
+
 ---
 
 ## Referencias
@@ -228,4 +244,4 @@ core/catalogs/               ← catálogos globales (estado global)
 
 ---
 
-_Estructura de Carpetas v1.1_
+_Estructura de Carpetas v1.2_

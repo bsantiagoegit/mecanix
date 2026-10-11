@@ -129,6 +129,8 @@ Los slices `auth` y `workshops` se persisten parcialmente. Los catálogos tambi�
 
 **Implementación**: meta-reducer custom. Sin dependencias extra.
 
+**Adicional**: el **tema** (`light` / `dark` / `system`) se persiste en `localStorage` con clave `theme`. No vive en NgRx; vive en `ThemeService` (`core/theme/`). Ver [D-DS-16](../../design/decisions.md).
+
 ---
 
 ## D-STATE-15: Invalidación de `resource` tras escritura

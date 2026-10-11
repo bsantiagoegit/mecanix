@@ -63,6 +63,7 @@ Define la arquitectura del frontend Angular: cómo se organiza el código, qué 
 - [ADR-005: Estrategia de estado](../adr/ADR-005-estrategia-estado.md)
 - [Modelo relacional](../data-model/README.md)
 - [Casos de uso](../../domain/use-cases/README.md)
+- [Design System](../../design/README.md)
 
 ---
 

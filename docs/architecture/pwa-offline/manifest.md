@@ -2,7 +2,7 @@
 
 **Sistema de Gestión para Taller Mecánico Automotriz — SaaS Multi-Tenant**
 
-- **Versión:** 1.0
+- **Versión:** 1.1
 - **Fecha:** Octubre 2026
 
 ---
@@ -184,7 +184,7 @@ Agregar en `<head>`:
 
 ```html
 <link rel="manifest" href="/manifest.webmanifest" />
-<meta name="theme-color" content="#0f172a" />
+<meta name="theme-color" content="#ffffff" />
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
 <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
@@ -193,6 +193,30 @@ Agregar en `<head>`:
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="TallerOS" />
 ```
+
+---
+
+## `theme-color` dinámico
+
+El `<meta name="theme-color">` cambia según el tema aplicado.
+
+**Valores**:
+
+- Light: `#ffffff` (surface).
+- Dark: `#020617` (neutral-950).
+
+**Implementación**: se actualiza desde `ThemeService` cuando cambia el tema.
+
+```typescript
+private updateThemeColor(isDark: boolean) {
+  const meta = document.querySelector('meta[name="theme-color"]');
+  meta?.setAttribute('content', isDark ? '#020617' : '#ffffff');
+}
+```
+
+**Razón:** el color de la barra del navegador se adapta al tema. Mejor experiencia visual.
+
+**Limitación:** el manifest.webmanifest tiene un theme_color estático. El meta tag dinámico tiene prioridad sobre el manifest en la mayoría de navegadores. En iOS, el theme_color del manifest se usa solo al instalar.
 
 ---
 
