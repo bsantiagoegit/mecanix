@@ -10,7 +10,7 @@ Este directorio contiene las **decisiones técnicas** del proyecto. Complementa 
 4. `frontend.md` — Arquitectura Angular. _(pendiente)_
 5. `state-management.md` — Estrategia de estado (NgRx + signals). _(pendiente)_
 6. `pwa-offline.md` — Estrategia PWA y offline. _(pendiente)_
-7. `adr/` — Architecture Decision Records. _(pendiente)_
+7. `adr/` — Architecture Decision Records. Empieza por [`adr/README.md`](./adr/README.md).
 
 ## Estado actual
 
@@ -19,10 +19,10 @@ Este directorio contiene las **decisiones técnicas** del proyecto. Complementa 
 | `data-model/`         | 1.0     | ✅ Estable   |
 | `security/`           | 1.0     | ✅ Estable   |
 | `storage/`            | 1.1     | ✅ Estable   |
+| `adr/`                | 1.0     | ✅ Estable   |
 | `frontend.md`         | —       | ⏳ Pendiente |
 | `state-management.md` | —       | ⏳ Pendiente |
 | `pwa-offline.md`      | —       | ⏳ Pendiente |
-| `adr/`                | —       | ⏳ Pendiente |
 
 ## Relación con docs/domain
 
