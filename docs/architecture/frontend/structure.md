@@ -2,7 +2,7 @@
 
 **Sistema de Gestión para Taller Mecánico Automotriz — SaaS Multi-Tenant**
 
-- **Versión:** 1.2
+- **Versión:** 1.3
 - **Fecha:** Octubre 2026
 
 ---
@@ -26,6 +26,8 @@ src/
 │   │   ├── supabase/
 │   │   ├── errors/
 │   │   ├── interceptors/
+│   │   ├── pwa/                       ← update/install (service worker)
+│   │   ├── network/                   ← estado online/offline
 │   │   └── config/
 │   │
 │   ├── shared/                        ← componentes reutilizables sin lógica de negocio
@@ -80,6 +82,8 @@ src/
 | `supabase/`     | Singleton del cliente Supabase                                              |
 | `errors/`       | Tipos de error de dominio (`DataError`, `NotFoundError`, `ValidationError`) |
 | `interceptors/` | Interceptors HTTP funcionales                                               |
+| `pwa/`          | `UpdateService` (SwUpdate) e `InstallService` (beforeinstallprompt)         |
+| `network/`      | `NetworkService`: signal online/offline para el banner offline             |
 | `config/`       | Configuración global de la app                                              |
 
 **Caso especial**: `auth` y `workshops` tienen parte en `core/` (estado global) y parte en `features/` (pantallas). Ver sección "Casos especiales".
@@ -244,4 +248,4 @@ core/theme/
 
 ---
 
-_Estructura de Carpetas v1.2_
+_Estructura de Carpetas v1.3_

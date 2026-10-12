@@ -2,7 +2,7 @@
 
 **Sistema de Gestión para Taller Mecánico Automotriz — SaaS Multi-Tenant**
 
-- **Versión:** 1.1
+- **Versión:** 1.2
 - **Fecha:** Octubre 2026
 
 ---
@@ -15,41 +15,53 @@ Definir las herramientas de testing y cómo se configuran.
 
 ## Vitest (unit + integration)
 
+**Angular 21 trae Vitest nativo** vía el builder `@angular/build:unit-test` (`ng test`). **No** se usa `vitest.config.ts` ni `@analogjs/vite-plugin-angular`: ese plugin es para proyectos Vite sin el builder de Angular, y aquí genera un paquete sin uso. La configuración vive en `angular.json`, no en un archivo Vitest aparte.
+
 **Instalación**:
 
 ```bash
-pnpm add -D vitest @vitest/coverage-v8 @vitest/ui jsdom @testing-library/angular @testing-library/user-event
+pnpm add -D vitest @vitest/coverage-v8 @vitest/ui jsdom @testing-library/angular @testing-library/user-event @testing-library/jest-dom
 ```
 
-**Configuración** (`vitest.config.ts`):
+**Configuración** (`angular.json`, target `test` del proyecto):
+
+```json
+"test": {
+  "builder": "@angular/build:unit-test",
+  "options": {
+    "setupFiles": ["src/testing/setup.ts"],
+    "exclude": ["supabase/tests/**"],
+    "coverageReporters": ["text", "html", "lcov"],
+    "coverageThresholds": { "statements": 70, "branches": 60, "functions": 70, "lines": 70 }
+  },
+  "configurations": {
+    "integration": {
+      "include": ["supabase/tests/**/*.spec.ts"],
+      "exclude": [],
+      "coverage": false
+    }
+  }
+}
+```
+
+**Por qué `exclude`/`configurations.integration` y no `include` combinado**: el builder solo soporta un `include` activo a la vez. La corrida por defecto (unit) excluye `supabase/tests/`; la configuración `integration` (`ng test --configuration=integration`) apunta solo ahí. Así no se mezclan en la misma corrida (D-TEST-01: niveles separados).
+
+**`src/testing/setup.ts`**:
 
 ```typescript
-import { defineConfig } from 'vitest/config';
-import angular from '@analogjs/vite-plugin-angular';
-
-export default defineConfig({
-  plugins: [angular()],
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['src/testing/setup.ts'],
-    include: ['src/**/*.spec.ts', 'supabase/tests/**/*.spec.ts'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'html', 'lcov'],
-      exclude: ['**/*.spec.ts', '**/*.mock.ts', '**/testing/**', '**/*.model.ts'],
-    },
-  },
-});
+import '@testing-library/jest-dom/vitest';
 ```
+
+**No llamar `cleanup()` de `@testing-library/angular` aquí.** El builder de Angular ya resetea el `TestBed` entre tests; llamar `cleanup()` en un `afterEach` global choca con ese reset (`Cannot configure the test module when the test module has already been instantiated`) y rompe specs que no usan `render()`.
 
 **Comandos**:
 
 ```bash
-pnpm test           # corre todos
-pnpm test:watch     # modo watch
-pnpm test:coverage  # con cobertura
-pnpm test:ui        # UI interactiva
+pnpm test              # unit, corre todos
+pnpm test:watch        # modo watch
+pnpm test:coverage     # con cobertura (usa los thresholds de angular.json)
+pnpm test:ui           # UI interactiva de Vitest
+pnpm test:integration  # solo supabase/tests/**/*.spec.ts
 ```
 
 ---
@@ -189,26 +201,25 @@ await client.query(
 
 ## Comandos pnpm
 
-Scripts a agregar en `package.json` cuando se implemente el setup de testing:
+Ya configurados en `package.json` (el builder `@angular/build:unit-test` corre Vitest por debajo de `ng test`, no hay un binario `vitest` separado):
 
 ```json
 {
   "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui",
-    "test:integration": "vitest run supabase/tests",
+    "test": "ng test",
+    "test:watch": "ng test --watch",
+    "test:coverage": "ng test --coverage",
+    "test:ui": "ng test --ui",
+    "test:integration": "ng test --configuration=integration",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
     "e2e:headed": "playwright test --headed",
-    "lint": "ng lint",
     "typecheck": "tsc --noEmit"
   }
 }
 ```
 
-> Nota: el package.json actual tiene "test": "ng test" (Karma). Se reemplazará por Vitest cuando se implemente el setup. Esta tabla documenta el estado objetivo, no el actual.
+**`lint` pendiente**: no hay linter instalado todavía (requiere `ng add @angular-eslint/schematics`, una decisión aparte). Se agrega el script cuando se decida.
 
 ---
 
@@ -223,4 +234,4 @@ Scripts a agregar en `package.json` cuando se implemente el setup de testing:
 
 ---
 
-_Herramientas de Testing v1.1_
+_Herramientas de Testing v1.2_

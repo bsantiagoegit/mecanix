@@ -2,7 +2,7 @@
 
 **Sistema de Gestión para Taller Mecánico Automotriz — SaaS Multi-Tenant**
 
-- **Versión:** 1.0
+- **Versión:** 1.1
 - **Fecha:** Octubre 2026
 
 ---
@@ -155,19 +155,17 @@ const customer = createCustomer({ firstName: 'María' });
 
 ```typescript
 import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/angular';
-import { afterEach } from 'vitest';
-
-afterEach(() => {
-  cleanup();
-});
 ```
 
-**Registro** en `vitest.config.ts`:
+**No llamar `cleanup()` de `@testing-library/angular` aquí.** El builder nativo de Angular (`@angular/build:unit-test`) ya resetea el `TestBed` entre tests; un `cleanup()` global en `afterEach` choca con ese reset y rompe specs que no usan `render()` (`Cannot configure the test module when the test module has already been instantiated`).
 
-```typescript
-test: {
-  setupFiles: ['src/testing/setup.ts'],
+**Registro** en `angular.json` (target `test`, no `vitest.config.ts` — ver [`tools.md`](./tools.md)):
+
+```json
+"test": {
+  "options": {
+    "setupFiles": ["src/testing/setup.ts"]
+  }
 }
 ```
 
@@ -202,4 +200,4 @@ test: {
 
 ---
 
-_Convenciones de Testing v1.0_
+_Convenciones de Testing v1.1_

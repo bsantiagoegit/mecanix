@@ -24,9 +24,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.css"
-            ]
+            "styles": ["src/styles.css"]
           },
           "configurations": {
             "production": {
@@ -42,7 +40,8 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "serviceWorker": "ngsw-config.json"
             },
             "development": {
               "optimization": false,
@@ -65,7 +64,25 @@
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "setupFiles": ["src/testing/setup.ts"],
+            "exclude": ["supabase/tests/**"],
+            "coverageReporters": ["text", "html", "lcov"],
+            "coverageThresholds": {
+              "statements": 70,
+              "branches": 60,
+              "functions": 70,
+              "lines": 70
+            }
+          },
+          "configurations": {
+            "integration": {
+              "include": ["supabase/tests/**/*.spec.ts"],
+              "exclude": [],
+              "coverage": false
+            }
+          }
         }
       }
     }

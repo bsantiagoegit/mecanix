@@ -2,7 +2,7 @@
 
 **Sistema de Gestión para Taller Mecánico Automotriz — SaaS Multi-Tenant**
 
-- **Versión:** 1.1
+- **Versión:** 1.2
 - **Fecha:** Octubre 2026
 - **Framework:** Angular 21
 - **Próxima revisión:** Al implementar el primer feature completo
@@ -47,8 +47,8 @@ Define la arquitectura del frontend Angular: cómo se organiza el código, qué 
 
 | Documento             | Versión | Estado     |
 | --------------------- | ------- | ---------- |
-| `decisions.md`        | 1.1     | ✅ Estable |
-| `structure.md`        | 1.1     | ✅ Estable |
+| `decisions.md`        | 1.2     | ✅ Estable |
+| `structure.md`        | 1.3     | ✅ Estable |
 | `feature-template.md` | 1.0     | ✅ Estable |
 | `data-flow.md`        | 1.0     | ✅ Estable |
 | `error-handling.md`   | 1.0     | ✅ Estable |
@@ -67,4 +67,4 @@ Define la arquitectura del frontend Angular: cómo se organiza el código, qué 
 
 ---
 
-_Arquitectura Frontend v1.1 — Documento vivo._
+_Arquitectura Frontend v1.2 — Documento vivo._

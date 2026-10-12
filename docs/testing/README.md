@@ -2,9 +2,9 @@
 
 **Sistema de Gestión para Taller Mecánico Automotriz — SaaS Multi-Tenant**
 
-- **Versión:** 1.1
+- **Versión:** 1.2
 - **Fecha:** Octubre 2026
-- **Runner unit/integration:** Vitest
+- **Runner unit/integration:** Vitest (nativo de Angular 21, vía `ng test` — sin `vitest.config.ts`)
 - **Runner E2E:** Playwright
 - **Próxima revisión:** Al implementar el primer feature completo
 
@@ -49,11 +49,11 @@ Define cómo se testea el proyecto: qué se testea, con qué herramienta, con qu
 | ---------------------- | ------- | ---------- |
 | `decisions.md`         | 1.1     | ✅ Estable |
 | `strategy.md`          | 1.1     | ✅ Estable |
-| `tools.md`             | 1.1     | ✅ Estable |
+| `tools.md`             | 1.2     | ✅ Estable |
 | `unit-tests.md`        | 1.0     | ✅ Estable |
 | `integration-tests.md` | 1.0     | ✅ Estable |
 | `e2e-tests.md`         | 1.0     | ✅ Estable |
-| `conventions.md`       | 1.0     | ✅ Estable |
+| `conventions.md`       | 1.1     | ✅ Estable |
 
 ---
 
@@ -68,4 +68,4 @@ Define cómo se testea el proyecto: qué se testea, con qué herramienta, con qu
 
 ---
 
-_Estrategia de Testing v1.1 — Documento vivo._
+_Estrategia de Testing v1.2 — Documento vivo._

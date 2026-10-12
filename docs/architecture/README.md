@@ -20,8 +20,8 @@ Este directorio contiene las **decisiones técnicas** del proyecto. Complementa 
 | `data-model/`       | 1.0     | ✅ Estable |
 | `security/`         | 1.0     | ✅ Estable |
 | `storage/`          | 1.1     | ✅ Estable |
-| `adr/`              | 1.0     | ✅ Estable |
-| `frontend/`         | 1.1     | ✅ Estable |
+| `adr/`              | 1.1     | ✅ Estable |
+| `frontend/`         | 1.2     | ✅ Estable |
 | `state-management/` | 1.0     | ✅ Estable |
 | `pwa-offline/`      | 1.0     | ✅ Estable |
 | `multi-tenant/`     | 1.0     | ✅ Estable |
@@ -41,4 +41,4 @@ Si hay conflicto entre ambos, `docs/domain/` gana. El código se adapta al domin
 
 ---
 
-_Arquitectura v1.2 — Documento vivo._
+_Arquitectura v1.3 — Documento vivo._

@@ -2,7 +2,7 @@
 
 **Sistema de Gestión para Taller Mecánico Automotriz — SaaS Multi-Tenant**
 
-- **Versión:** 1.1
+- **Versión:** 1.2
 - **Fecha:** Octubre 2026
 
 ---
@@ -125,20 +125,28 @@ Cada feature tiene un `README.md` con propósito, casos de uso, estructura, depe
 
 ---
 
-## D-FE-14: Sin barrel files
+## D-FE-14: Sin barrel files (excepto `core/`)
 
-No usar `index.ts` para exportar. Importar directamente desde el archivo.
+No usar `index.ts` para exportar en `shared/` ni en `features/`. Importar directamente desde el archivo.
 
 **Razón**: los barrel files crean problemas de tree-shaking y ciclos.
+
+**Excepción — `core/*`**: cada módulo de `core/` (`auth/`, `workshops/`, `catalogs/`, `theme/`, `supabase/`, `errors/`, `interceptors/`, `pwa/`, `network/`) sí tiene `index.ts`.
+
+**Razón de la excepción**: son módulos singleton, transversales, con una API pública pequeña y estable (el store/facade, el servicio, los tipos). El barrel documenta esa API sin exponer los archivos internos (actions/reducer/effects/selectors). El riesgo de ciclos es bajo porque `core/` no importa de `features/` ni de `shared/` (D-FE-02).
 
 ---
 
 ## D-FE-15: Naming conventions
 
-| Tipo              | Convención                   | Ejemplo                         |
-| ----------------- | ---------------------------- | ------------------------------- |
-| Archivos          | `kebab-case.tipo.ts`         | `customer-list.component.ts`    |
-| Clases            | `PascalCase`                 | `CustomerListComponent`         |
+**Componentes**: el CLI de Angular 21 genera componentes sin sufijo `Component` en el archivo ni en la clase por defecto (`app.ts` → clase `App`, no `app.component.ts` → `AppComponent`). Se adopta ese default: `kebab-case.ts` para el archivo, `PascalCase` para la clase, sin sufijo. El resto de tipos (servicios, guards, stores, etc.) sí mantienen su sufijo porque no son componentes.
+
+| Tipo                   | Convención                   | Ejemplo                         |
+| ---------------------- | ---------------------------- | ------------------------------- |
+| Archivos (componente)  | `kebab-case.ts`               | `customer-list.ts`              |
+| Clases (componente)    | `PascalCase`                  | `CustomerList`                  |
+| Archivos (resto)       | `kebab-case.tipo.ts`         | `customers.service.ts`          |
+| Clases (resto)         | `PascalCase`                 | `CustomersService`              |
 | Métodos/variables | `camelCase`                  | `loadCustomers()`               |
 | Constantes        | `UPPER_SNAKE_CASE`           | `MAX_PHOTOS_PER_ORDER`          |
 | Interfaces        | `PascalCase` sin prefijo `I` | `Customer`, `CreateCustomerDto` |
@@ -225,4 +233,4 @@ El **código** (nombres de archivos, carpetas, clases, variables) va en **inglé
 
 ---
 
-_Decisiones Transversales — Frontend v1.1_
+_Decisiones Transversales — Frontend v1.2_
