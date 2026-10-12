@@ -11,6 +11,7 @@ Este directorio contiene las **decisiones técnicas** del proyecto. Complementa 
 5. `state-management/` — Estrategia de estado (NgRx + signals). Empieza por [`state-management/README.md`](./state-management/README.md).
 6. `pwa-offline/` — Estrategia PWA y offline. Empieza por [`pwa-offline/README.md`](./pwa-offline/README.md).
 7. `adr/` — Architecture Decision Records. Empieza por [`adr/README.md`](./adr/README.md).
+8. `multi-tenant/` — Estrategia multi-tenant y configuración por taller. Empieza por [`multi-tenant/README.md`](./multi-tenant/README.md).
 
 ## Estado actual
 
@@ -23,6 +24,7 @@ Este directorio contiene las **decisiones técnicas** del proyecto. Complementa 
 | `frontend/`         | 1.1     | ✅ Estable |
 | `state-management/` | 1.0     | ✅ Estable |
 | `pwa-offline/`      | 1.0     | ✅ Estable |
+| `multi-tenant/`     | 1.0     | ✅ Estable |
 
 ## Relación con docs/domain
 
@@ -39,4 +41,4 @@ Si hay conflicto entre ambos, `docs/domain/` gana. El código se adapta al domin
 
 ---
 
-_Arquitectura v1.1 — Documento vivo._
+_Arquitectura v1.2 — Documento vivo._

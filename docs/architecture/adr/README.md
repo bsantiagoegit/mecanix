@@ -2,7 +2,7 @@
 
 **Sistema de Gestión para Taller Mecánico Automotriz — SaaS Multi-Tenant**
 
-- **Versión:** 1.0
+- **Versión:** 1.1
 - **Fecha:** Octubre 2026
 
 ---
@@ -59,6 +59,7 @@ Crear ADR cuando la decisión:
 | [ADR-008](./ADR-008-aprobacion-individual.md) | Aprobación por reparación individual            | ✅ Aceptado | 2026-10 |
 | [ADR-009](./ADR-009-storage-privado.md)       | Storage privado con URLs firmadas               | ✅ Aceptado | 2026-10 |
 | [ADR-010](./ADR-010-un-bucket.md)             | Un solo bucket (`photos`), PDFs no se almacenan | ✅ Aceptado | 2026-10 |
+| [ADR-011](./ADR-011-feature-flags.md)         | Feature flags                                   | ✅ Aceptado | 2026-10 |
 
 ---
 
@@ -92,4 +93,4 @@ Crear ADR cuando la decisión:
 
 ---
 
-_ADRs v1.0 — Documento vivo._
+_ADRs v1.1 — Documento vivo._
