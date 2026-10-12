@@ -167,7 +167,7 @@ Ubicación: `public/manifest.webmanifest`.
 iOS requiere splash screens por resolución. Se generan con `pwa-asset-generator`:
 
 ```bash
-npx pwa-asset-generator ./logo.svg ./public/icons \
+pnpm dlx pwa-asset-generator ./logo.svg ./public/icons \
   --background "#0f172a" \
   --padding "20%" \
   --icon-only \
