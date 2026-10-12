@@ -20,6 +20,7 @@
 | **Dominio**      | [`domain/`](./domain/README.md)             | Qué construye el sistema (negocio). Glosario, actores, estados, reglas, casos de uso, modelo conceptual. |
 | **Arquitectura** | [`architecture/`](./architecture/README.md) | Cómo se construye (técnico). Modelo relacional, RLS, Storage, ADRs, frontend, estado, PWA.               |
 | **Diseño**       | [`design/`](./design/README.md)             | Sistema de diseño. Tokens, Tailwind, componentes base, responsive, accesibilidad.                        |
+| **Testing**      | [`testing/`](./testing/README.md)           | Estrategia de tests. Unit, integration, E2E, cobertura, herramientas.                                    |
 
 ---
 
@@ -30,6 +31,7 @@ Para entender el proyecto completo:
 1. [`domain/README.md`](./domain/README.md) — empezar por el glosario y los casos de uso.
 2. [`architecture/README.md`](./architecture/README.md) — seguir con el modelo de datos y RLS.
 3. [`design/README.md`](./design/README.md) — terminar con el sistema de diseño.
+4. [`testing/README.md`](./testing/README.md) — entender cómo se testea.
 
 ---
 
