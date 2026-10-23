@@ -78,7 +78,7 @@
           },
           "configurations": {
             "integration": {
-              "include": ["supabase/tests/**/*.spec.ts"],
+              "include": ["../supabase/tests/**/*.spec.ts"],
               "exclude": [],
               "coverage": false
             }
