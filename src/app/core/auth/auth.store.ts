@@ -30,6 +30,10 @@ export class AuthStore {
     this.store.dispatch(AuthActions.login({ email, password }));
   }
 
+  restoreSession(): void {
+    this.store.dispatch(AuthActions.restoreSession());
+  }
+
   logout(): void {
     this.store.dispatch(AuthActions.logout());
   }

@@ -1,10 +1,12 @@
 import { createReducer, on } from '@ngrx/store';
 
+import { AuthActions } from '../auth';
 import { WorkshopsActions } from './workshop.actions';
 import { initialWorkshopState } from './workshop.models';
 
 export const workshopReducer = createReducer(
   initialWorkshopState,
+  on(AuthActions.logout, AuthActions.restoreSessionFailure, () => initialWorkshopState),
   on(WorkshopsActions.loadAvailable, (state) => ({ ...state, isLoading: true, error: null })),
   on(WorkshopsActions.loadAvailableSuccess, (state, { workshops }) => ({
     ...state,

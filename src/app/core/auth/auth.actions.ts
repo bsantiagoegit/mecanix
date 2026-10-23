@@ -15,6 +15,7 @@ export const AuthActions = createActionGroup({
     Logout: emptyProps(),
 
     'Restore Session': emptyProps(),
+    'Restore Session Failure': emptyProps(),
 
     'Set Active Workshop': props<{ workshopId: string }>(),
   },

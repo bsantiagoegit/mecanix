@@ -7,6 +7,12 @@ export interface User {
   phone: string | null;
 }
 
+export interface AuthSession {
+  user: User;
+  role: Role;
+  activeWorkshopId: string;
+}
+
 export interface AuthState {
   user: User | null;
   activeWorkshopId: string | null;

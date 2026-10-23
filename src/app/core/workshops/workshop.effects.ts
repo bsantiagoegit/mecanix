@@ -3,6 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { catchError, map, of, switchMap, withLatestFrom } from 'rxjs';
 
+import { AuthActions } from '../auth';
 import { WorkshopsActions } from './workshop.actions';
 import { selectAvailableWorkshops } from './workshop.selectors';
 import { WorkshopService } from './workshop.service';
@@ -12,6 +13,13 @@ export class WorkshopEffects {
   private readonly actions$ = inject(Actions);
   private readonly store = inject(Store);
   private readonly service = inject(WorkshopService);
+
+  loadOnSession$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.loginSuccess),
+      map(() => WorkshopsActions.loadAvailable()),
+    ),
+  );
 
   loadAvailable$ = createEffect(() =>
     this.actions$.pipe(

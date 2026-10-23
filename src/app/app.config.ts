@@ -1,5 +1,12 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, ErrorHandler, isDevMode, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  ApplicationConfig,
+  ErrorHandler,
+  inject,
+  isDevMode,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideEffects } from '@ngrx/effects';
@@ -7,11 +14,13 @@ import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 
 import { routes } from './app.routes';
-import { AuthEffects, authReducer } from './core/auth';
+import { AuthEffects, AuthStore, authReducer } from './core/auth';
 import { CatalogsEffects, catalogsReducer } from './core/catalogs';
 import { localStorageMetaReducer } from './core/config/persistence.meta-reducer';
 import { GlobalErrorHandler } from './core/errors';
 import { errorInterceptor } from './core/interceptors';
+import { UpdateService } from './core/pwa';
+import { ThemeService } from './core/theme';
 import { WorkshopEffects, workshopReducer } from './core/workshops';
 
 export const appConfig: ApplicationConfig = {
@@ -40,5 +49,11 @@ export const appConfig: ApplicationConfig = {
     }),
 
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
+
+    provideAppInitializer(() => {
+      inject(ThemeService).init();
+      inject(UpdateService).init();
+      inject(AuthStore).restoreSession();
+    }),
   ],
 };

@@ -14,8 +14,8 @@ export class ThemeService {
   }
 
   init(): void {
-    const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    if (saved) {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === 'light' || saved === 'dark' || saved === 'system') {
       this._theme.set(saved);
     }
   }

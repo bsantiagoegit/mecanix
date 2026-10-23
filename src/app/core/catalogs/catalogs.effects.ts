@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
+import { AuthActions } from '../auth';
 import { CatalogsActions } from './catalogs.actions';
 import { CatalogsService } from './catalogs.service';
 
@@ -8,6 +9,13 @@ import { CatalogsService } from './catalogs.service';
 export class CatalogsEffects {
   private readonly actions$ = inject(Actions);
   private readonly service = inject(CatalogsService);
+
+  loadOnSession$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.loginSuccess),
+      map(() => CatalogsActions.loadCatalogs()),
+    ),
+  );
 
   load$ = createEffect(() =>
     this.actions$.pipe(
