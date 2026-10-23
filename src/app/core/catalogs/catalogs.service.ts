@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, from, map } from 'rxjs';
+import { mapSupabaseError } from '../errors';
 import { SupabaseService } from '../supabase';
 import { Role } from './catalogs.models';
 
@@ -10,7 +11,7 @@ export class CatalogsService {
   listRoles(): Observable<Role[]> {
     return from(this.supabase.from('roles').select('*')).pipe(
       map(({ data, error }) => {
-        if (error) throw error;
+        if (error) throw mapSupabaseError(error);
         return data ?? [];
       }),
     );

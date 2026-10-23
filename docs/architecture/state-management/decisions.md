@@ -107,6 +107,8 @@ NgRx Effects se usan **solo** para lógica asíncrona del store global (`auth`, 
 
 **Estado**: `available`, `active`, `isLoading`, `error`.
 
+**Relación con `auth`**: `auth.activeWorkshopId` y `auth.role` describen el taller contra el que se resolvió la sesión; `workshops.active` es el taller que muestra la UI. Un efecto de `workshops` los mantiene alineados: al cargar o cambiar de taller, si difieren, vuelve a resolver el rol en `workshop_members` y despacha `Set Active Workshop`. El rol siempre se obtiene del servidor, nunca se asume.
+
 ---
 
 ## D-STATE-13: Catálogos en NgRx

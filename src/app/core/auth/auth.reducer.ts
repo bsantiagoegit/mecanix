@@ -27,10 +27,11 @@ export const authReducer = createReducer(
     error,
   })),
 
-  on(AuthActions.logout, () => initialAuthState),
+  on(AuthActions.logout, AuthActions.restoreSessionFailure, () => initialAuthState),
 
-  on(AuthActions.setActiveWorkshop, (state, { workshopId }) => ({
+  on(AuthActions.setActiveWorkshop, (state, { workshopId, role }) => ({
     ...state,
     activeWorkshopId: workshopId,
+    role,
   })),
 );
