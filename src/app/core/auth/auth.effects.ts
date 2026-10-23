@@ -4,7 +4,7 @@ import { Store } from '@ngrx/store';
 import { EMPTY, catchError, map, of, switchMap, withLatestFrom } from 'rxjs';
 import { AuthenticationError, AuthorizationError } from '../errors';
 import { AuthActions } from './auth.actions';
-import { selectActiveWorkshopId } from './auth.selectors';
+import { selectSessionWorkshopId } from './auth.selectors';
 import { AuthService } from './auth.service';
 
 @Injectable()
@@ -34,7 +34,7 @@ export class AuthEffects {
   restoreSession$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.restoreSession),
-      withLatestFrom(this.store.select(selectActiveWorkshopId)),
+      withLatestFrom(this.store.select(selectSessionWorkshopId)),
       switchMap(([, preferredWorkshopId]) =>
         this.service.restoreSession(preferredWorkshopId).pipe(
           map((session) =>

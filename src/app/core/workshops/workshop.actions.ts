@@ -5,7 +5,7 @@ export const WorkshopsActions = createActionGroup({
   source: 'Workshops',
   events: {
     'Load Available': emptyProps(),
-    'Load Available Success': props<{ workshops: Workshop[] }>(),
+    'Load Available Success': props<{ workshops: Workshop[]; preferredWorkshopId: string | null }>(),
     'Load Available Failure': props<{ error: string }>(),
 
     'Switch Workshop': props<{ workshopId: string }>(),

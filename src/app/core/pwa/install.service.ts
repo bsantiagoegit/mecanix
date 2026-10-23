@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { DestroyRef, Injectable, inject, signal } from '@angular/core';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -11,16 +11,29 @@ export class InstallService {
   readonly canInstall = signal(false);
 
   constructor() {
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      this.deferredPrompt = e as BeforeInstallPromptEvent;
-      this.canInstall.set(true);
-    });
+    const controller = new AbortController();
+    const { signal: abortSignal } = controller;
 
-    window.addEventListener('appinstalled', () => {
-      this.deferredPrompt = null;
-      this.canInstall.set(false);
-    });
+    window.addEventListener(
+      'beforeinstallprompt',
+      (e) => {
+        e.preventDefault();
+        this.deferredPrompt = e as BeforeInstallPromptEvent;
+        this.canInstall.set(true);
+      },
+      { signal: abortSignal },
+    );
+
+    window.addEventListener(
+      'appinstalled',
+      () => {
+        this.deferredPrompt = null;
+        this.canInstall.set(false);
+      },
+      { signal: abortSignal },
+    );
+
+    inject(DestroyRef).onDestroy(() => controller.abort());
   }
 
   async promptInstall(): Promise<void> {

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, from } from 'rxjs';
-import { AuthenticationError, AuthorizationError, DataError } from '../errors';
+import { AuthenticationError, AuthorizationError, mapSupabaseError } from '../errors';
 import { SupabaseService } from '../supabase';
 import { AuthSession, Role } from './auth.models';
 
@@ -29,6 +29,11 @@ export class AuthService {
     return from(this.restore(preferredWorkshopId));
   }
 
+  /** Rol del usuario en un taller; `AuthorizationError` si no es miembro activo. */
+  roleIn(workshopId: string): Observable<Role> {
+    return from(this.fetchRole(workshopId));
+  }
+
   logout(): Promise<void> {
     return this.supabase.auth.signOut().then(() => undefined);
   }
@@ -48,10 +53,28 @@ export class AuthService {
 
   private async restore(preferredWorkshopId: string | null): Promise<AuthSession | null> {
     const { data, error } = await this.supabase.auth.getSession();
-    if (error) throw new DataError(error);
+    if (error) throw mapSupabaseError(error);
     if (!data.session) return null;
 
     return this.buildSession(data.session.user.id, preferredWorkshopId);
+  }
+
+  private async fetchRole(workshopId: string): Promise<Role> {
+    const { data: sessionData, error: sessionError } = await this.supabase.auth.getSession();
+    if (sessionError) throw mapSupabaseError(sessionError);
+    if (!sessionData.session) throw new AuthenticationError();
+
+    const { data, error } = await this.supabase
+      .from('workshop_members')
+      .select('role')
+      .eq('workshop_id', workshopId)
+      .eq('user_id', sessionData.session.user.id)
+      .eq('status', 'active')
+      .maybeSingle<Pick<MembershipRow, 'role'>>();
+    if (error) throw mapSupabaseError(error);
+    if (!data) throw new AuthorizationError();
+
+    return data.role;
   }
 
   private async buildSession(
@@ -73,8 +96,8 @@ export class AuthService {
         .returns<MembershipRow[]>(),
     ]);
 
-    if (userRes.error) throw new DataError(userRes.error);
-    if (membersRes.error) throw new DataError(membersRes.error);
+    if (userRes.error) throw mapSupabaseError(userRes.error);
+    if (membersRes.error) throw mapSupabaseError(membersRes.error);
 
     const memberships = membersRes.data;
     const membership =

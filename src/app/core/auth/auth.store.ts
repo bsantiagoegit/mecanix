@@ -3,11 +3,11 @@ import { Store } from '@ngrx/store';
 
 import { AuthActions } from './auth.actions';
 import {
-  selectActiveWorkshopId,
   selectAuthError,
   selectIsAuthenticated,
   selectIsLoading,
   selectRole,
+  selectSessionWorkshopId,
   selectUser,
 } from './auth.selectors';
 
@@ -23,7 +23,7 @@ export class AuthStore {
   readonly isAuthenticated = this.store.selectSignal(selectIsAuthenticated);
   readonly isLoading = this.store.selectSignal(selectIsLoading);
   readonly error = this.store.selectSignal(selectAuthError);
-  readonly activeWorkshopId = this.store.selectSignal(selectActiveWorkshopId);
+  readonly activeWorkshopId = this.store.selectSignal(selectSessionWorkshopId);
   readonly role = this.store.selectSignal(selectRole);
 
   login(email: string, password: string): void {
