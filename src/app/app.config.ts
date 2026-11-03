@@ -19,8 +19,6 @@ import { CatalogsEffects, catalogsReducer } from './core/catalogs';
 import { localStorageMetaReducer } from './core/config/persistence.meta-reducer';
 import { GlobalErrorHandler } from './core/errors';
 import { errorInterceptor } from './core/interceptors';
-import { UpdateService } from './core/pwa';
-import { ThemeService } from './core/theme';
 import { WorkshopEffects, workshopReducer } from './core/workshops';
 
 export const appConfig: ApplicationConfig = {
@@ -51,8 +49,6 @@ export const appConfig: ApplicationConfig = {
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
 
     provideAppInitializer(() => {
-      inject(ThemeService).init();
-      inject(UpdateService).init();
       inject(AuthStore).restoreSession();
     }),
   ],

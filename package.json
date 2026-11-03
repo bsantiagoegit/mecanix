@@ -14,7 +14,8 @@
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
     "e2e:headed": "playwright test --headed",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:prod": "node scripts/validate-env.js && ng build --configuration production"
   },
   "private": true,
   "packageManager": "pnpm@11.1.3",
