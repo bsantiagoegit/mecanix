@@ -7,7 +7,7 @@ import { cn } from '../../utils/cn';
   templateUrl: './card.html',
   styleUrl: './card.scss',
 })
-export class Card {
+export class CardComponent {
   readonly padding = input<'none' | 'sm' | 'md' | 'lg'>('md');
 
   readonly classes = () =>
