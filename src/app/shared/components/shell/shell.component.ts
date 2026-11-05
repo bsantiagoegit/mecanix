@@ -10,7 +10,7 @@ import { Toast } from '../toast/toast';
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
-export class Shell {
+export class ShellComponent {
   readonly auth = inject(AuthStore);
   readonly workshop = inject(WorkshopStore);
 

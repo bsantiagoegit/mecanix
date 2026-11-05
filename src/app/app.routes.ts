@@ -1,6 +1,24 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/auth';
 
-// Las rutas de cada feature se agregan con lazy loading cuando el feature
-// exista (ver docs/architecture/frontend/feature-template.md). features/
-// está vacío (solo .gitkeep) hasta el próximo entregable.
-export const routes: Routes = [];
+export const routes: Routes = [
+  {
+    path: 'auth',
+    loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
+  },
+  {
+    path: '',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./shared/components/shell/shell.component').then((m) => m.ShellComponent),
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: 'dashboard',
+        loadChildren: () =>
+          import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
+      },
+    ],
+  },
+  { path: '**', redirectTo: '' },
+];

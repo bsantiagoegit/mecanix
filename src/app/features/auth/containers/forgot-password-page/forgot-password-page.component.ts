@@ -6,4 +6,4 @@ import { Component } from '@angular/core';
   templateUrl: './forgot-password-page.html',
   styleUrl: './forgot-password-page.scss',
 })
-export class ForgotPasswordPage {}
+export class ForgotPasswordPageComponent {}

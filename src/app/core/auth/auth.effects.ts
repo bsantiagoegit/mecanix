@@ -60,4 +60,76 @@ export class AuthEffects {
       ),
     { dispatch: false },
   );
+
+  loginWithGoogle$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.loginWithGoogle),
+      switchMap(() =>
+        this.service.signInWithGoogle().pipe(
+          map(() => AuthActions.loginWithGoogleSuccess()),
+          catchError((error: unknown) =>
+            of(
+              AuthActions.loginWithGoogleFailure({
+                error: error instanceof Error ? error.message : 'Error desconocido',
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  register$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.register),
+      switchMap(({ email, password, fullName }) =>
+        this.service.register(email, password, fullName).pipe(
+          map(() => AuthActions.registerSuccess({ email })),
+          catchError((error: unknown) =>
+            of(
+              AuthActions.registerFailure({
+                error: error instanceof Error ? error.message : 'Error desconocido',
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  forgotPassword$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.forgotPassword),
+      switchMap(({ email }) =>
+        this.service.forgotPassword(email).pipe(
+          map(() => AuthActions.forgotPasswordSuccess()),
+          catchError((error: unknown) =>
+            of(
+              AuthActions.forgotPasswordFailure({
+                error: error instanceof Error ? error.message : 'Error desconocido',
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  resetPassword$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AuthActions.resetPassword),
+      switchMap(({ newPassword }) =>
+        this.service.resetPassword(newPassword).pipe(
+          map(() => AuthActions.resetPasswordSuccess()),
+          catchError((error: unknown) =>
+            of(
+              AuthActions.resetPasswordFailure({
+                error: error instanceof Error ? error.message : 'Error desconocido',
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }

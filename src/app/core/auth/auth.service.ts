@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, from } from 'rxjs';
+import { Observable, from, map } from 'rxjs';
 import { AuthenticationError, AuthorizationError, mapSupabaseError } from '../errors';
 import { SupabaseService } from '../supabase';
 import { AuthSession, Role } from './auth.models';
@@ -36,6 +36,58 @@ export class AuthService {
 
   logout(): Promise<void> {
     return this.supabase.auth.signOut().then(() => undefined);
+  }
+
+  signInWithGoogle(): Observable<void> {
+    return from(this.signInWithGoogleImpl()).pipe(map(() => undefined));
+  }
+
+  register(email: string, password: string, fullName: string): Observable<void> {
+    return from(this.registerImpl(email, password, fullName)).pipe(map(() => undefined));
+  }
+
+  forgotPassword(email: string): Observable<void> {
+    return from(this.forgotPasswordImpl(email)).pipe(map(() => undefined));
+  }
+
+  resetPassword(newPassword: string): Observable<void> {
+    return from(this.resetPasswordImpl(newPassword)).pipe(map(() => undefined));
+  }
+
+  private async signInWithGoogleImpl(): Promise<void> {
+    const { error } = await this.supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      },
+    });
+    if (error) throw mapSupabaseError(error);
+  }
+
+  private async registerImpl(email: string, password: string, fullName: string): Promise<void> {
+    const { error } = await this.supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullName },
+        emailRedirectTo: `${window.location.origin}/auth/login`,
+      },
+    });
+    if (error) throw mapSupabaseError(error);
+  }
+
+  private async forgotPasswordImpl(email: string): Promise<void> {
+    const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    });
+    if (error) throw mapSupabaseError(error);
+  }
+
+  private async resetPasswordImpl(newPassword: string): Promise<void> {
+    const { error } = await this.supabase.auth.updateUser({
+      password: newPassword,
+    });
+    if (error) throw mapSupabaseError(error);
   }
 
   private async signIn(email: string, password: string): Promise<AuthSession> {

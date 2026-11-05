@@ -1,0 +1,31 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold text-fg">Dashboard</h1>
+    <p class="text-sm text-fg-muted mt-1">
+      @if (workshop.active(); as w) {
+        {{ w.name }}
+      }
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <app-card>
+      <p class="text-sm text-fg-muted">Órdenes abiertas</p>
+      <p class="text-2xl font-bold text-fg mt-1">—</p>
+    </app-card>
+    <app-card>
+      <p class="text-sm text-fg-muted">Vehículos en taller</p>
+      <p class="text-2xl font-bold text-fg mt-1">—</p>
+    </app-card>
+    <app-card>
+      <p class="text-sm text-fg-muted">Ingresos del mes</p>
+      <p class="text-2xl font-bold text-fg mt-1">—</p>
+    </app-card>
+  </div>
+
+  <app-card>
+    <p class="text-sm text-fg-muted">
+      Los datos del dashboard se implementan en el feature <code>reports</code>.
+    </p>
+  </app-card>
+</div>
