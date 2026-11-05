@@ -2,11 +2,11 @@ import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthStore } from '../../../core/auth';
 import { WorkshopStore } from '../../../core/workshops';
-import { Toast } from '../toast/toast';
+import { ToastComponent } from '../toast/toast.component';
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, Toast],
+  imports: [RouterOutlet, ToastComponent],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })

@@ -7,7 +7,7 @@ import { ToastService } from '../../services/toast.service';
   templateUrl: './toast.html',
   styleUrl: './toast.scss',
 })
-export class Toast {
+export class ToastComponent {
   readonly toastService = inject(ToastService);
 
   toastClass(type: string): string {
