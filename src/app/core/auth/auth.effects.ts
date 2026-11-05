@@ -1,11 +1,12 @@
 import { Injectable, inject } from '@angular/core';
+import { AuthActions, AuthService, selectSessionWorkshopId } from '@core/auth';
+import { AuthenticationError, AuthorizationError } from '@core/errors';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { EMPTY, catchError, map, of, switchMap, withLatestFrom } from 'rxjs';
-import { AuthenticationError, AuthorizationError } from '../errors';
-import { AuthActions } from './auth.actions';
+/* import { AuthActions } from './auth.actions';
 import { selectSessionWorkshopId } from './auth.selectors';
-import { AuthService } from './auth.service';
+import { AuthService } from './auth.service'; */
 
 @Injectable()
 export class AuthEffects {

@@ -1,11 +1,11 @@
-export interface Role {
+export interface CatalogRole {
   code: string;
   name: string;
   description: string;
 }
 
 export interface CatalogsState {
-  roles: Role[];
+  roles: CatalogRole[];
   isLoading: boolean;
   error: string | null;
 }

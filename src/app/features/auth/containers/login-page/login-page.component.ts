@@ -1,9 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ButtonComponent, CardComponent, InputComponent } from '@shared/components';
+import { ToastService } from '@shared/services';
 import { AuthStore } from '../../../../core/auth';
-import { ButtonComponent, CardComponent, InputComponent } from '../../../../shared/components';
-import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-login-page',

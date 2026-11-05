@@ -1,15 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 
-import { AuthActions } from './auth.actions';
 import {
+  AuthActions,
   selectAuthError,
   selectIsAuthenticated,
   selectIsLoading,
   selectRole,
   selectSessionWorkshopId,
   selectUser,
-} from './auth.selectors';
+} from '@core/auth';
 
 /**
  * Facade sobre el slice NgRx `auth` (D-STATE-11). Los componentes

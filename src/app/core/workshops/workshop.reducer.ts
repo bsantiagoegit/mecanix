@@ -1,8 +1,8 @@
 import { createReducer, on } from '@ngrx/store';
 
-import { AuthActions } from '../auth';
-import { WorkshopsActions } from './workshop.actions';
-import { initialWorkshopState } from './workshop.models';
+import { AuthActions } from '@core/auth';
+import { initialWorkshopState } from '@core/models/';
+import { WorkshopsActions } from '@core/workshops';
 
 export const workshopReducer = createReducer(
   initialWorkshopState,

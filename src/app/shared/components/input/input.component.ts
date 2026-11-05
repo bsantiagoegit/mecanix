@@ -4,6 +4,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 let nextId = 0;
 
 @Component({
+  standalone: true,
   selector: 'app-input',
   providers: [
     {

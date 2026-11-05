@@ -1,5 +1,5 @@
+import { WorkshopState } from '@core/models';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { WorkshopState } from './workshop.models';
 
 export const selectWorkshopState = createFeatureSelector<WorkshopState>('workshops');
 

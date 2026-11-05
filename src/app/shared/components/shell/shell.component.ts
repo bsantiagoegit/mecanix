@@ -5,6 +5,7 @@ import { WorkshopStore } from '../../../core/workshops';
 import { ToastComponent } from '../toast/toast.component';
 
 @Component({
+  standalone: true,
   selector: 'app-shell',
   imports: [RouterOutlet, ToastComponent],
   templateUrl: './shell.html',

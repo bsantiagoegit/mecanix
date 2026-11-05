@@ -2,8 +2,8 @@ import { Component, input } from '@angular/core';
 import { cn } from '../../utils/cn';
 
 @Component({
+  standalone: true,
   selector: 'app-card',
-  imports: [],
   templateUrl: './card.html',
   styleUrl: './card.scss',
 })

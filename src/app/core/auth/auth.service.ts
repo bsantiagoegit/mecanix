@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
+import { AuthenticationError, AuthorizationError, mapSupabaseError } from '@core/errors';
+import { AuthSession, Role } from '@core/models';
+import { SupabaseService } from '@core/supabase';
 import { Observable, from, map } from 'rxjs';
-import { AuthenticationError, AuthorizationError, mapSupabaseError } from '../errors';
-import { SupabaseService } from '../supabase';
-import { AuthSession, Role } from './auth.models';
 
 interface UserRow {
   id: string;
