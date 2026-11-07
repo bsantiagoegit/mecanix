@@ -186,6 +186,10 @@ git rebase origin/main
 git push --force-with-lease
 ```
 
+### Un check de CI falla y no tiene que ver con mi cambio
+
+Si el paso que falla es de infraestructura (descarga de imágenes, red, `Start local Supabase`) y el mismo job pasó en otras ejecuciones, vuelve a lanzarlo: en el PR, **Details → Re-run failed jobs** (solo repite el job fallido). Si falla de forma repetida con el mismo error, es un problema real y hay que corregirlo.
+
 ### `git push origin main` es rechazado
 
 Es lo esperado: `main` solo se actualiza por Pull Request. Sube tu rama (`git push -u origin <rama>`) y abre el PR.
@@ -234,6 +238,7 @@ El workflow `.github/workflows/ci.yml` corre en cada Pull Request y en cada push
 - Token de solo lectura (`permissions: contents: read`), `timeout-minutes` en cada job y cancelación de runs obsoletos de una misma rama o PR.
 - La versión de Node sale de `.nvmrc`; la de pnpm, del campo `packageManager` de `package.json`.
 - pnpm 11 aborta la instalación si una dependencia tiene scripts de build sin aprobar. Las aprobadas están en `pnpm-workspace.yaml` (`allowBuilds`); al agregar una dependencia con scripts nativos, ejecuta `pnpm approve-builds`.
+- El arranque de Supabase se **reintenta hasta 3 veces**, limpiando contenedores entre intentos: `public.ecr.aws` limita las descargas anónimas (`toomanyrequests`) y un arranque fallido puede dejar un contenedor ocupando el puerto 54322.
 - No hay secretos: el Supabase de CI usa las claves de demostración locales.
 
 **Todavía no incluye**: tests E2E con Playwright ni despliegue. El despliegue iría en un workflow aparte, con un entorno protegido de GitHub y los secretos reales.
