@@ -1,15 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 
-import { AuthActions } from './auth.actions';
 import {
+  AuthActions,
   selectAuthError,
   selectIsAuthenticated,
   selectIsLoading,
   selectRole,
   selectSessionWorkshopId,
   selectUser,
-} from './auth.selectors';
+} from '@core/auth';
 
 /**
  * Facade sobre el slice NgRx `auth` (D-STATE-11). Los componentes
@@ -41,5 +41,21 @@ export class AuthStore {
   hasRole(...roles: string[]): boolean {
     const role = this.role();
     return role !== null && roles.includes(role);
+  }
+
+  loginWithGoogle(): void {
+    this.store.dispatch(AuthActions.loginWithGoogle());
+  }
+
+  register(email: string, password: string, fullName: string): void {
+    this.store.dispatch(AuthActions.register({ email, password, fullName }));
+  }
+
+  forgotPassword(email: string): void {
+    this.store.dispatch(AuthActions.forgotPassword({ email }));
+  }
+
+  resetPassword(newPassword: string): void {
+    this.store.dispatch(AuthActions.resetPassword({ newPassword }));
   }
 }

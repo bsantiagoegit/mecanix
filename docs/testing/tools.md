@@ -36,13 +36,15 @@ pnpm add -D vitest @vitest/coverage-v8 @vitest/ui jsdom @testing-library/angular
   },
   "configurations": {
     "integration": {
-      "include": ["supabase/tests/**/*.spec.ts"],
+      "include": ["../supabase/tests/**/*.spec.ts"],
       "exclude": [],
       "coverage": false
     }
   }
 }
 ```
+
+**Nota**: los globs de `include`/`exclude` del builder se resuelven relativos a `sourceRoot` (`src/`), no a la raíz del repo. Por eso el path de integración lleva `../` para alcanzar `supabase/tests/`.
 
 **Por qué `exclude`/`configurations.integration` y no `include` combinado**: el builder solo soporta un `include` activo a la vez. La corrida por defecto (unit) excluye `supabase/tests/`; la configuración `integration` (`ng test --configuration=integration`) apunta solo ahí. Así no se mezclan en la misma corrida (D-TEST-01: niveles separados).
 

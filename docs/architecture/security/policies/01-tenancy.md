@@ -2,7 +2,7 @@
 
 **Tablas**: `roles`, `workshops`, `users`, `workshop_members`
 
-- **Versión:** 1.0
+- **Versión:** 1.1
 - **Fecha:** Octubre 2026
 
 ---
@@ -62,17 +62,7 @@ CREATE POLICY users_select_self ON users
 CREATE POLICY users_select_shared_workshop ON users
   FOR SELECT
   TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1
-        FROM workshop_members wm1
-        JOIN workshop_members wm2 ON wm1.workshop_id = wm2.workshop_id
-       WHERE wm1.user_id = auth.uid()
-         AND wm2.user_id = users.id
-         AND wm1.status = 'active'
-         AND wm2.status = 'active'
-    )
-  );
+  USING (auth_shares_workshop_with(id));
 
 CREATE POLICY users_update_self ON users
   FOR UPDATE
@@ -80,8 +70,10 @@ CREATE POLICY users_update_self ON users
   USING (id = auth.uid())
   WITH CHECK (id = auth.uid());
 
--- Sin INSERT (lo hace trigger de auth.users). Sin DELETE (CASCADE desde auth).
+-- Sin INSERT (lo hace el trigger handle_new_auth_user). Sin DELETE (CASCADE desde auth).
 ```
+
+**Nota (v1.1)**: la versión 1.0 resolvía "comparte taller" con un `EXISTS` directo sobre `workshop_members`. Ese subquery está sujeto a la RLS de `workshop_members`, así que solo un `owner` veía a sus compañeros. Se reemplazó por el helper `auth_shares_workshop_with` (ver [helpers](../helpers.md)).
 
 ---
 
@@ -129,4 +121,4 @@ CREATE POLICY workshop_members_update_owner ON workshop_members
 
 ---
 
-_Policies de Tenancy v1.0_
+_Policies de Tenancy v1.1_

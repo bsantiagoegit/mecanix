@@ -23,6 +23,35 @@ CREATE TRIGGER trg_workshops_updated_at BEFORE UPDATE ON workshops
 --      repair_items, items_catalog, suppliers)
 ```
 
+## Trigger: perfil de usuario (`handle_new_auth_user`)
+
+Se dispara al crearse un usuario en `auth.users` y crea su fila en `users`. Es la única forma de poblar `users` (no tiene policy de INSERT).
+
+```sql
+CREATE OR REPLACE FUNCTION handle_new_auth_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO users (id, email, full_name, phone)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NULLIF(NEW.raw_user_meta_data ->> 'full_name', ''), split_part(NEW.email, '@', 1)),
+    NULLIF(NEW.raw_user_meta_data ->> 'phone', '')
+  );
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_auth_users_create_profile AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_auth_user();
+```
+
+**`full_name`**: `NOT NULL`. Se toma de `raw_user_meta_data.full_name`; si no viene, se usa la parte local del email.
+
 ## Trigger: numeración de orden
 
 Se dispara al pasar de `draft` a `received`.

@@ -1,0 +1,57 @@
+<div class="min-h-screen flex items-center justify-center p-4 bg-bg">
+  <app-card padding="lg" class="w-full max-w-md">
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-bold text-fg">Iniciar sesión</h1>
+      <p class="text-sm text-fg-muted mt-1">Accede a tu taller</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+      <app-input
+        type="email"
+        label="Email"
+        placeholder="tu@email.com"
+        autocomplete="email"
+        [required]="true"
+        formControlName="email"
+        [error]="fieldError('email')"
+      />
+
+      <app-input
+        type="password"
+        label="Contraseña"
+        autocomplete="current-password"
+        [required]="true"
+        [revealable]="true"
+        formControlName="password"
+        [error]="fieldError('password')"
+      />
+
+      <app-button type="submit" [loading]="auth.isLoading()" [fullWidth]="true">
+        Iniciar sesión
+      </app-button>
+    </form>
+
+    <div class="mt-4 text-center">
+      <a routerLink="/auth/forgot-password" class="text-sm text-primary-600 hover:underline">
+        ¿Olvidaste tu contraseña?
+      </a>
+    </div>
+
+    <div class="mt-6 flex items-center gap-3">
+      <div class="flex-1 h-px bg-border"></div>
+      <span class="text-xs text-fg-muted">o</span>
+      <div class="flex-1 h-px bg-border"></div>
+    </div>
+
+    <div class="mt-4 flex flex-col gap-2">
+      <app-button variant="secondary" [fullWidth]="true" (clicked)="loginWithGoogle()">
+        Continuar con Google
+      </app-button>
+    </div>
+
+    <div class="mt-6 text-center text-sm text-fg-muted">
+      ¿No tienes cuenta?
+      <a routerLink="/auth/register" class="text-primary-600 hover:underline">Regístrate</a>
+    </div>
+  </app-card>
+</div>

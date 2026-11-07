@@ -1,5 +1,5 @@
+import { CatalogsState } from '@core/models';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { CatalogsState } from './catalogs.models';
 
 export const selectCatalogsState = createFeatureSelector<CatalogsState>('catalogs');
 

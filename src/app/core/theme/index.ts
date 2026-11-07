@@ -1,2 +1,2 @@
-export * from './theme.models';
+export * from '../models/theme.models';
 export * from './theme.service';

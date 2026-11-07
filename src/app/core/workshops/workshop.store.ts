@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 
-import { WorkshopsActions } from './workshop.actions';
+import { WorkshopsActions } from '@core/workshops';
 import {
   selectActiveWorkshop,
   selectActiveWorkshopId,

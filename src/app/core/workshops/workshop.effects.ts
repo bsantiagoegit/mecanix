@@ -3,10 +3,13 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { EMPTY, catchError, filter, map, of, switchMap, withLatestFrom } from 'rxjs';
 
-import { AuthActions, AuthService, selectSessionWorkshopId } from '../auth';
-import { WorkshopsActions } from './workshop.actions';
-import { selectActiveWorkshopId, selectAvailableWorkshops } from './workshop.selectors';
-import { WorkshopService } from './workshop.service';
+import { AuthActions, AuthService, selectSessionWorkshopId } from '@core/auth';
+import {
+  WorkshopService,
+  WorkshopsActions,
+  selectActiveWorkshopId,
+  selectAvailableWorkshops,
+} from '@core/workshops';
 
 @Injectable()
 export class WorkshopEffects {

@@ -42,9 +42,9 @@ Define cómo se protege la información a nivel de base de datos. RLS es la **de
 | Documento      | Versión | Estado     |
 | -------------- | ------- | ---------- |
 | `decisions.md` | 1.0     | ✅ Estable |
-| `helpers.md`   | 1.0     | ✅ Estable |
+| `helpers.md`   | 1.1     | ✅ Estable |
 | `views.md`     | 1.0     | ✅ Estable |
-| `policies/`    | 1.0     | ✅ Estable |
+| `policies/`    | 1.1     | ✅ Estable |
 
 ---
 

@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
+import { mapSupabaseError } from '@core/errors';
+import { Workshop } from '@core/models';
+import { SupabaseService } from '@core/supabase';
 import { Observable, from, map } from 'rxjs';
-import { mapSupabaseError } from '../errors';
-import { SupabaseService } from '../supabase';
-import { Workshop } from './workshop.models';
 
 interface WorkshopRow {
   id: string;

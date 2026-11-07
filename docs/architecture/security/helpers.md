@@ -2,7 +2,7 @@
 
 **Sistema de Gestión para Taller Mecánico Automotriz — SaaS Multi-Tenant**
 
-- **Versión:** 1.0
+- **Versión:** 1.1
 - **Fecha:** Octubre 2026
 
 ---
@@ -145,6 +145,42 @@ $$;
 
 ---
 
+## Helper 6: `auth_shares_workshop_with(p_user_id uuid)`
+
+Devuelve `true` si el usuario autenticado y `p_user_id` comparten al menos un taller en el que ambos están `active`.
+
+```sql
+CREATE OR REPLACE FUNCTION auth_shares_workshop_with(p_user_id uuid)
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+      FROM workshop_members wm1
+      JOIN workshop_members wm2 ON wm1.workshop_id = wm2.workshop_id
+     WHERE wm1.user_id = auth.uid()
+       AND wm2.user_id = p_user_id
+       AND wm1.status = 'active'
+       AND wm2.status = 'active'
+  );
+$$;
+```
+
+**Uso típico**: `USING (auth_shares_workshop_with(id))` en `users`.
+
+**Por qué existe**: un subquery directo sobre `workshop_members` dentro de una policy se ejecuta **sujeto a la RLS de quien consulta**. Como `workshop_members` solo deja ver membresías propias (o todas, si es `owner`), un `mechanic` o `advisor` no vería a sus compañeros. El helper `SECURITY DEFINER` evita esa restricción.
+
+---
+
+## Permisos de ejecución
+
+Las migraciones revocan `EXECUTE` a `PUBLIC` y `anon`, y lo conceden solo a `authenticated`. Los helpers dependen de `auth.uid()`, que es `NULL` para `anon`, así que no devolverían nada útil; así no quedan expuestos como RPC anónimos de PostgREST.
+
+---
+
 ## Resumen
 
 | Función                                    | Retorna   | Uso                          |
@@ -154,6 +190,7 @@ $$;
 | `auth_is_owner_in(workshop_id)`            | `boolean` | ¿Es owner?                   |
 | `auth_is_advisor_or_owner_in(workshop_id)` | `boolean` | ¿Es owner o advisor?         |
 | `auth_is_mechanic_in(workshop_id)`         | `boolean` | ¿Es mechanic?                |
+| `auth_shares_workshop_with(user_id)`       | `boolean` | ¿Comparten taller activo?    |
 
 ---
 
@@ -173,4 +210,4 @@ $$;
 
 ---
 
-_Funciones Helper v1.0_
+_Funciones Helper v1.1_

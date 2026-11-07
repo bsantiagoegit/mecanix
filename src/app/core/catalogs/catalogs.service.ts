@@ -1,14 +1,14 @@
 import { Injectable, inject } from '@angular/core';
+import { mapSupabaseError } from '@core/errors';
+import { CatalogRole } from '@core/models';
+import { SupabaseService } from '@core/supabase';
 import { Observable, from, map } from 'rxjs';
-import { mapSupabaseError } from '../errors';
-import { SupabaseService } from '../supabase';
-import { Role } from './catalogs.models';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogsService {
   private readonly supabase = inject(SupabaseService).client;
 
-  listRoles(): Observable<Role[]> {
+  listRoles(): Observable<CatalogRole[]> {
     return from(this.supabase.from('roles').select('*')).pipe(
       map(({ data, error }) => {
         if (error) throw mapSupabaseError(error);
