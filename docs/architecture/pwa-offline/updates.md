@@ -17,25 +17,29 @@ Definir cómo se detectan y aplican las actualizaciones de la PWA.
 
 Ubicación: `core/pwa/update.service.ts`.
 
+El servicio **detecta** la versión nueva y expone `updateReady` (signal) y `applyUpdate()`. No muestra UI: `core/` no puede depender de `shared/` (D-FE-02). Quien compone la app (`App`) observa `updateReady` y muestra el toast.
+
 ```typescript
 @Injectable({ providedIn: 'root' })
 export class UpdateService {
   private readonly swUpdate = inject(SwUpdate);
-  private readonly toast = inject(ToastService);
+  private readonly _updateReady = signal(false);
+  readonly updateReady = this._updateReady.asReadonly();
 
   init() {
     if (!this.swUpdate.isEnabled) return;
 
-    this.swUpdate.versionUpdates.subscribe((event) => {
-      if (event.type === 'VERSION_READY') {
-        this.toast.showUpdate('Hay una actualización disponible', () => {
-          this.swUpdate.activateUpdate().then(() => location.reload());
-        });
-      }
-    });
+    this.swUpdate.versionUpdates
+      .pipe(filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
+      .subscribe(() => this._updateReady.set(true));
 
     // Check cada 6 horas
     setInterval(() => this.swUpdate.checkForUpdate(), 6 * 60 * 60 * 1000);
+  }
+
+  async applyUpdate() {
+    await this.swUpdate.activateUpdate();
+    location.reload();
   }
 }
 ```
@@ -53,7 +57,7 @@ export class UpdateService {
    ↓
 4. Evento VERSION_READY se emite
    ↓
-5. UpdateService muestra toast: "Hay una actualización disponible. [Recargar]"
+5. `App` ve `updateReady` y muestra toast: "Hay una actualización disponible. [Recargar]"
    ↓
 6. Usuario toca "Recargar"
    ↓
@@ -69,14 +73,9 @@ export class UpdateService {
 El `ToastService` incluye un método específico para actualizaciones:
 
 ```typescript
-@Injectable({ providedIn: 'root' })
-export class ToastService {
-  showUpdate(message: string, onReload: () => void) {
-    this.toast.info(message, {
-      action: { label: 'Recargar', callback: onReload },
-      duration: 0, // no auto-dismiss
-    });
-  }
+// ToastService
+withAction(message: string, action: { label: string; run: () => void }) {
+  // toast info con duration 0 (no se auto-cierra) y un botón
 }
 ```
 
@@ -104,13 +103,10 @@ export class ToastService {
 Si `activateUpdate()` falla:
 
 ```typescript
-this.swUpdate
-  .activateUpdate()
-  .then(() => location.reload())
-  .catch((error) => {
-    console.error('Error activating update:', error);
-    this.toast.error('No se pudo actualizar. Recarga manualmente.');
-  });
+// App: el toast llama a applyUpdate() y captura el rechazo
+this.update
+  .applyUpdate()
+  .catch(() => this.toast.error('No se pudo actualizar. Recarga manualmente.'));
 ```
 
 ---
