@@ -59,10 +59,14 @@ describe('Triggers: tenancy', () => {
 
   describe('set_updated_at', () => {
     it('actualiza updated_at en users al modificar la fila', async () => {
-      const before = await admin.query(`SELECT updated_at FROM users WHERE id = $1`, [USER_OWNER_A]);
+      const before = await admin.query(`SELECT updated_at FROM users WHERE id = $1`, [
+        USER_OWNER_A,
+      ]);
       try {
         await admin.query(`UPDATE users SET phone = '0911111111' WHERE id = $1`, [USER_OWNER_A]);
-        const after = await admin.query(`SELECT updated_at FROM users WHERE id = $1`, [USER_OWNER_A]);
+        const after = await admin.query(`SELECT updated_at FROM users WHERE id = $1`, [
+          USER_OWNER_A,
+        ]);
         expect(after.rows[0].updated_at.getTime()).toBeGreaterThan(
           before.rows[0].updated_at.getTime(),
         );

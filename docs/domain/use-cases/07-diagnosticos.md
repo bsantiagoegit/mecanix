@@ -3,7 +3,7 @@
 # Feature 7: Diagnósticos
 
 | ID         | Caso de uso                                    | Actor    | Prioridad |
-| ---------- | ------------------------------------------------ | -------- | --------- |
+| ---------- | ---------------------------------------------- | -------- | --------- |
 | UC-DIAG-01 | Registrar diagnóstico para un hallazgo         | Mechanic | **MVP**   |
 | UC-DIAG-02 | Editar diagnóstico (mientras no esté aprobado) | Mechanic | **MVP**   |
 | UC-DIAG-03 | Ver diagnósticos de una orden                  | Todos    | **MVP**   |

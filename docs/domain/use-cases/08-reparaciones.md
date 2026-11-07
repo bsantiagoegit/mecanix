@@ -3,7 +3,7 @@
 # Feature 8: Reparaciones
 
 | ID        | Caso de uso                                               | Actor             | Prioridad |
-| --------- | ------------------------------------------------------------ | ----------------- | --------- |
+| --------- | --------------------------------------------------------- | ----------------- | --------- |
 | UC-REP-01 | Crear reparación recomendada                              | Mechanic          | **MVP**   |
 | UC-REP-02 | Asociar reparación a múltiples hallazgos                  | Mechanic          | **MVP**   |
 | UC-REP-03 | Asociar repuestos e insumos a una reparación              | Mechanic, Advisor | **MVP**   |

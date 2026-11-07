@@ -3,7 +3,7 @@
 # Feature 2: Onboarding de Taller
 
 | ID       | Caso de uso                                                                                     | Actor            | Prioridad |
-| -------- | ------------------------------------------------------------------------------------------------ | ---------------- | --------- |
+| -------- | ----------------------------------------------------------------------------------------------- | ---------------- | --------- |
 | UC-WS-01 | Crear taller (manual, por ti)                                                                   | Tú (admin SaaS)  | **MVP**   |
 | UC-WS-02 | Configurar taller (nombre, dirección, logo, capacidad, fotos mínimas, expiración de cotización) | Owner            | **MVP**   |
 | UC-WS-03 | Invitar usuario a taller                                                                        | Owner            | **MVP**   |

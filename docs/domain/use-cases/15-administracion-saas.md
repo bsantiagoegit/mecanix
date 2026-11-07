@@ -3,7 +3,7 @@
 # Feature 15: Administración del SaaS
 
 | ID         | Caso de uso                                   | Actor           | Prioridad |
-| ---------- | ------------------------------------------------- | --------------- | --------- |
+| ---------- | --------------------------------------------- | --------------- | --------- |
 | UC-SAAS-01 | Ver listado de talleres                       | Tú (admin SaaS) | **MVP**   |
 | UC-SAAS-02 | Crear taller manualmente                      | Tú              | **MVP**   |
 | UC-SAAS-03 | Ver uso de storage por taller                 | Tú              | Fase 2    |

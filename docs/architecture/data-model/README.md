@@ -31,7 +31,7 @@ Transformar el modelo conceptual en un **esquema relacional concreto** para Post
 ## Convenciones
 
 | Aspecto      | Decisión                                               | Razón                                                       |
-| ------------ | ------------------------------------------------------- | ------------------------------------------------------------- |
+| ------------ | ------------------------------------------------------ | ----------------------------------------------------------- |
 | PK           | `uuid` con `gen_random_uuid()`                         | Único global, no expone info, facilita migración            |
 | Timestamps   | `timestamptz`                                          | Sin ambigüedad de zona horaria                              |
 | Strings      | `text`                                                 | Mismo rendimiento que `varchar(n)`, sin límites arbitrarios |
@@ -48,7 +48,7 @@ Transformar el modelo conceptual en un **esquema relacional concreto** para Post
 ## Resumen de tablas
 
 | #   | Tabla                       | Soft delete | workshop_id    | Auditoría |
-| --- | ---------------------------- | ----------- | -------------- | --------- |
+| --- | --------------------------- | ----------- | -------------- | --------- |
 | 1   | `roles`                     | No          | No             | No        |
 | 2   | `workshops`                 | Sí          | — (es la raíz) | Sí        |
 | 3   | `users`                     | No          | No             | Parcial   |

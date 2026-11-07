@@ -3,7 +3,7 @@
 # Feature 10: Cotizaciones
 
 | ID          | Caso de uso                                              | Actor          | Prioridad |
-| ----------- | ------------------------------------------------------------ | -------------- | --------- |
+| ----------- | -------------------------------------------------------- | -------------- | --------- |
 | UC-QUOTE-01 | Generar cotización a partir de reparaciones recomendadas | Advisor        | **MVP**   |
 | UC-QUOTE-02 | Ver cotización                                           | Advisor, Owner | **MVP**   |
 | UC-QUOTE-03 | Enviar cotización al cliente (WhatsApp/email)            | Advisor        | **MVP**   |

@@ -25,7 +25,12 @@ describe('localStorageMetaReducer', () => {
 
     const state = localStorageMetaReducer(baseReducer)(undefined, { type: INIT });
 
-    expect(state.auth).toMatchObject({ user, activeWorkshopId: 'w1', role: 'owner', isAuthenticated: true });
+    expect(state.auth).toMatchObject({
+      user,
+      activeWorkshopId: 'w1',
+      role: 'owner',
+      isAuthenticated: true,
+    });
     expect(state.auth.error).toBeNull();
     expect(state.auth.isLoading).toBe(false);
   });
@@ -42,7 +47,11 @@ describe('localStorageMetaReducer', () => {
   it('persists only the allowed fields after a store action', () => {
     const reducer: ActionReducer<AppState> = (state = initial) => ({
       ...state,
-      auth: { ...state.auth, user: { id: 'u1', email: 'a@b.com', fullName: 'Ana', phone: null }, error: 'secret-ish' },
+      auth: {
+        ...state.auth,
+        user: { id: 'u1', email: 'a@b.com', fullName: 'Ana', phone: null },
+        error: 'secret-ish',
+      },
     });
 
     localStorageMetaReducer(reducer)(undefined, { type: '[Auth] Login Success' });

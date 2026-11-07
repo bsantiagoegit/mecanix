@@ -3,7 +3,7 @@
 # Feature 5: Órdenes de Trabajo
 
 | ID       | Caso de uso                                                      | Actor          | Prioridad |
-| -------- | ----------------------------------------------------------------- | -------------- | --------- |
+| -------- | ---------------------------------------------------------------- | -------------- | --------- |
 | UC-WO-01 | Crear orden de trabajo (draft)                                   | Advisor        | **MVP**   |
 | UC-WO-02 | Confirmar recepción de vehículo (draft → received)               | Advisor        | **MVP**   |
 | UC-WO-03 | Registrar estado de ingreso (intake) con fotos obligatorias      | Advisor        | **MVP**   |

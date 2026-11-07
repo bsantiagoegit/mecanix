@@ -13,7 +13,11 @@ function setup(options: { auth?: Partial<typeof initialAuthState>; returnUrl?: s
       {
         provide: ActivatedRoute,
         useValue: {
-          snapshot: { queryParamMap: convertToParamMap(options.returnUrl ? { returnUrl: options.returnUrl } : {}) },
+          snapshot: {
+            queryParamMap: convertToParamMap(
+              options.returnUrl ? { returnUrl: options.returnUrl } : {},
+            ),
+          },
         },
       },
     ],
@@ -41,7 +45,10 @@ describe('LoginPage', () => {
   });
 
   it('goes back to the requested internal route', async () => {
-    const { fixture, navigate } = setup({ auth: { isAuthenticated: true }, returnUrl: '/work-orders/42' });
+    const { fixture, navigate } = setup({
+      auth: { isAuthenticated: true },
+      returnUrl: '/work-orders/42',
+    });
     await fixture.whenStable();
     expect(navigate).toHaveBeenCalledWith('/work-orders/42');
   });
@@ -58,7 +65,9 @@ describe('LoginPage', () => {
   it('shows the authentication error', async () => {
     const { fixture, element } = setup({ auth: { error: 'Email o contraseña incorrectos.' } });
     await fixture.whenStable();
-    expect(element.querySelector('[role="alert"]')?.textContent).toContain('Email o contraseña incorrectos.');
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'Email o contraseña incorrectos.',
+    );
   });
 
   it('links to register and forgot-password', async () => {

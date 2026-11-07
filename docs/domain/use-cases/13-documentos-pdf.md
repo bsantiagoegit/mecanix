@@ -3,7 +3,7 @@
 # Feature 13: Documentos PDF
 
 | ID        | Caso de uso                              | Actor   | Prioridad |
-| --------- | ------------------------------------------- | ------- | --------- |
+| --------- | ---------------------------------------- | ------- | --------- |
 | UC-PDF-01 | Generar informe inicial (PDF)            | Advisor | **MVP**   |
 | UC-PDF-02 | Generar informe final (PDF)              | Advisor | **MVP**   |
 | UC-PDF-03 | Compartir PDF por WhatsApp               | Advisor | **MVP**   |

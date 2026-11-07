@@ -3,7 +3,7 @@
 # Feature 6: Inspecciones y Hallazgos
 
 | ID         | Caso de uso                                              | Actor    | Prioridad |
-| ---------- | ---------------------------------------------------------- | -------- | --------- |
+| ---------- | -------------------------------------------------------- | -------- | --------- |
 | UC-INSP-01 | Crear inspección                                         | Mechanic | **MVP**   |
 | UC-INSP-02 | Registrar hallazgo en inspección                         | Mechanic | **MVP**   |
 | UC-INSP-03 | Adjuntar fotos a un hallazgo                             | Mechanic | **MVP**   |

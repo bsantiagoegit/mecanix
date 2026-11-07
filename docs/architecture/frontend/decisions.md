@@ -146,24 +146,24 @@ No usar `index.ts` para exportar en `shared/` ni en `features/`. Importar direct
 - **Excepción respecto al CLI**: el CLI genera guards, interceptors y pipes con guion (`foo-guard.ts`). Este proyecto usa punto (`auth.guard.ts`) para ser consistente con servicios y facades. Si generas con el CLI, renombra el archivo.
 - **Nombrar por rol, nunca por entidad pelada**: `CustomerCard`, `CustomerListPage`; jamás `Customer` como componente (choca con el modelo de dominio).
 
-| Tipo                   | Convención                         | Ejemplo                              |
-| ---------------------- | ---------------------------------- | ------------------------------------ |
-| Archivo (componente)   | `kebab-case.ts`                    | `customer-card.ts`                   |
-| Clase (componente)     | `PascalCase`, sin sufijo           | `CustomerCard`                       |
-| Página (ruta)          | `kebab-case-page.ts` / `...Page`   | `customer-list-page.ts` / `CustomerListPage` |
-| Archivos (resto)       | `kebab-case.tipo.ts`               | `customers.service.ts`               |
-| Clases (resto)         | `PascalCase` + tipo                | `CustomersService`                   |
-| Métodos/variables      | `camelCase`                        | `loadCustomers()`                    |
-| Constantes             | `UPPER_SNAKE_CASE`                 | `MAX_PHOTOS_PER_ORDER`               |
-| Interfaces             | `PascalCase` sin prefijo `I`       | `Customer`, `CreateCustomerDto`      |
-| Tipos de dominio       | `feature.model.ts`                 | `auth.model.ts`                      |
-| Signals                | `camelCase`                        | `customers = signal([])`             |
-| Store NgRx (carpeta)   | `store/` con un archivo por tipo   | `store/auth.actions.ts`              |
-| Estado del slice       | `feature.state.ts`                 | `auth.state.ts`                      |
-| Facade del slice       | `feature.facade.ts` / `...Facade`  | `auth.facade.ts` / `AuthFacade`      |
-| Effects / reducer / selectors | `feature.effects.ts`, `.reducer.ts`, `.selectors.ts` | `auth.effects.ts` |
-| Guards                 | `feature.guard.ts`                 | `auth.guard.ts`                      |
-| Rutas                  | `feature.routes.ts`                | `customers.routes.ts`                |
+| Tipo                          | Convención                                           | Ejemplo                                      |
+| ----------------------------- | ---------------------------------------------------- | -------------------------------------------- |
+| Archivo (componente)          | `kebab-case.ts`                                      | `customer-card.ts`                           |
+| Clase (componente)            | `PascalCase`, sin sufijo                             | `CustomerCard`                               |
+| Página (ruta)                 | `kebab-case-page.ts` / `...Page`                     | `customer-list-page.ts` / `CustomerListPage` |
+| Archivos (resto)              | `kebab-case.tipo.ts`                                 | `customers.service.ts`                       |
+| Clases (resto)                | `PascalCase` + tipo                                  | `CustomersService`                           |
+| Métodos/variables             | `camelCase`                                          | `loadCustomers()`                            |
+| Constantes                    | `UPPER_SNAKE_CASE`                                   | `MAX_PHOTOS_PER_ORDER`                       |
+| Interfaces                    | `PascalCase` sin prefijo `I`                         | `Customer`, `CreateCustomerDto`              |
+| Tipos de dominio              | `feature.model.ts`                                   | `auth.model.ts`                              |
+| Signals                       | `camelCase`                                          | `customers = signal([])`                     |
+| Store NgRx (carpeta)          | `store/` con un archivo por tipo                     | `store/auth.actions.ts`                      |
+| Estado del slice              | `feature.state.ts`                                   | `auth.state.ts`                              |
+| Facade del slice              | `feature.facade.ts` / `...Facade`                    | `auth.facade.ts` / `AuthFacade`              |
+| Effects / reducer / selectors | `feature.effects.ts`, `.reducer.ts`, `.selectors.ts` | `auth.effects.ts`                            |
+| Guards                        | `feature.guard.ts`                                   | `auth.guard.ts`                              |
+| Rutas                         | `feature.routes.ts`                                  | `customers.routes.ts`                        |
 
 ---
 

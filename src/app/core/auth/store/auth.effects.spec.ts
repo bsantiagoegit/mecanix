@@ -40,7 +40,9 @@ describe('AuthEffects redirects', () => {
     const effects = setup('/work-orders/42');
     effects.sessionExpiredRedirect$.subscribe();
     actions$.next(AuthActions.restoreSessionFailure({ wasAuthenticated: true }));
-    expect(navigate).toHaveBeenCalledWith(['/auth/login'], { queryParams: { returnUrl: '/work-orders/42' } });
+    expect(navigate).toHaveBeenCalledWith(['/auth/login'], {
+      queryParams: { returnUrl: '/work-orders/42' },
+    });
   });
 
   it('does not redirect a visitor who had no session to begin with', () => {

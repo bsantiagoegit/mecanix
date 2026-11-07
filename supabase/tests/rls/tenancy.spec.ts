@@ -118,7 +118,9 @@ describe('RLS: tenancy', () => {
 
     it('nadie inserta ni elimina perfiles desde el cliente', async () => {
       await expect(
-        ownerA.query(`INSERT INTO users (id, email, full_name) VALUES (gen_random_uuid(), 'x@x.com', 'X')`),
+        ownerA.query(
+          `INSERT INTO users (id, email, full_name) VALUES (gen_random_uuid(), 'x@x.com', 'X')`,
+        ),
       ).rejects.toThrow(/row-level security|policy|foreign key/i);
       const res = await ownerA.query(`DELETE FROM users WHERE id = $1`, [USER_MECHANIC_A]);
       expect(res.rowCount).toBe(0);

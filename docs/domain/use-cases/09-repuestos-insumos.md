@@ -3,7 +3,7 @@
 # Feature 9: Repuestos e Insumos
 
 | ID         | Caso de uso                                                      | Actor             | Prioridad |
-| ---------- | ------------------------------------------------------------------- | ----------------- | --------- |
+| ---------- | ---------------------------------------------------------------- | ----------------- | --------- |
 | UC-PART-01 | Registrar repuesto en una reparación                             | Mechanic, Advisor | **MVP**   |
 | UC-PART-02 | Registrar insumo en una reparación                               | Mechanic, Advisor | **MVP**   |
 | UC-PART-03 | Actualizar estado de repuesto (requested → received → installed) | Advisor           | **MVP**   |

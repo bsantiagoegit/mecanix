@@ -1,10 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { CatalogsActions } from './catalogs.actions';
-import {
-  selectCatalogsError,
-  selectCatalogsLoading,
-  selectRoles,
-} from './catalogs.selectors';
+import { selectCatalogsError, selectCatalogsLoading, selectRoles } from './catalogs.selectors';
 import { Store } from '@ngrx/store';
 
 /** Facade sobre el slice NgRx `catalogs` (D-STATE-13). */

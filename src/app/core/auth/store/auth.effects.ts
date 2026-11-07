@@ -29,9 +29,7 @@ export class AuthEffects {
         this.service.login(email, password).pipe(
           map((session) => AuthActions.loginSuccess(session)),
           catchError((error: unknown) =>
-            of(
-              AuthActions.loginFailure({ error: loginErrorMessage(error) }),
-            ),
+            of(AuthActions.loginFailure({ error: loginErrorMessage(error) })),
           ),
         ),
       ),
@@ -89,8 +87,11 @@ export class AuthEffects {
       this.actions$.pipe(
         ofType(AuthActions.restoreSessionFailure),
         filter(({ wasAuthenticated }) => wasAuthenticated),
-        tap(() =>
-          void this.router.navigate(['/auth/login'], { queryParams: { returnUrl: this.router.url } }),
+        tap(
+          () =>
+            void this.router.navigate(['/auth/login'], {
+              queryParams: { returnUrl: this.router.url },
+            }),
         ),
       ),
     { dispatch: false },

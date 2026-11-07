@@ -43,7 +43,7 @@ Definir qué se testea, con qué cobertura y con qué prioridades.
 | ---------------- | ---- | -------------------------- | --- | --------- |
 | Data services    | ✅   | ⚠️ (contra Supabase local) | ❌  | 80%       |
 | Componentes dumb | ✅   | ❌                         | ⚠️  | 60%       |
-| Páginas     | ✅   | ❌                         | ⚠️  | 50%       |
+| Páginas          | ✅   | ❌                         | ⚠️  | 50%       |
 | Guards           | ✅   | ❌                         | ❌  | 80%       |
 | Interceptors     | ✅   | ❌                         | ❌  | 80%       |
 | Stores NgRx      | ✅   | ❌                         | ❌  | 70%       |

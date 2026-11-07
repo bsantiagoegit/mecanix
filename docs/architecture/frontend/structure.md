@@ -87,16 +87,16 @@ src/
 
 **Infraestructura** (una carpeta por capacidad):
 
-| Carpeta         | Propósito                                                                   |
-| --------------- | --------------------------------------------------------------------------- |
-| `store/`        | Composición del store global: `AppState` y meta-reducer de persistencia     |
-| `theme/`        | Servicio de tema (claro/oscuro/sistema)                                     |
-| `supabase/`     | Singleton del cliente Supabase                                              |
+| Carpeta         | Propósito                                                                                      |
+| --------------- | ---------------------------------------------------------------------------------------------- |
+| `store/`        | Composición del store global: `AppState` y meta-reducer de persistencia                        |
+| `theme/`        | Servicio de tema (claro/oscuro/sistema)                                                        |
+| `supabase/`     | Singleton del cliente Supabase                                                                 |
 | `errors/`       | Errores de dominio (`DataError`, `NotFoundError`, `ValidationError`, ...) y `mapSupabaseError` |
-| `interceptors/` | Interceptors HTTP funcionales (vacía mientras no se use `HttpClient`)       |
-| `pwa/`          | `UpdateService` (SwUpdate) e `InstallService` (beforeinstallprompt)         |
-| `network/`      | `NetworkService`: signal online/offline para el banner offline              |
-| `config/`       | Constantes y configuración global de la app                                 |
+| `interceptors/` | Interceptors HTTP funcionales (vacía mientras no se use `HttpClient`)                          |
+| `pwa/`          | `UpdateService` (SwUpdate) e `InstallService` (beforeinstallprompt)                            |
+| `network/`      | `NetworkService`: signal online/offline para el banner offline                                 |
+| `config/`       | Constantes y configuración global de la app                                                    |
 
 **Caso especial**: `auth` y `workshops` tienen parte en `core/` (estado global) y parte en `features/` (pantallas). Ver "Casos especiales".
 

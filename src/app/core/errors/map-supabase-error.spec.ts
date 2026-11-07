@@ -11,12 +11,17 @@ describe('mapSupabaseError', () => {
   });
 
   it('uses the provided field map for validation errors', () => {
-    const error = mapSupabaseError({ code: '23505', message: 'dup' }, { identification: 'Ya existe' });
+    const error = mapSupabaseError(
+      { code: '23505', message: 'dup' },
+      { identification: 'Ya existe' },
+    );
     expect((error as ValidationError).fields).toEqual({ identification: 'Ya existe' });
   });
 
   it('maps 42501 to AuthorizationError', () => {
-    expect(mapSupabaseError({ code: '42501', message: 'denied' })).toBeInstanceOf(AuthorizationError);
+    expect(mapSupabaseError({ code: '42501', message: 'denied' })).toBeInstanceOf(
+      AuthorizationError,
+    );
   });
 
   it('maps RLS policy messages to AuthorizationError', () => {
