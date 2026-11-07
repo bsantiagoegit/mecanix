@@ -2,7 +2,7 @@
 
 **Sistema de Gestión para Taller Mecánico Automotriz — SaaS Multi-Tenant**
 
-- **Versión:** 1.0
+- **Versión:** 1.1
 - **Fecha:** Noviembre 2026
 
 ---
@@ -35,7 +35,7 @@ git config merge.ff only      # git merge se niega a crear commits de merge
 git config pull.rebase true   # git pull hace rebase en lugar de merge
 ```
 
-**Alcance real**: esto protege contra un `git merge` o `git pull` accidental. **No** impide un `git merge --no-ff` escrito a propósito, porque la opción explícita tiene prioridad sobre la configuración. La protección fuerte es la regla de GitHub descrita en [Ajustes recomendados en GitHub](#ajustes-recomendados-en-github).
+**Alcance**: esto protege contra un `git merge` o `git pull` accidental. No impide un `git merge --no-ff` escrito a propósito (la opción explícita tiene prioridad sobre la configuración); eso lo frena el hook `pre-merge-commit`, descrito en [Hooks de Git](#hooks-de-git).
 
 ---
 
@@ -82,7 +82,7 @@ El rebase reaplica los commits de la rama **encima** del `main` actual. Si hay c
 ### 4. Verificar
 
 ```bash
-pnpm typecheck && pnpm test && pnpm build
+pnpm format:check && pnpm typecheck && pnpm test && pnpm build
 ```
 
 ### 5. Integrar en `main`
@@ -176,6 +176,46 @@ Usa `git revert <hash>`: crea un commit nuevo que lo invierte y no reescribe el 
 
 ---
 
+## Hooks de Git
+
+Viven en `.githooks/` (versionados, sin dependencias) y se activan solos al ejecutar `pnpm install`, que corre el script `prepare` (`git config core.hooksPath .githooks`). Para activarlos a mano: `git config core.hooksPath .githooks`.
+
+| Hook               | Cuándo corre                | Qué hace                                                                                                                     |
+| ------------------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `commit-msg`       | Al crear un commit          | Exige `tipo(scope): descripción` (tipos: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`) y máximo 72 caracteres.         |
+| `pre-commit`       | Al crear un commit          | Bloquea commits en `main` y revisa con Prettier solo los archivos staged.                                                    |
+| `pre-merge-commit` | Al crear un commit de merge | Siempre lo rechaza: mantiene `main` lineal incluso con `--no-ff`.                                                            |
+| `pre-push`         | Al hacer `git push`         | Rechaza commits de merge nuevos hacia `main` y corre `typecheck` y los tests unitarios. Borrar una rama remota no los corre. |
+
+Los mensajes que Git genera solos (`Merge ...`, `Revert "..."`, `fixup!`, `squash!`) no se validan.
+
+**Límites**: se saltan con `--no-verify`, solo existen en los clones donde estén activados, y no sustituyen a CI. Si un hook falla, corrige la causa en vez de saltarlo. Para formatear: `pnpm format`.
+
+---
+
+## CI (GitHub Actions)
+
+El workflow `.github/workflows/ci.yml` corre en cada Pull Request y en cada push a `main`. Es la barrera que no depende de que cada persona tenga los hooks activos.
+
+| Job                                            | Qué ejecuta                                                                                     |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| **Quality (format, types, unit tests, build)** | `pnpm format:check`, `pnpm typecheck`, `pnpm test --watch=false`, `pnpm build`                  |
+| **Database (RLS and triggers)**                | Levanta un Supabase local mínimo (`db`, `auth`, `kong`, `rest`) y corre `pnpm test:integration` |
+
+**Equivalente local** del job de calidad: `pnpm format:check && pnpm typecheck && pnpm test --watch=false && pnpm build`. El de base de datos necesita Docker (Colima) y `supabase start`.
+
+**Convenciones del workflow**:
+
+- Las Actions están fijadas por **SHA de commit** (con el tag en un comentario), no por tag móvil. Dependabot propone las actualizaciones semanalmente (`.github/dependabot.yml`).
+- Token de solo lectura (`permissions: contents: read`), `timeout-minutes` en cada job y cancelación de runs obsoletos de una misma rama o PR.
+- La versión de Node sale de `.nvmrc`; la de pnpm, del campo `packageManager` de `package.json`.
+- pnpm 11 aborta la instalación si una dependencia tiene scripts de build sin aprobar. Las aprobadas están en `pnpm-workspace.yaml` (`allowBuilds`); al agregar una dependencia con scripts nativos, ejecuta `pnpm approve-builds`.
+- No hay secretos: el Supabase de CI usa las claves de demostración locales.
+
+**Todavía no incluye**: tests E2E con Playwright ni despliegue. El despliegue iría en un workflow aparte, con un entorno protegido de GitHub y los secretos reales.
+
+---
+
 ## Prohibido
 
 - Commit directo en `main`.
@@ -191,6 +231,7 @@ Usa `git revert <hash>`: crea un commit nuevo que lo invierte y no reescribe el 
 En **Settings → Rules** (o Branches), regla para `main`:
 
 - **Require linear history**: rechaza cualquier merge commit. Es la protección que sí se puede imponer a todo el equipo.
+- **Require status checks to pass** con los dos jobs de CI: `Quality (format, types, unit tests, build)` y `Database (RLS and triggers)`. Los nombres aparecen en la lista solo después de la primera ejecución del workflow.
 - **Require a pull request before merging** (cuando haya más de una persona).
 - **Block force pushes**.
 - En **Settings → General → Pull Requests**: desactivar **Allow merge commits** y dejar solo **Allow squash merging** y **Allow rebase merging**.
@@ -211,4 +252,4 @@ El historial hasta el commit `32b18ca` contiene commits de merge, del flujo ante
 
 ---
 
-_Flujo de Git v1.0_
+_Flujo de Git v1.1_
