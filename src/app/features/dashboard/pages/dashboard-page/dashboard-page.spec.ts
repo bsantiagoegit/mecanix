@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideTestStore } from '../../../../../testing/utils/store';
 
 import { DashboardPage } from './dashboard-page';
 
@@ -9,6 +10,7 @@ describe('DashboardPage', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DashboardPage],
+      providers: [provideTestStore()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DashboardPage);

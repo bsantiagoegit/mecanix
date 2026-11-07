@@ -212,13 +212,15 @@ El **código** (nombres de archivos, carpetas, clases, variables) va en **inglé
 ## D-FE-19: Organización de `core/`
 
 - **Módulos de dominio** (`auth/`, `workshops/`, `catalogs/`): una carpeta por módulo. Los archivos del store NgRx van agrupados en `store/` (`*.actions.ts`, `*.state.ts`, `*.reducer.ts`, `*.selectors.ts`, `*.effects.ts`, `*.facade.ts`). El servicio, el guard y los modelos de dominio van planos junto a `store/`.
-- **Infraestructura técnica** (`supabase/`, `errors/`, `interceptors/`, `config/`, `layout/`, `theme/`, `pwa/`, `network/`, `store/` raíz): una carpeta por capacidad.
+- **Infraestructura técnica** (`supabase/`, `errors/`, `interceptors/`, `config/`, `theme/`, `pwa/`, `network/`, `store/` raíz): una carpeta por capacidad.
 - **Sin carpetas globales por tipo** (`core/models/`, `core/services/`): separan el código de su dominio, dispersan cada cambio en varias carpetas y terminan sin dueño.
 - **Subcarpetas por tipo** (`services/`, `models/`, `guards/`) dentro de un módulo solo cuando supera unos 8 archivos sin contar `store/`.
 - **`core/store/`** (raíz): composición del store global (`app.state.ts`, `persistence.meta-reducer.ts`).
 - **Imports**: dentro de un módulo, rutas relativas. Nunca importar un módulo a través de su propio `index.ts`: crea ciclos. Entre módulos, vía alias al `index.ts`.
 
 **Razón**: cohesión (un cambio en `auth` toca `core/auth/`), borrar o mover un módulo es mover una carpeta, y el API público de cada módulo queda en su `index.ts`.
+
+**El shell de la app** vive en `app/layout/`, fuera de `core/` y `shared/`: es composición y necesita importar de ambos.
 
 **Dentro de una feature** sí se agrupa por tipo (`components/`, `pages/`, `services/`, `models/`), porque ahí hay muchos archivos de naturaleza distinta (D-FE-03).
 

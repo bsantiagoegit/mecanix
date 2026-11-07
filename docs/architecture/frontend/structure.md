@@ -23,7 +23,6 @@ src/
 │   │   ├── workshops/                 ← taller activo (store/, service, modelos)
 │   │   ├── catalogs/                  ← catálogos globales (store/, service, modelos)
 │   │   ├── store/                     ← composición del store global (AppState, persistencia)
-│   │   ├── layout/                    ← shell principal de la app (usa auth y workshops)
 │   │   ├── theme/                     ← tema claro/oscuro/sistema
 │   │   ├── supabase/
 │   │   ├── errors/
@@ -39,6 +38,8 @@ src/
 │   │   ├── services/                  ← servicios de UI sin dominio (ToastService)
 │   │   ├── models/                    ← tipos de UI (ToastMessage)
 │   │   └── utils/                     ← funciones puras (cn)
+│   │
+│   ├── layout/                        ← shell principal de la app (compone core/ y shared/)
 │   │
 │   ├── features/                      ← features del dominio
 │   │   ├── auth/
@@ -89,7 +90,6 @@ src/
 | Carpeta         | Propósito                                                                   |
 | --------------- | --------------------------------------------------------------------------- |
 | `store/`        | Composición del store global: `AppState` y meta-reducer de persistencia     |
-| `layout/`       | Shell principal de la app (header, `router-outlet`, toasts)                 |
 | `theme/`        | Servicio de tema (claro/oscuro/sistema)                                     |
 | `supabase/`     | Singleton del cliente Supabase                                              |
 | `errors/`       | Errores de dominio (`DataError`, `NotFoundError`, `ValidationError`, ...) y `mapSupabaseError` |
@@ -102,11 +102,19 @@ src/
 
 ---
 
+## `layout/`
+
+**Propósito**: el shell principal de la app (header, `router-outlet`, contenedor de toasts). Es la ruta padre de las features autenticadas.
+
+**Regla**: es una capa de composición; puede importar de `core/` (sesión, taller activo) y de `shared/` (UI). `core/` y `shared/` no lo importan.
+
+---
+
 ## `shared/`
 
 **Propósito**: componentes, pipes, directivas y utilidades de UI reutilizables, **sin lógica de negocio**.
 
-**Regla**: no importa de `features/` ni de `core/` (salvo utilidades puras como funciones de formato). Si algo necesita la sesión o el taller activo (por ejemplo el shell de la app o una directiva `hasRole`), no es `shared/`: va en `core/`.
+**Regla**: no importa de `features/` ni de `core/` (salvo utilidades puras como funciones de formato). Si algo necesita la sesión o el taller activo (por ejemplo el shell de la app o una directiva `hasRole`), no es `shared/`: va en `layout/` (si compone la UI de la app) o en `core/` (si es un servicio).
 
 **Contenido**:
 

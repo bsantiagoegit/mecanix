@@ -3,6 +3,11 @@ import { AppState } from './app.state';
 
 const STORAGE_KEY = 'app-state';
 
+/** Campos de cada slice que se guardan y se rehidratan (D-STATE-14). */
+const AUTH_KEYS: (keyof AppState['auth'])[] = ['user', 'activeWorkshopId', 'role'];
+const WORKSHOPS_KEYS: (keyof AppState['workshops'])[] = ['active'];
+const CATALOGS_KEYS: (keyof AppState['catalogs'])[] = ['roles'];
+
 interface PersistedState {
   auth?: Partial<AppState['auth']>;
   workshops?: Partial<AppState['workshops']>;
@@ -24,9 +29,9 @@ export function localStorageMetaReducer(reducer: ActionReducer<AppState>): Actio
     ) {
       try {
         const persisted: PersistedState = {
-          auth: pick(newState.auth, ['user', 'activeWorkshopId', 'role']),
-          workshops: pick(newState.workshops, ['active']),
-          catalogs: pick(newState.catalogs, ['roles']),
+          auth: pick(newState.auth, AUTH_KEYS),
+          workshops: pick(newState.workshops, WORKSHOPS_KEYS),
+          catalogs: pick(newState.catalogs, CATALOGS_KEYS),
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted));
       } catch (error) {
@@ -40,27 +45,25 @@ export function localStorageMetaReducer(reducer: ActionReducer<AppState>): Actio
 
 /**
  * Mezcla lo persistido sobre el estado inicial de cada slice. Solo se
- * rehidratan los campos de `pick`; flags transitorios (isLoading, error)
- * siempre arrancan en su valor inicial. `isAuthenticated` se deriva de
+ * rehidratan los campos permitidos (lo demás en storage se ignora); flags
+ * transitorios (isLoading, error) siempre arrancan en su valor inicial. `isAuthenticated` se deriva de
  * `user`; `restoreSession` lo confirma contra la sesión de Supabase.
  */
 function hydrate(state: AppState, persisted: PersistedState | undefined): AppState {
   if (!persisted) return state;
 
+  const auth = pick(persisted.auth ?? {}, AUTH_KEYS);
+
   return {
-    auth: {
-      ...state.auth,
-      ...persisted.auth,
-      isAuthenticated: (persisted.auth?.user ?? null) !== null,
-    },
-    workshops: { ...state.workshops, ...persisted.workshops },
-    catalogs: { ...state.catalogs, ...persisted.catalogs },
+    auth: { ...state.auth, ...auth, isAuthenticated: (auth.user ?? null) !== null },
+    workshops: { ...state.workshops, ...pick(persisted.workshops ?? {}, WORKSHOPS_KEYS) },
+    catalogs: { ...state.catalogs, ...pick(persisted.catalogs ?? {}, CATALOGS_KEYS) },
   };
 }
 
-function pick<T extends object>(obj: T, keys: (keyof T)[]): Partial<T> {
+function pick<T extends object>(obj: Partial<T>, keys: (keyof T)[]): Partial<T> {
   return keys.reduce((acc, key) => {
-    acc[key] = obj[key];
+    if (key in obj) acc[key] = obj[key];
     return acc;
   }, {} as Partial<T>);
 }
