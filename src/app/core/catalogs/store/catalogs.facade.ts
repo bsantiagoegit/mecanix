@@ -1,15 +1,15 @@
 import { Injectable, inject } from '@angular/core';
+import { CatalogsActions } from './catalogs.actions';
 import {
-  CatalogsActions,
   selectCatalogsError,
   selectCatalogsLoading,
   selectRoles,
-} from '@core/catalogs';
+} from './catalogs.selectors';
 import { Store } from '@ngrx/store';
 
 /** Facade sobre el slice NgRx `catalogs` (D-STATE-13). */
 @Injectable({ providedIn: 'root' })
-export class CatalogsStore {
+export class CatalogsFacade {
   private readonly store = inject(Store);
 
   readonly roles = this.store.selectSignal(selectRoles);

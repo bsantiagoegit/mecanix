@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthStore } from '@core/auth';
+import { AuthFacade } from '@core/auth';
 import { Button } from '@shared/components/button/button';
 import { Card } from '@shared/components/card/card';
 import { Input } from '@shared/components/input/input';
@@ -17,7 +17,7 @@ export class LoginPage {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
-  readonly auth = inject(AuthStore);
+  readonly auth = inject(AuthFacade);
 
   readonly form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],

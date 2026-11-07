@@ -1,4 +1,4 @@
-import { CatalogRole } from '@core/catalogs';
+import { CatalogRole } from '../catalogs.model';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 
 export const CatalogsActions = createActionGroup({

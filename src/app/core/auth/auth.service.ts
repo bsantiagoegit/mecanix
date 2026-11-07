@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { AuthenticationError, AuthorizationError, mapSupabaseError } from '@core/errors';
-import { AuthSession, Role } from '@core/models';
+import { AuthSession, Role } from './auth.model';
 import { SupabaseService } from '@core/supabase';
 import { Observable, from, map } from 'rxjs';
 

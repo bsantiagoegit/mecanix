@@ -1,22 +1,22 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 
+import { AuthActions } from './auth.actions';
 import {
-  AuthActions,
   selectAuthError,
   selectIsAuthenticated,
   selectIsLoading,
   selectRole,
   selectSessionWorkshopId,
   selectUser,
-} from '@core/auth';
+} from './auth.selectors';
 
 /**
  * Facade sobre el slice NgRx `auth` (D-STATE-11). Los componentes
- * inyectan AuthStore en vez de Store<AuthState> + selectores sueltos.
+ * inyectan AuthFacade en vez de Store<AuthState> + selectores sueltos.
  */
 @Injectable({ providedIn: 'root' })
-export class AuthStore {
+export class AuthFacade {
   private readonly store = inject(Store);
 
   readonly user = this.store.selectSignal(selectUser);

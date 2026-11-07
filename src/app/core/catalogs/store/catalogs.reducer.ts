@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import { initialCatalogsState } from '../models/catalogs.models';
+import { initialCatalogsState } from './catalogs.state';
 import { CatalogsActions } from './catalogs.actions';
 
 export const catalogsReducer = createReducer(

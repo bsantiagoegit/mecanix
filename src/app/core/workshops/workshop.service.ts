@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { mapSupabaseError } from '@core/errors';
-import { Workshop } from '@core/models';
+import { Workshop } from './workshop.model';
 import { SupabaseService } from '@core/supabase';
 import { Observable, from, map } from 'rxjs';
 

@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { AuthStore } from '@core/auth';
-import { WorkshopStore } from '@core/workshops';
+import { AuthFacade } from '@core/auth';
+import { WorkshopFacade } from '@core/workshops';
 import { ToastContainer } from '@shared/components/toast-container/toast-container';
 
 @Component({
@@ -10,8 +10,8 @@ import { ToastContainer } from '@shared/components/toast-container/toast-contain
   templateUrl: './shell.html',
 })
 export class Shell {
-  readonly auth = inject(AuthStore);
-  readonly workshop = inject(WorkshopStore);
+  readonly auth = inject(AuthFacade);
+  readonly workshop = inject(WorkshopFacade);
 
   logout(): void {
     this.auth.logout();

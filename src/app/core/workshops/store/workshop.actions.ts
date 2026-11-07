@@ -1,4 +1,4 @@
-import { Workshop } from '@core/models';
+import { Workshop } from '../workshop.model';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 
 export const WorkshopsActions = createActionGroup({

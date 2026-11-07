@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { AuthActions } from '@core/auth';
-import { CatalogsActions, CatalogsService } from '@core/catalogs';
+import { CatalogsService } from '../catalogs.service';
+import { CatalogsActions } from './catalogs.actions';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, of, switchMap } from 'rxjs';
 

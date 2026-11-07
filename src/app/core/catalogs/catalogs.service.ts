@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { mapSupabaseError } from '@core/errors';
-import { CatalogRole } from '@core/models';
+import { CatalogRole } from './catalogs.model';
 import { SupabaseService } from '@core/supabase';
 import { Observable, from, map } from 'rxjs';
 

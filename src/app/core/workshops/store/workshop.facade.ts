@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 
-import { WorkshopsActions } from '@core/workshops';
+import { WorkshopsActions } from './workshop.actions';
 import {
   selectActiveWorkshop,
   selectActiveWorkshopId,
@@ -12,7 +12,7 @@ import {
 
 /** Facade sobre el slice NgRx `workshops` (D-STATE-12). */
 @Injectable({ providedIn: 'root' })
-export class WorkshopStore {
+export class WorkshopFacade {
   private readonly store = inject(Store);
 
   readonly available = this.store.selectSignal(selectAvailableWorkshops);

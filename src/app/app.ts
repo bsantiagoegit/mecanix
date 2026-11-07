@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { UpdateService } from './core/pwa';
-import { ThemeService } from './core/theme';
+import { UpdateService } from '@core/pwa';
+import { ThemeService } from '@core/theme';
 
 @Component({
   selector: 'app-root',

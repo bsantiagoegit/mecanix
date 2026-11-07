@@ -9,37 +9,19 @@ import {
 } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
-import { provideEffects } from '@ngrx/effects';
-import { provideStore } from '@ngrx/store';
-import { provideStoreDevtools } from '@ngrx/store-devtools';
+import { AuthFacade } from '@core/auth';
+import { GlobalErrorHandler } from '@core/errors';
+import { errorInterceptor } from '@core/interceptors';
+import { provideAppStore } from '@core/store';
 
 import { routes } from './app.routes';
-import { AuthEffects, AuthStore, authReducer } from './core/auth';
-import { CatalogsEffects, catalogsReducer } from './core/catalogs';
-import { localStorageMetaReducer } from './core/config/persistence.meta-reducer';
-import { GlobalErrorHandler } from './core/errors';
-import { errorInterceptor } from './core/interceptors';
-import { WorkshopEffects, workshopReducer } from './core/workshops';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([errorInterceptor])),
-
-    provideStore(
-      {
-        auth: authReducer,
-        workshops: workshopReducer,
-        catalogs: catalogsReducer,
-      },
-      {
-        metaReducers: [localStorageMetaReducer],
-      },
-    ),
-    provideEffects([AuthEffects, WorkshopEffects, CatalogsEffects]),
-
-    isDevMode() ? provideStoreDevtools({ maxAge: 25, logOnly: false }) : [],
+    provideAppStore(),
 
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
@@ -49,7 +31,7 @@ export const appConfig: ApplicationConfig = {
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
 
     provideAppInitializer(() => {
-      inject(AuthStore).restoreSession();
+      inject(AuthFacade).restoreSession();
     }),
   ],
 };

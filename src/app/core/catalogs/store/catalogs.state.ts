@@ -1,8 +1,4 @@
-export interface CatalogRole {
-  code: string;
-  name: string;
-  description: string;
-}
+import { CatalogRole } from '../catalogs.model';
 
 export interface CatalogsState {
   roles: CatalogRole[];

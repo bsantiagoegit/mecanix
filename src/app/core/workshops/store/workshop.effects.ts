@@ -4,12 +4,9 @@ import { Store } from '@ngrx/store';
 import { EMPTY, catchError, filter, map, of, switchMap, withLatestFrom } from 'rxjs';
 
 import { AuthActions, AuthService, selectSessionWorkshopId } from '@core/auth';
-import {
-  WorkshopService,
-  WorkshopsActions,
-  selectActiveWorkshopId,
-  selectAvailableWorkshops,
-} from '@core/workshops';
+import { WorkshopService } from '../workshop.service';
+import { WorkshopsActions } from './workshop.actions';
+import { selectActiveWorkshopId, selectAvailableWorkshops } from './workshop.selectors';
 
 @Injectable()
 export class WorkshopEffects {
