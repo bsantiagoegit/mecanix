@@ -13,9 +13,9 @@ CREATE TABLE work_orders (
   customer_id              uuid NOT NULL REFERENCES customers(id) ON DELETE RESTRICT,
   vehicle_id               uuid NOT NULL REFERENCES vehicles(id)  ON DELETE RESTRICT,
   advisor_id               uuid NOT NULL REFERENCES users(id)     ON DELETE RESTRICT,
-  sequence_number          text NOT NULL,
-  sequence_year            int  NOT NULL,
-  sequence_number_annual   int  NOT NULL,
+  sequence_number          text,
+  sequence_year            int,
+  sequence_number_annual   int,
   status                   text NOT NULL DEFAULT 'draft',
   reported_problem         text NOT NULL,
   cancellation_reason      text,
@@ -38,6 +38,9 @@ CREATE TABLE work_orders (
   ),
   CONSTRAINT work_orders_delivered_at CHECK (
     delivered_at IS NULL OR status = 'delivered'
+  ),
+  CONSTRAINT work_orders_sequence_assigned CHECK (
+    status = 'draft' OR sequence_number IS NOT NULL
   )
 );
 
@@ -49,7 +52,7 @@ CREATE INDEX idx_work_orders_vehicle ON work_orders(vehicle_id);
 CREATE INDEX idx_work_orders_advisor ON work_orders(advisor_id);
 ```
 
-**Numeración**: `sequence_number` (`OT-YYYY-NNNN`) se genera en un trigger al confirmar la recepción, no al crear el draft.
+**Numeración**: `sequence_number` (`OT-YYYY-NNNN`) se genera en un trigger al confirmar la recepción, no al crear el draft. Por eso las tres columnas `sequence_*` son **nullable** mientras la orden es `draft`; el CHECK `work_orders_sequence_assigned` garantiza que toda orden que no es borrador tiene número. El índice UNIQUE no choca entre borradores porque Postgres trata los NULL como distintos.
 
 ---
 
