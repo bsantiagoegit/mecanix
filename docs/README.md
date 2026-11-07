@@ -2,7 +2,7 @@
 
 **Sistema de Gestión para Taller Mecánico Automotriz — SaaS Multi-Tenant**
 
-- **Versión:** 1.1
+- **Versión:** 1.2
 - **Fecha:** Octubre 2026
 
 ---
@@ -21,6 +21,7 @@
 | **Arquitectura** | [`architecture/`](./architecture/README.md) | Cómo se construye (técnico). Modelo relacional, RLS, Storage, ADRs, frontend, estado, PWA.               |
 | **Diseño**       | [`design/`](./design/README.md)             | Sistema de diseño. Tokens, Tailwind, componentes base, responsive, accesibilidad.                        |
 | **Testing**      | [`testing/`](./testing/README.md)           | Estrategia de tests. Unit, integration, E2E, cobertura, herramientas.                                    |
+| **Proceso**      | [`git-workflow.md`](./git-workflow.md)      | Cómo se trabaja con ramas, commits y merges. Historial lineal de `main`.                                 |
 
 ---
 
@@ -32,6 +33,7 @@ Para entender el proyecto completo:
 2. [`architecture/README.md`](./architecture/README.md) — seguir con el modelo de datos y RLS.
 3. [`design/README.md`](./design/README.md) — terminar con el sistema de diseño.
 4. [`testing/README.md`](./testing/README.md) — entender cómo se testea.
+5. [`git-workflow.md`](./git-workflow.md) — antes de abrir tu primera rama.
 
 ---
 
@@ -46,4 +48,4 @@ Para entender el proyecto completo:
 
 ---
 
-_Documentación v1.1 — Documento vivo._
+_Documentación v1.2 — Documento vivo._

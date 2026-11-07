@@ -15,12 +15,14 @@ Instrucciones para Claude Code en este repo. La fuente de verdad ampliada vive e
 9. `.ai/AGENTS.md` — orden de implementación y reglas de trabajo completas.
 10. `.ai/CONVENTIONS.md` — nombres, estructura de feature, commits, reglas TypeScript.
 11. `.ai/WORKFLOW.md` — pasos concretos para implementar un caso de uso o tocar el modelo de datos.
+12. `docs/git-workflow.md` — ramas, commits y merges (historial lineal).
 
 ## Reglas duras (no negociables)
 
 - NO inventar términos: usa `docs/domain/glossary.md`.
 - NO modificar la base de datos sin actualizar `docs/architecture/data-model/`.
 - NO añadir dependencias sin un ADR en `docs/architecture/adr/`.
+- NO crear commits de merge ni commitear directo en `main`: rama corta + `rebase` + `merge --ff-only` (ver `docs/git-workflow.md`). Antes de integrar o publicar, confirmar con el usuario.
 - NO usar NgRx para estado local — usa signals. NgRx solo para estado global.
 - NO llamar a Supabase desde componentes — usa data services.
 - Sigue las convenciones de `.ai/CONVENTIONS.md` (nombres, estructura de carpetas, commits).
