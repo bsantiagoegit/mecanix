@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Valida commits convencionales: tipo(scope): descripción. Ver docs/git-workflow.md
+set -euo pipefail
+
+first_line="$(head -n 1 "$1")"
+
+# Mensajes generados por git que no se validan
+case "$first_line" in
+  Merge\ * | Revert\ \"* | fixup!\ * | squash!\ *) exit 0 ;;
+esac
+
+pattern='^(feat|fix|docs|refactor|test|chore)\([a-z0-9][a-z0-9._/-]*\)!?: [^[:space:]]'
+
+if ! [[ "$first_line" =~ $pattern ]]; then
+  {
+    echo "✖ Mensaje de commit inválido: \"$first_line\""
+    echo "  Formato:  tipo(scope): descripción"
+    echo "  Tipos:    feat, fix, docs, refactor, test, chore"
+    echo "  Ejemplo:  fix(auth): navigate after login"
+  } >&2
+  exit 1
+fi
+
+if [ "${#first_line}" -gt 72 ]; then
+  echo "✖ La primera línea tiene ${#first_line} caracteres (máximo 72)." >&2
+  exit 1
+fi

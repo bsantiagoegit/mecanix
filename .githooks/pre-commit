@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# 1) No se commitea en main. 2) Formato Prettier de los archivos staged. Ver docs/git-workflow.md
+set -euo pipefail
+
+branch="$(git symbolic-ref --short -q HEAD || true)"
+if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+  {
+    echo "✖ No se commitea directo en '$branch'."
+    echo "  Crea una rama:  git switch -c tipo/descripcion-corta"
+  } >&2
+  exit 1
+fi
+
+staged=()
+while IFS= read -r -d '' file; do
+  staged+=("$file")
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+if [ "${#staged[@]}" -eq 0 ]; then
+  exit 0
+fi
+
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "aviso: pnpm no está en el PATH; se omite la revisión de formato." >&2
+  exit 0
+fi
+
+if ! pnpm exec prettier --check --ignore-unknown "${staged[@]}" >/dev/null 2>&1; then
+  {
+    echo "✖ Hay archivos staged sin el formato de Prettier:"
+    pnpm exec prettier --list-different --ignore-unknown "${staged[@]}" 2>/dev/null | sed 's/^/    /' || true
+    echo "  Corrige con:  pnpm format   (y vuelve a hacer git add)"
+  } >&2
+  exit 1
+fi

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# El historial de main es lineal: no se crean commits de merge. Ver docs/git-workflow.md
+{
+  echo "✖ Los commits de merge no están permitidos (historial lineal)."
+  echo "  Pon tu rama encima de main:   git fetch origin && git rebase origin/main"
+  echo "  Y luego integra en main:      git switch main && git merge --ff-only <rama>"
+} >&2
+exit 1

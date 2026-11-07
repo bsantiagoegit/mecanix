@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Antes de publicar: sin commits de merge nuevos en main, y typecheck + tests unitarios.
+# Ver docs/git-workflow.md
+set -euo pipefail
+
+zero='^0+$'
+only_deletes=true
+
+# git entrega por stdin: <ref local> <sha local> <ref remota> <sha remota>
+while read -r _local_ref local_sha remote_ref remote_sha; do
+  if [[ "$local_sha" =~ $zero ]]; then
+    continue # borrado de una rama remota: no hay nada que verificar
+  fi
+  only_deletes=false
+
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    if [[ "$remote_sha" =~ $zero ]]; then range="$local_sha"; else range="$remote_sha..$local_sha"; fi
+    if [ -n "$(git rev-list --merges "$range" 2>/dev/null)" ]; then
+      echo "✖ El push a main incluye commits de merge. Haz rebase sobre origin/main (historial lineal)." >&2
+      exit 1
+    fi
+  fi
+done
+
+if [ "$only_deletes" = true ]; then
+  exit 0
+fi
+
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "aviso: pnpm no está en el PATH; se omiten typecheck y tests." >&2
+  exit 0
+fi
+
+echo "pre-push: typecheck y tests unitarios..." >&2
+pnpm typecheck && pnpm test --watch=false
