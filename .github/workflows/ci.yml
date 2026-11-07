@@ -78,8 +78,23 @@ jobs:
 
       # Aplica supabase/migrations y supabase/seed.sql sobre una base nueva.
       # Se omiten los servicios que los tests (conexión directa a Postgres) no usan.
+      # public.ecr.aws limita las descargas anónimas ("toomanyrequests") y un arranque
+      # fallido puede dejar contenedores a medias ocupando el puerto 54322: se reintenta
+      # hasta 3 veces limpiando entre intentos. Si falla las 3 veces, el job falla.
       - name: Start local Supabase
-        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,realtime,storage-api,mailpit,postgres-meta
+        run: |
+          for attempt in 1 2 3; do
+            if supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,realtime,storage-api,mailpit,postgres-meta; then
+              exit 0
+            fi
+            echo "::warning::supabase start falló (intento $attempt de 3); se limpia y se reintenta"
+            supabase stop --no-backup || true
+            docker ps -aq --filter "name=supabase_" | xargs -r docker rm -f
+            docker network rm supabase_network_macanix-web 2>/dev/null || true
+            sleep $((attempt * 10))
+          done
+          echo "::error::supabase start falló 3 veces"
+          exit 1
 
       - name: Integration tests
         run: pnpm test:integration --watch=false
