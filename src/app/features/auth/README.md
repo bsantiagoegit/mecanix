@@ -72,4 +72,4 @@ Cargadas con `loadChildren` bajo `/auth` (ver [`auth.routes.ts`](./auth.routes.t
 
 - `login-page.spec.ts`: navegación tras autenticar, `returnUrl` interno, mensaje de error y enlaces.
 - Los demás specs de la feature son de arranque ("should create").
-- La lógica de sesión se prueba en `core/auth`: `auth.reducer.spec.ts` y las redirecciones de `auth.effects.spec.ts`. El login, el registro y la recuperación de contraseña de `AuthService` aún no tienen tests. Los tests de integración de RLS están en `supabase/tests/`.
+- La lógica de sesión se prueba en `core/auth`: `auth.reducer.spec.ts` y las redirecciones de `auth.effects.spec.ts`. `auth.service.spec.ts` cubre `AuthService` (login, `restoreSession`, `roleIn`, registro, recuperación y cambio de contraseña, Google) con un cliente de Supabase falso. Los tests de integración de RLS están en `supabase/tests/`.
