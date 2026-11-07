@@ -1,6 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthFacade } from '@core/auth';
 import { Button } from '@shared/components/button/button';
 import { Card } from '@shared/components/card/card';
@@ -9,7 +9,7 @@ import { ToastService } from '@shared/services/toast.service';
 
 @Component({
   selector: 'app-login-page',
-  imports: [ReactiveFormsModule, Button, Card, Input],
+  imports: [ReactiveFormsModule, RouterLink, Button, Card, Input],
   templateUrl: './login-page.html',
 })
 export class LoginPage {
@@ -23,6 +23,15 @@ export class LoginPage {
     email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
   });
+
+  constructor() {
+    // Con sesión activa (login recién hecho o sesión restaurada) esta pantalla no tiene sentido.
+    effect(() => {
+      if (this.auth.isAuthenticated()) {
+        void this.router.navigateByUrl(this.returnUrl());
+      }
+    });
+  }
 
   onSubmit(): void {
     if (this.form.invalid) {
@@ -46,7 +55,9 @@ export class LoginPage {
     return '';
   }
 
+  /** Solo rutas internas: evita redirigir a URLs absolutas o protocol-relative. */
   returnUrl(): string {
-    return this.route.snapshot.queryParamMap.get('returnUrl') ?? '/dashboard';
+    const url = this.route.snapshot.queryParamMap.get('returnUrl');
+    return url && url.startsWith('/') && !url.startsWith('//') ? url : '/dashboard';
   }
 }

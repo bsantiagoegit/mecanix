@@ -32,7 +32,8 @@ export const AuthActions = createActionGroup({
     // Sesión
     Logout: emptyProps(),
     'Restore Session': emptyProps(),
-    'Restore Session Failure': emptyProps(),
+    // wasAuthenticated: había sesión (hidratada) que resultó inválida; sin ella no hay nada que expulsar.
+    'Restore Session Failure': props<{ wasAuthenticated: boolean }>(),
 
     'Set Active Workshop': props<{ workshopId: string; role: Role }>(),
   },

@@ -5,6 +5,15 @@
       <p class="text-sm text-fg-muted mt-1">Accede a tu taller</p>
     </div>
 
+    @if (auth.error(); as error) {
+      <p
+        role="alert"
+        class="mb-4 rounded-md border border-danger-100 bg-danger-50 px-3 py-2 text-sm text-danger-700"
+      >
+        {{ error }}
+      </p>
+    }
+
     <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
       <app-input
         type="email"

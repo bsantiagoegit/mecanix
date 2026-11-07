@@ -28,7 +28,7 @@ describe('authReducer', () => {
 
   it.each([
     ['logout', AuthActions.logout()],
-    ['restoreSessionFailure', AuthActions.restoreSessionFailure()],
+    ['restoreSessionFailure', AuthActions.restoreSessionFailure({ wasAuthenticated: true })],
   ])('resets to the initial state on %s', (_name, action) => {
     const logged = authReducer(initialAuthState, AuthActions.loginSuccess(session));
     expect(authReducer(logged, action)).toEqual(initialAuthState);
