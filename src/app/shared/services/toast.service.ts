@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Toast, ToastType } from '../models/toast.model';
+import { Toast, ToastAction, ToastType } from '../models/toast.model';
 
 @Injectable({ providedIn: 'root' })
 export class ToastService {
@@ -22,13 +22,18 @@ export class ToastService {
     this.show('info', message, duration);
   }
 
+  /** Persistent toast with a button; it stays until the user acts or dismisses it. */
+  withAction(message: string, action: ToastAction): void {
+    this.show('info', message, 0, action);
+  }
+
   dismiss(id: string): void {
     this._toasts.update((toasts) => toasts.filter((t) => t.id !== id));
   }
 
-  private show(type: ToastType, message: string, duration: number): void {
+  private show(type: ToastType, message: string, duration: number, action?: ToastAction): void {
     const id = crypto.randomUUID();
-    this._toasts.update((toasts) => [...toasts, { id, type, message, duration }]);
+    this._toasts.update((toasts) => [...toasts, { id, type, message, duration, action }]);
 
     if (duration > 0) {
       setTimeout(() => this.dismiss(id), duration);

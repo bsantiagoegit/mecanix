@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { ToastAction } from '../../models/toast.model';
 import { ToastService } from '../../services/toast.service';
 
 @Component({
@@ -7,6 +8,11 @@ import { ToastService } from '../../services/toast.service';
 })
 export class ToastContainer {
   readonly toastService = inject(ToastService);
+
+  run(id: string, action: ToastAction): void {
+    this.toastService.dismiss(id);
+    action.run();
+  }
 
   toastClass(type: string): string {
     const base =
