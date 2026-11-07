@@ -9,7 +9,7 @@
 
 ## Propósito
 
-Definir la estrategia de manejo de errores en tres niveles: data service, contenedor, y global.
+Definir la estrategia de manejo de errores en tres niveles: data service, página, y global.
 
 ---
 
@@ -18,7 +18,7 @@ Definir la estrategia de manejo de errores en tres niveles: data service, conten
 | Nivel            | Responsabilidad                                 | Ejemplo                           |
 | ---------------- | ----------------------------------------------- | --------------------------------- |
 | **Data service** | Mapear errores de Supabase a errores de dominio | `23505` → `ValidationError`       |
-| **Contenedor**   | Mostrar al usuario, decidir si reintentar       | `toast.error('No se pudo crear')` |
+| **Página**       | Mostrar al usuario, decidir si reintentar       | `toast.error('No se pudo crear')` |
 | **Global**       | Capturar errores no manejados                   | `ErrorHandler`                    |
 
 ---
@@ -112,7 +112,7 @@ async create(payload: CreateCustomerDto): Promise<Customer> {
 
 ---
 
-## Manejo en contenedores
+## Manejo en páginas
 
 **Patrón típico**:
 
@@ -178,7 +178,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-        inject(AuthStore).logout();
+        inject(AuthFacade).logout();
       }
       return throwError(() => error);
     }),

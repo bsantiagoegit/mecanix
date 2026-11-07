@@ -2,7 +2,7 @@
 
 **Sistema de Gestión para Taller Mecánico Automotriz — SaaS Multi-Tenant**
 
-- **Versión:** 1.2
+- **Versión:** 1.3
 - **Fecha:** Octubre 2026
 
 ---
@@ -36,18 +36,18 @@ Organizar el código por **feature de dominio**, no por tipo de archivo.
 
 ## D-FE-03: Estructura estándar de un feature
 
-Cada feature tiene: `components/`, `containers/`, `services/`, `models/`, `{feature}.routes.ts`, `README.md`. Opcionalmente `store/` y `guards/`.
+Cada feature tiene: `components/`, `pages/`, `services/`, `models/`, `{feature}.routes.ts`, `README.md`. Opcionalmente `store/` y `guards/`.
 
 **Razón**: predecible. El agente sabe dónde buscar cada tipo de archivo.
 
 ---
 
-## D-FE-04: Componentes "dumb" vs "smart"
+## D-FE-04: Páginas y componentes presentacionales
 
-- **`components/`**: presentacionales. `input()`, `output()`. Sin lógica de negocio.
-- **`containers/`**: smart. Inyectan servicios y store. Coordinan.
+- **`pages/`**: componentes enrutados (los que aparecen en `{feature}.routes.ts`). Inyectan servicios y facades, cargan datos con `resource`, coordinan navegación, errores y toasts. Nombre con sufijo `-page` / `Page`.
+- **`components/`**: presentacionales. `input()`, `output()`. Sin acceso a datos ni lógica de negocio.
 
-**Razón**: reduce acoplamiento. Los presentacionales son reutilizables y testeables.
+**Razón**: el criterio es verificable a simple vista: si el componente está en una ruta, es una página. Reduce acoplamiento: los presentacionales son reutilizables y testeables. Reemplaza la antigua carpeta `containers/` (smart components), cuyo nombre sugería una regla que nadie hacía cumplir.
 
 ---
 
@@ -93,7 +93,7 @@ Usar `CanActivateFn` en lugar de clases.
 
 ## D-FE-10: Sin `resolvers` en MVP
 
-Los contenedores cargan datos con `resource`. Sin resolvers.
+Las páginas cargan datos con `resource`. Sin resolvers.
 
 **Razón**: los resolvers bloquean la navegación. Con `resource` la pantalla se muestra con skeleton.
 
@@ -110,7 +110,7 @@ Interceptors funcionales (`HttpInterceptorFn`) para lógica transversal HTTP.
 ## D-FE-12: Manejo de errores en tres niveles
 
 - **Data service**: mapea errores de Supabase a errores de dominio.
-- **Contenedor**: muestra al usuario, decide si reintentar.
+- **Página**: muestra al usuario, decide si reintentar.
 - **Global**: `ErrorHandler` captura errores no manejados.
 
 **Razón**: los componentes no manejan errores crudos de Supabase.
@@ -139,22 +139,31 @@ No usar `index.ts` para exportar en `shared/` ni en `features/`. Importar direct
 
 ## D-FE-15: Naming conventions
 
-**Componentes**: el CLI de Angular 21 genera componentes sin sufijo `Component` en el archivo ni en la clase por defecto (`app.ts` → clase `App`, no `app.component.ts` → `AppComponent`). Se adopta ese default: `kebab-case.ts` para el archivo, `PascalCase` para la clase, sin sufijo. El resto de tipos (servicios, guards, stores, etc.) sí mantienen su sufijo porque no son componentes.
+**Regla híbrida**:
 
-| Tipo                   | Convención                   | Ejemplo                         |
-| ---------------------- | ---------------------------- | ------------------------------- |
-| Archivos (componente)  | `kebab-case.ts`               | `customer-list.ts`              |
-| Clases (componente)    | `PascalCase`                  | `CustomerList`                  |
-| Archivos (resto)       | `kebab-case.tipo.ts`         | `customers.service.ts`          |
-| Clases (resto)         | `PascalCase`                 | `CustomersService`              |
-| Métodos/variables | `camelCase`                  | `loadCustomers()`               |
-| Constantes        | `UPPER_SNAKE_CASE`           | `MAX_PHOTOS_PER_ORDER`          |
-| Interfaces        | `PascalCase` sin prefijo `I` | `Customer`, `CreateCustomerDto` |
-| Signals           | `camelCase`                  | `customers = signal([])`        |
-| Stores NgRx       | `feature.store.ts`           | `auth.store.ts`                 |
-| Effects NgRx      | `feature.effects.ts`         | `auth.effects.ts`               |
-| Guards            | `feature.guard.ts`           | `auth.guard.ts`                 |
-| Rutas             | `feature.routes.ts`          | `customers.routes.ts`           |
+- **Componentes y directivas: sin sufijo.** Es el default del CLI de Angular 21 (`ng g c foo` genera `foo.ts`, `foo.html`, `foo.css`, `foo.spec.ts`). Archivo `kebab-case.ts`, clase `PascalCase` sin `Component`.
+- **Resto de tipos: sufijo con punto** (`.service`, `.facade`, `.guard`, `.model`, etc.). Dentro de un módulo hay varios archivos con la misma base (`auth.service.ts`, `auth.facade.ts`, `auth.guard.ts`); sin el sufijo serían todos `auth.ts`.
+- **Excepción respecto al CLI**: el CLI genera guards, interceptors y pipes con guion (`foo-guard.ts`). Este proyecto usa punto (`auth.guard.ts`) para ser consistente con servicios y facades. Si generas con el CLI, renombra el archivo.
+- **Nombrar por rol, nunca por entidad pelada**: `CustomerCard`, `CustomerListPage`; jamás `Customer` como componente (choca con el modelo de dominio).
+
+| Tipo                   | Convención                         | Ejemplo                              |
+| ---------------------- | ---------------------------------- | ------------------------------------ |
+| Archivo (componente)   | `kebab-case.ts`                    | `customer-card.ts`                   |
+| Clase (componente)     | `PascalCase`, sin sufijo           | `CustomerCard`                       |
+| Página (ruta)          | `kebab-case-page.ts` / `...Page`   | `customer-list-page.ts` / `CustomerListPage` |
+| Archivos (resto)       | `kebab-case.tipo.ts`               | `customers.service.ts`               |
+| Clases (resto)         | `PascalCase` + tipo                | `CustomersService`                   |
+| Métodos/variables      | `camelCase`                        | `loadCustomers()`                    |
+| Constantes             | `UPPER_SNAKE_CASE`                 | `MAX_PHOTOS_PER_ORDER`               |
+| Interfaces             | `PascalCase` sin prefijo `I`       | `Customer`, `CreateCustomerDto`      |
+| Tipos de dominio       | `feature.model.ts`                 | `auth.model.ts`                      |
+| Signals                | `camelCase`                        | `customers = signal([])`             |
+| Store NgRx (carpeta)   | `store/` con un archivo por tipo   | `store/auth.actions.ts`              |
+| Estado del slice       | `feature.state.ts`                 | `auth.state.ts`                      |
+| Facade del slice       | `feature.facade.ts` / `...Facade`  | `auth.facade.ts` / `AuthFacade`      |
+| Effects / reducer / selectors | `feature.effects.ts`, `.reducer.ts`, `.selectors.ts` | `auth.effects.ts` |
+| Guards                 | `feature.guard.ts`                 | `auth.guard.ts`                      |
+| Rutas                  | `feature.routes.ts`                | `customers.routes.ts`                |
 
 ---
 
@@ -200,6 +209,31 @@ El **código** (nombres de archivos, carpetas, clases, variables) va en **inglé
 
 ---
 
+## D-FE-19: Organización de `core/`
+
+- **Módulos de dominio** (`auth/`, `workshops/`, `catalogs/`): una carpeta por módulo. Los archivos del store NgRx van agrupados en `store/` (`*.actions.ts`, `*.state.ts`, `*.reducer.ts`, `*.selectors.ts`, `*.effects.ts`, `*.facade.ts`). El servicio, el guard y los modelos de dominio van planos junto a `store/`.
+- **Infraestructura técnica** (`supabase/`, `errors/`, `interceptors/`, `config/`, `layout/`, `theme/`, `pwa/`, `network/`, `store/` raíz): una carpeta por capacidad.
+- **Sin carpetas globales por tipo** (`core/models/`, `core/services/`): separan el código de su dominio, dispersan cada cambio en varias carpetas y terminan sin dueño.
+- **Subcarpetas por tipo** (`services/`, `models/`, `guards/`) dentro de un módulo solo cuando supera unos 8 archivos sin contar `store/`.
+- **`core/store/`** (raíz): composición del store global (`app.state.ts`, `persistence.meta-reducer.ts`).
+- **Imports**: dentro de un módulo, rutas relativas. Nunca importar un módulo a través de su propio `index.ts`: crea ciclos. Entre módulos, vía alias al `index.ts`.
+
+**Razón**: cohesión (un cambio en `auth` toca `core/auth/`), borrar o mover un módulo es mover una carpeta, y el API público de cada módulo queda en su `index.ts`.
+
+**Dentro de una feature** sí se agrupa por tipo (`components/`, `pages/`, `services/`, `models/`), porque ahí hay muchos archivos de naturaleza distinta (D-FE-03).
+
+---
+
+## D-FE-20: Alias de importación
+
+`@core/*`, `@shared/*` y `@features/*`, definidos en `tsconfig.json` (los heredan `tsconfig.app.json` y `tsconfig.spec.json`). Sin `@app/*` (duplica a los demás) ni `@environments/*` (se importa en un solo lugar).
+
+**Uso**: alias al cruzar capas o módulos; rutas relativas dentro de un mismo módulo o feature.
+
+**Razón**: evita `../../../../core/auth`. Definirlos solo en `tsconfig.app.json` rompe la compilación de los tests.
+
+---
+
 ## Resumen
 
 | ID      | Decisión                                        |
@@ -207,7 +241,7 @@ El **código** (nombres de archivos, carpetas, clases, variables) va en **inglé
 | D-FE-01 | Arquitectura por features                       |
 | D-FE-02 | Tres capas: core, shared, features              |
 | D-FE-03 | Estructura estándar de un feature               |
-| D-FE-04 | Componentes dumb vs smart                       |
+| D-FE-04 | Páginas y componentes presentacionales          |
 | D-FE-05 | Data services para Supabase                     |
 | D-FE-06 | `resource` para data fetching                   |
 | D-FE-07 | Lazy loading por feature                        |
@@ -218,10 +252,12 @@ El **código** (nombres de archivos, carpetas, clases, variables) va en **inglé
 | D-FE-12 | Manejo de errores en tres niveles               |
 | D-FE-13 | README por feature                              |
 | D-FE-14 | Sin barrel files                                |
-| D-FE-15 | Naming conventions                              |
+| D-FE-15 | Naming conventions (sufijo híbrido)             |
 | D-FE-16 | Standalone components                           |
 | D-FE-17 | Zoneless change detection                       |
 | D-FE-18 | Nomenclatura: código en inglés, docs en español |
+| D-FE-19 | Organización de `core/`                         |
+| D-FE-20 | Alias de importación                            |
 
 ---
 
@@ -233,4 +269,4 @@ El **código** (nombres de archivos, carpetas, clases, variables) va en **inglé
 
 ---
 
-_Decisiones Transversales — Frontend v1.2_
+_Decisiones Transversales — Frontend v1.3_

@@ -2,7 +2,7 @@
 
 **Sistema de Gestión para Taller Mecánico Automotriz — SaaS Multi-Tenant**
 
-- **Versión:** 1.3
+- **Versión:** 1.4
 - **Fecha:** Octubre 2026
 
 ---
@@ -18,10 +18,12 @@ Definir la estructura completa del frontend Angular, con las tres capas (`core/`
 ```
 src/
 ├── app/
-│   ├── core/                          ← servicios singleton, guards, interceptors
-│   │   ├── auth/
-│   │   ├── workshops/
-│   │   ├── catalogs/                  ← catálogos globales (roles, estados, tipos)
+│   ├── core/                          ← singletons: módulos de dominio transversales e infraestructura
+│   │   ├── auth/                      ← sesión (store/, service, guard, modelos)
+│   │   ├── workshops/                 ← taller activo (store/, service, modelos)
+│   │   ├── catalogs/                  ← catálogos globales (store/, service, modelos)
+│   │   ├── store/                     ← composición del store global (AppState, persistencia)
+│   │   ├── layout/                    ← shell principal de la app (usa auth y workshops)
 │   │   ├── theme/                     ← tema claro/oscuro/sistema
 │   │   ├── supabase/
 │   │   ├── errors/
@@ -30,10 +32,13 @@ src/
 │   │   ├── network/                   ← estado online/offline
 │   │   └── config/
 │   │
-│   ├── shared/                        ← componentes reutilizables sin lógica de negocio
+│   ├── shared/                        ← UI reutilizable sin lógica de negocio ni dependencia de core/
 │   │   ├── components/
+│   │   ├── directives/
 │   │   ├── pipes/
-│   │   └── directives/
+│   │   ├── services/                  ← servicios de UI sin dominio (ToastService)
+│   │   ├── models/                    ← tipos de UI (ToastMessage)
+│   │   └── utils/                     ← funciones puras (cn)
 │   │
 │   ├── features/                      ← features del dominio
 │   │   ├── auth/
@@ -52,7 +57,7 @@ src/
 │   │   ├── reports/
 │   │   └── saas-admin/
 │   │
-│   ├── app.component.ts
+│   ├── app.ts
 │   ├── app.config.ts
 │   └── app.routes.ts
 │
@@ -69,32 +74,39 @@ src/
 
 **Propósito**: servicios singleton que se usan en toda la app.
 
-**Regla**: no importa de `features/`.
+**Regla**: no importa de `features/` ni de `shared/` (salvo utilidades puras). Organización según [D-FE-19](./decisions.md).
 
-**Contenido**:
+**Módulos de dominio** (cada uno con su `store/` NgRx, ver "Anatomía de un módulo de `core/`"):
+
+| Carpeta      | Propósito                                                            |
+| ------------ | -------------------------------------------------------------------- |
+| `auth/`      | Sesión: store, guard, service de Supabase Auth, tipos de usuario/rol |
+| `workshops/` | Taller activo y talleres disponibles: store, service, tipos          |
+| `catalogs/`  | Catálogos globales (roles, estados de orden, tipos de item): store   |
+
+**Infraestructura** (una carpeta por capacidad):
 
 | Carpeta         | Propósito                                                                   |
 | --------------- | --------------------------------------------------------------------------- |
-| `auth/`         | Store de sesión, guard, service de Supabase Auth                            |
-| `workshops/`    | Store del taller activo, service de talleres                                |
-| `catalogs/`     | Store de catálogos globales (roles, estados de orden, tipos de item)        |
+| `store/`        | Composición del store global: `AppState` y meta-reducer de persistencia     |
+| `layout/`       | Shell principal de la app (header, `router-outlet`, toasts)                 |
 | `theme/`        | Servicio de tema (claro/oscuro/sistema)                                     |
 | `supabase/`     | Singleton del cliente Supabase                                              |
-| `errors/`       | Tipos de error de dominio (`DataError`, `NotFoundError`, `ValidationError`) |
-| `interceptors/` | Interceptors HTTP funcionales                                               |
+| `errors/`       | Errores de dominio (`DataError`, `NotFoundError`, `ValidationError`, ...) y `mapSupabaseError` |
+| `interceptors/` | Interceptors HTTP funcionales (vacía mientras no se use `HttpClient`)       |
 | `pwa/`          | `UpdateService` (SwUpdate) e `InstallService` (beforeinstallprompt)         |
-| `network/`      | `NetworkService`: signal online/offline para el banner offline             |
-| `config/`       | Configuración global de la app                                              |
+| `network/`      | `NetworkService`: signal online/offline para el banner offline              |
+| `config/`       | Constantes y configuración global de la app                                 |
 
-**Caso especial**: `auth` y `workshops` tienen parte en `core/` (estado global) y parte en `features/` (pantallas). Ver sección "Casos especiales".
+**Caso especial**: `auth` y `workshops` tienen parte en `core/` (estado global) y parte en `features/` (pantallas). Ver "Casos especiales".
 
 ---
 
 ## `shared/`
 
-**Propósito**: componentes, pipes y directivas reutilizables, **sin lógica de negocio**.
+**Propósito**: componentes, pipes, directivas y utilidades de UI reutilizables, **sin lógica de negocio**.
 
-**Regla**: no importa de `features/` ni de `core/` (salvo utilidades puras como funciones de formato).
+**Regla**: no importa de `features/` ni de `core/` (salvo utilidades puras como funciones de formato). Si algo necesita la sesión o el taller activo (por ejemplo el shell de la app o una directiva `hasRole`), no es `shared/`: va en `core/`.
 
 **Contenido**:
 
@@ -102,7 +114,10 @@ src/
 | ------------- | ----------------------------------------------------------- |
 | `components/` | Botones, inputs, modales, skeletons, estados vacíos, toasts |
 | `pipes/`      | Formateo de moneda, fecha, etc.                             |
-| `directives/` | Directivas reutilizables (`hasRole`, etc.)                  |
+| `directives/` | Directivas visuales reutilizables                           |
+| `services/`   | Servicios de UI sin dominio (`ToastService`)                |
+| `models/`     | Tipos de UI (`ToastMessage`)                                |
+| `utils/`      | Funciones puras (`cn`)                                      |
 
 **Ejemplos de componentes**:
 
@@ -166,37 +181,58 @@ core/     ──→ core/    (permitido)
 
 ---
 
+## Anatomía de un módulo de `core/`
+
+Los archivos del store NgRx se agrupan en `store/`; el servicio, el guard y los tipos de dominio van planos junto a ella ([D-FE-19](./decisions.md)):
+
+```
+core/auth/
+├── store/
+│   ├── auth.actions.ts
+│   ├── auth.state.ts          ← AuthState + estado inicial
+│   ├── auth.reducer.ts
+│   ├── auth.selectors.ts
+│   ├── auth.effects.ts
+│   └── auth.facade.ts         ← API que usan los componentes (signals vía selectSignal)
+├── auth.service.ts            ← acceso a Supabase Auth
+├── auth.guard.ts
+├── auth.model.ts              ← User, Role, AuthSession
+└── index.ts                   ← API pública del módulo
+```
+
+**`index.ts` exporta**: la facade, el servicio, el guard, los tipos de dominio y las actions/selectors que otros módulos de `core/` necesiten (p. ej. `workshops` reacciona a `AuthActions.loginSuccess`). No exporta reducers ni effects (los registra `app.config.ts` importándolos de `store/`).
+
+**Imports**: dentro del módulo, rutas relativas (`./store/auth.actions`). Nunca importar el módulo por su propio `index.ts`, porque crea ciclos. Desde fuera: `import { AuthFacade } from '@core/auth'`.
+
+---
+
 ## Casos especiales: `auth`, `workshops` y `catalogs`
 
 Estos tres slices del store global son **transversales** (toda la app los usa) y merecen documentación específica.
 
-**Decisión**:
+**Decisión**: la sesión es global, las pantallas son una feature. La separación refleja la diferencia.
 
 ```
-core/auth/                    ← estado global de sesión
-├── auth.store.ts
-├── auth.effects.ts
-├── auth.guard.ts
-└── auth.service.ts
+core/auth/                    ← estado global de sesión (ver anatomía arriba)
 
-features/auth/                ← pantallas de login
-├── containers/
+features/auth/                ← pantallas de login, registro, recuperación
+├── pages/
 ├── components/
 ├── auth.routes.ts
 └── README.md
 ```
 
-**Razón**: la sesión es global, las pantallas son un feature. La separación refleja la diferencia.
-
 **Mismo patrón para `workshops`**:
 
 ```
 core/workshops/               ← taller activo (estado global)
-├── workshop.store.ts
-└── workshop.service.ts
+├── store/                    ← actions, state, reducer, selectors, effects, facade
+├── workshop.service.ts
+├── workshop.model.ts
+└── index.ts
 
 features/workshops/           ← pantallas de gestión del taller
-├── containers/
+├── pages/
 ├── components/
 ├── workshops.routes.ts
 └── README.md
@@ -207,11 +243,11 @@ features/workshops/           ← pantallas de gestión del taller
 Los catálogos globales (roles, estados de orden, tipos de item) no tienen pantallas. Son datos de referencia que la app carga una vez y comparte.
 
 ```
-core/catalogs/               ← catálogos globales (estado global)
-├── catalogs.store.ts
-├── catalogs.effects.ts
+core/catalogs/                ← catálogos globales (estado global)
+├── store/
 ├── catalogs.service.ts
-└── catalogs.model.ts
+├── catalogs.model.ts
+└── index.ts
 ```
 
 **Razón**: los catálogos son inmutables y se usan en múltiples features (ej: `work-orders` usa estados, `items` usa tipos). Cargarlos una vez es más eficiente que cada feature los recargue.
@@ -231,12 +267,18 @@ El tema no es un slice de NgRx. Vive como un servicio con signal.
 ```
 core/theme/
 ├── theme.service.ts ← signal + setTheme() + effect()
-└── theme.model.ts ← tipo Theme = 'light' | 'dark' | 'system'
+└── theme.model.ts   ← tipo Theme = 'light' | 'dark' | 'system'
 ```
 
 **Razón**: el tema es un solo valor (string). No justifica NgRx. Un servicio con signal es suficiente.
 
 **Persistencia**: `localStorage` con clave `theme`.
+
+---
+
+## Alias de importación
+
+`@core/*`, `@shared/*` y `@features/*`, definidos en `tsconfig.json` ([D-FE-20](./decisions.md)). Alias al cruzar capas o módulos; rutas relativas dentro del mismo módulo o feature.
 
 ---
 
@@ -248,4 +290,4 @@ core/theme/
 
 ---
 
-_Estructura de Carpetas v1.3_
+_Estructura de Carpetas v1.4_

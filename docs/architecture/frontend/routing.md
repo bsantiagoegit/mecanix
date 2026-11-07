@@ -25,7 +25,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    component: AppShellComponent,
+    component: AppShell,
     canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'work-orders', pathMatch: 'full' },
@@ -107,10 +107,10 @@ export const customersRoutes: Routes = [
   {
     path: '',
     children: [
-      { path: '', component: CustomerListComponent },
-      { path: 'new', component: CustomerCreateComponent },
-      { path: ':id', component: CustomerDetailComponent },
-      { path: ':id/edit', component: CustomerEditComponent, canActivate: [canEditCustomerGuard] },
+      { path: '', component: CustomerListPage },
+      { path: 'new', component: CustomerCreatePage },
+      { path: ':id', component: CustomerDetailPage },
+      { path: ':id/edit', component: CustomerEditPage, canActivate: [canEditCustomerGuard] },
     ],
   },
 ];
@@ -129,7 +129,7 @@ export const customersRoutes: Routes = [
 
 Todos los features se cargan con `loadChildren`. La app inicial solo carga:
 
-- `AppShellComponent`
+- `AppShell`
 - `authGuard`
 - El módulo raíz
 
@@ -147,7 +147,7 @@ Todos los features se cargan con `loadChildren`. La app inicial solo carga:
 
 ```typescript
 export const authGuard: CanActivateFn = () => {
-  const auth = inject(AuthStore);
+  const auth = inject(AuthFacade);
   const router = inject(Router);
   if (!auth.isAuthenticated()) {
     return router.parseUrl('/auth/login');
@@ -156,12 +156,12 @@ export const authGuard: CanActivateFn = () => {
 };
 
 export const saasAdminGuard: CanActivateFn = () => {
-  const auth = inject(AuthStore);
+  const auth = inject(AuthFacade);
   return auth.isSaasAdmin();
 };
 
 export const canEditCustomerGuard: CanActivateFn = () => {
-  const auth = inject(AuthStore);
+  const auth = inject(AuthFacade);
   return auth.hasRole('owner') || auth.hasRole('advisor');
 };
 ```
@@ -182,7 +182,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-        inject(AuthStore).logout();
+        inject(AuthFacade).logout();
       }
       return throwError(() => error);
     }),
@@ -205,7 +205,7 @@ export const appConfig: ApplicationConfig = {
 
 ## Navegación programática
 
-**Patrón**: inyectar `Router` en el contenedor y navegar después de una acción.
+**Patrón**: inyectar `Router` en la página y navegar después de una acción.
 
 ```typescript
 async onSubmit() {
@@ -214,7 +214,7 @@ async onSubmit() {
 }
 ```
 
-**Regla**: la navegación se hace en el contenedor, nunca en el componente presentacional.
+**Regla**: la navegación se hace en la página, nunca en el componente presentacional.
 
 ---
 
@@ -223,7 +223,7 @@ async onSubmit() {
 **Patrón**:
 
 ```typescript
-export class CustomerDetailComponent {
+export class CustomerDetailPage {
   private readonly route = inject(ActivatedRoute);
   private readonly customersService = inject(CustomersService);
 

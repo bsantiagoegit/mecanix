@@ -18,7 +18,7 @@ Definir la estructura estándar de un feature y sus archivos. Sirve como plantil
 ```
 features/{feature-name}/
 ├── components/              ← componentes presentacionales (dumb)
-├── containers/              ← componentes smart (conectan al estado)
+├── pages/                   ← páginas: componentes enrutados que conectan al estado
 ├── services/                ← data services (acceso a Supabase)
 ├── models/                  ← interfaces TypeScript del dominio
 ├── guards/                  ← guards específicos del feature (opcional)
@@ -36,15 +36,15 @@ features/{feature-name}/
 ```
 features/customers/
 ├── components/
-│   ├── customer-card.component.ts
-│   ├── customer-form.component.ts
-│   └── customer-search.component.ts
+│   ├── customer-card.ts
+│   ├── customer-form.ts
+│   └── customer-search.ts
 │
-├── containers/
-│   ├── customer-list.component.ts
-│   ├── customer-detail.component.ts
-│   ├── customer-create.component.ts
-│   └── customer-edit.component.ts
+├── pages/
+│   ├── customer-list-page.ts
+│   ├── customer-detail-page.ts
+│   ├── customer-create-page.ts
+│   └── customer-edit-page.ts
 │
 ├── services/
 │   └── customers.service.ts
@@ -91,15 +91,15 @@ features/customers/
     </div>
   `,
 })
-export class CustomerCardComponent {
+export class CustomerCard {
   readonly customer = input.required<Customer>();
   readonly edit = output<Customer>();
 }
 ```
 
-### `containers/`
+### `pages/`
 
-**Qué contiene**: componentes smart ("containers").
+**Qué contiene**: componentes enrutados (los de `{feature}.routes.ts`). Nombre con sufijo `-page` / `Page`.
 
 **Responsabilidades**:
 
@@ -115,7 +115,7 @@ export class CustomerCardComponent {
 ```typescript
 @Component({
   selector: 'app-customer-list',
-  imports: [CustomerCardComponent, SkeletonComponent, EmptyStateComponent],
+  imports: [CustomerCard, Skeleton, EmptyState],
   template: `
     @if (customers.isLoading()) {
       <app-skeleton />
@@ -130,9 +130,9 @@ export class CustomerCardComponent {
     }
   `,
 })
-export class CustomerListComponent {
+export class CustomerListPage {
   private readonly customersService = inject(CustomersService);
-  private readonly workshops = inject(WorkshopStore);
+  private readonly workshops = inject(WorkshopFacade);
   private readonly router = inject(Router);
 
   readonly customers = resource({
@@ -235,7 +235,7 @@ export interface CreateCustomerDto {
 
 ```typescript
 export const canEditCustomerGuard: CanActivateFn = (route) => {
-  const auth = inject(AuthStore);
+  const auth = inject(AuthFacade);
   return auth.hasRole('owner') || auth.hasRole('advisor');
 };
 ```
@@ -271,10 +271,10 @@ export const customersRoutes: Routes = [
     path: '',
     canActivate: [authGuard],
     children: [
-      { path: '', component: CustomerListComponent },
-      { path: 'new', component: CustomerCreateComponent },
-      { path: ':id', component: CustomerDetailComponent },
-      { path: ':id/edit', component: CustomerEditComponent },
+      { path: '', component: CustomerListPage },
+      { path: 'new', component: CustomerCreatePage },
+      { path: ':id', component: CustomerDetailPage },
+      { path: ':id/edit', component: CustomerEditPage },
     ],
   },
 ];
@@ -304,7 +304,7 @@ export const customersRoutes: Routes = [
 
 features/{feature}/
 ├── components/
-├── containers/
+├── pages/
 ├── services/
 ├── models/
 ├── guards/
@@ -334,7 +334,7 @@ features/{feature}/
 3. Crea los modelos en `models/`.
 4. Crea el data service en `services/`.
 5. Crea los componentes presentacionales en `components/`.
-6. Crea los contenedores en `containers/`.
+6. Crea las páginas en `pages/`.
 7. Crea las rutas en `{feature}.routes.ts`.
 8. Agrega el feature a `app.routes.ts` con lazy loading.
 9. Escribe el `README.md` del feature.

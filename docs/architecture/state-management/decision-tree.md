@@ -45,7 +45,7 @@ Proporcionar un **árbol de decisión** para elegir la herramienta correcta seg�
 
 - ¿Viene de Supabase? Sí.
 - ¿Es para mostrar? Sí.
-- → `resource` en el contenedor.
+- → `resource` en la página.
 
 ### Ejemplo 2: Taller activo
 

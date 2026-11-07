@@ -234,7 +234,7 @@ El botón activo se marca visualmente.
 
 **Propósito**: notificaciones temporales.
 
-**Uso**: se maneja con un `ToastService` global. El componente `app-toast-container` se coloca en el `AppShellComponent`.
+**Uso**: se maneja con un `ToastService` global. El componente `app-toast-container` se coloca en el `AppShell`.
 
 **Tipos**: `success`, `error`, `warning`, `info`, `update`.
 
@@ -397,16 +397,16 @@ this.toast.showUpdate('Hay una actualización', () => location.reload());
 
 ```
 shared/components/{component-name}/
-├── {component-name}.component.ts
-├── {component-name}.component.html
-├── {component-name}.component.css     ← solo si necesita estilos custom
-└── {component-name}.component.spec.ts
+├── {component-name}.ts
+├── {component-name}.html
+├── {component-name}.css               ← solo si necesita estilos custom (no crear archivos vacíos)
+└── {component-name}.spec.ts
 ```
 
 ### Naming
 
 - Selector: `app-{component-name}`.
-- Clase: `{ComponentName}Component`.
+- Clase: `{ComponentName}`, sin sufijo `Component` ([D-FE-15](../architecture/frontend/decisions.md)).
 - Archivos: `kebab-case`.
 
 ### API

@@ -22,9 +22,9 @@ Ejemplo: listar clientes.
    ↓
 2. Router carga lazy el feature customers
    ↓
-3. CustomerListComponent (container) se inicializa
+3. CustomerListPage (página) se inicializa
    ↓
-4. Container usa resource() para cargar clientes
+4. La página usa resource() para cargar clientes
    ↓
 5. resource llama a CustomersService.list(workshopId)
    ↓
@@ -36,14 +36,14 @@ Ejemplo: listar clientes.
    ↓
 9. resource actualiza su signal (loading → success)
    ↓
-10. Container pasa datos a CustomerCardComponent (presentacional)
+10. La página pasa datos a CustomerCard (presentacional)
    ↓
-11. CustomerCardComponent renderiza
+11. CustomerCard renderiza
 ```
 
 **Ventajas**:
 
-- El container maneja el estado de carga con `resource`.
+- La página maneja el estado de carga con `resource`.
 - El componente presentacional es puro.
 - El data service encapsula Supabase.
 
@@ -54,29 +54,29 @@ Ejemplo: listar clientes.
 Ejemplo: crear cliente.
 
 ```
-1. Usuario llena form en CustomerCreateComponent (container)
+1. Usuario llena form en CustomerCreatePage (página)
    ↓
 2. Usuario toca "Guardar"
    ↓
-3. Container valida el form (Reactive Forms)
+3. La página valida el form (Reactive Forms)
    ↓
-4. Container llama a CustomersService.create(dto)
+4. La página llama a CustomersService.create(dto)
    ↓
 5. CustomersService llama a Supabase
    ↓
 6. Supabase valida RLS y devuelve la fila creada
    ↓
-7. Container muestra toast de éxito
+7. La página muestra toast de éxito
    ↓
-8. Container invalida la caché del listado (refetch)
+8. La página invalida la caché del listado (refetch)
    ↓
-9. Container navega al detalle del cliente
+9. La página navega al detalle del cliente
 ```
 
 **Manejo de errores**:
 
 - Si Supabase devuelve error, el data service lo mapea a `ValidationError` o `DataError`.
-- El container captura el error y muestra un mensaje.
+- La página captura el error y muestra un mensaje.
 - Si el error es de validación, se aplica al form.
 
 ---
@@ -88,23 +88,23 @@ Ejemplo: editar cliente.
 ```
 1. Usuario navega a /customers/:id/edit
    ↓
-2. CustomerEditComponent (container) se inicializa
+2. CustomerEditPage (página) se inicializa
    ↓
-3. Container carga el cliente con resource()
+3. La página carga el cliente con resource()
    ↓
-4. Container llena el form con los datos del cliente
+4. La página llena el form con los datos del cliente
    ↓
 5. Usuario modifica y toca "Guardar"
    ↓
-6. Container valida el form
+6. La página valida el form
    ↓
-7. Container llama a CustomersService.update(id, dto)
+7. La página llama a CustomersService.update(id, dto)
    ↓
 8. CustomersService llama a Supabase
    ↓
-9. Container muestra toast de éxito
+9. La página muestra toast de éxito
    ↓
-10. Container navega al detalle del cliente
+10. La página navega al detalle del cliente
 ```
 
 ---
@@ -114,19 +114,19 @@ Ejemplo: editar cliente.
 Ejemplo: eliminar cliente.
 
 ```
-1. Usuario toca "Eliminar" en CustomerDetailComponent
+1. Usuario toca "Eliminar" en CustomerDetailPage
    ↓
-2. Container muestra modal de confirmación
+2. La página muestra modal de confirmación
    ↓
 3. Usuario confirma
    ↓
-4. Container llama a CustomersService.softDelete(id)
+4. La página llama a CustomersService.softDelete(id)
    ↓
 5. CustomersService llama a Supabase (UPDATE deleted_at = now())
    ↓
-6. Container muestra toast de éxito
+6. La página muestra toast de éxito
    ↓
-7. Container navega al listado
+7. La página navega al listado
 ```
 
 ---
@@ -166,9 +166,9 @@ Ejemplo: subir foto del intake.
 **Patrón típico**:
 
 ```typescript
-export class CustomerListComponent {
+export class CustomerListPage {
   private readonly customersService = inject(CustomersService);
-  private readonly workshops = inject(WorkshopStore);
+  private readonly workshops = inject(WorkshopFacade);
 
   readonly customers = resource({
     request: () => ({ workshopId: this.workshops.activeId() }),
@@ -212,7 +212,7 @@ async onSubmit() {
 }
 ```
 
-**Nota**: `resource` no tiene invalidación automática. El container decide cuándo recargar.
+**Nota**: `resource` no tiene invalidación automática. La página decide cuándo recargar.
 
 ---
 

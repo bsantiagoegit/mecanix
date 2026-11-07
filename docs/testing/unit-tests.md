@@ -107,13 +107,13 @@ export function createSupabaseMock() {
 ### Estructura
 
 ```typescript
-// customer-card.component.spec.ts
+// customer-card.spec.ts
 import { render, screen, userEvent } from '@testing-library/angular';
-import { CustomerCardComponent } from './customer-card.component';
+import { CustomerCard } from './customer-card';
 
-describe('CustomerCardComponent', () => {
+describe('CustomerCard', () => {
   it('muestra el nombre y teléfono del cliente', async () => {
-    await render(CustomerCardComponent, {
+    await render(CustomerCard, {
       inputs: { customer: customerMock },
     });
 
@@ -122,7 +122,7 @@ describe('CustomerCardComponent', () => {
   });
 
   it('emite edit con el cliente al tocar "Editar"', async () => {
-    const { fixture } = await render(CustomerCardComponent, {
+    const { fixture } = await render(CustomerCard, {
       inputs: { customer: customerMock },
     });
     const editSpy = vi.fn();
@@ -134,7 +134,7 @@ describe('CustomerCardComponent', () => {
   });
 
   it('muestra badge "Sin clave" si hasKey es false', async () => {
-    await render(CustomerCardComponent, {
+    await render(CustomerCard, {
       inputs: { customer: { ...customerMock, hasKey: false } },
     });
 
@@ -157,27 +157,27 @@ describe('CustomerCardComponent', () => {
 
 ---
 
-## Contenedores
+## Páginas
 
 ### Estructura
 
 ```typescript
-// customer-list.component.spec.ts
+// customer-list-page.spec.ts
 import { render, screen } from '@testing-library/angular';
-import { CustomerListComponent } from './customer-list.component';
+import { CustomerListPage } from './customer-list-page';
 import { CustomersService } from '../services/customers.service';
-import { WorkshopStore } from '../../../core/workshops/workshop.store';
+import { WorkshopFacade } from '@core/workshops';
 
-describe('CustomerListComponent', () => {
+describe('CustomerListPage', () => {
   it('muestra skeleton mientras carga', async () => {
     const customersServiceMock = {
       list: vi.fn(() => new Promise(() => {})), // nunca resuelve
     };
 
-    await render(CustomerListComponent, {
+    await render(CustomerListPage, {
       providers: [
         { provide: CustomersService, useValue: customersServiceMock },
-        { provide: WorkshopStore, useValue: { activeId: () => WORKSHOP_ID } },
+        { provide: WorkshopFacade, useValue: { activeId: () => WORKSHOP_ID } },
       ],
     });
 
@@ -189,10 +189,10 @@ describe('CustomerListComponent', () => {
       list: vi.fn().mockResolvedValue([customerMock]),
     };
 
-    await render(CustomerListComponent, {
+    await render(CustomerListPage, {
       providers: [
         { provide: CustomersService, useValue: customersServiceMock },
-        { provide: WorkshopStore, useValue: { activeId: () => WORKSHOP_ID } },
+        { provide: WorkshopFacade, useValue: { activeId: () => WORKSHOP_ID } },
       ],
     });
 
@@ -210,13 +210,13 @@ describe('CustomerListComponent', () => {
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { authGuard } from './auth.guard';
-import { AuthStore } from './auth.store';
+import { AuthFacade } from './store/auth.facade';
 
 describe('authGuard', () => {
   it('redirige a /auth/login si no autenticado', () => {
     TestBed.configureTestingModule({
       providers: [
-        { provide: AuthStore, useValue: { isAuthenticated: () => false } },
+        { provide: AuthFacade, useValue: { isAuthenticated: () => false } },
         { provide: Router, useValue: { parseUrl: vi.fn((url) => url) } },
       ],
     });
@@ -228,7 +228,7 @@ describe('authGuard', () => {
 
   it('permite acceso si autenticado', () => {
     TestBed.configureTestingModule({
-      providers: [{ provide: AuthStore, useValue: { isAuthenticated: () => true } }],
+      providers: [{ provide: AuthFacade, useValue: { isAuthenticated: () => true } }],
     });
 
     const result = TestBed.runInInjectionContext(() => authGuard({} as any, {} as any));

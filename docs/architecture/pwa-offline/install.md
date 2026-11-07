@@ -65,7 +65,7 @@ Ubicación: pantalla de login o menú de configuración.
     }
   `,
 })
-export class InstallButtonComponent {
+export class InstallButton {
   readonly install = inject(InstallService);
 }
 ```
@@ -118,7 +118,7 @@ export class InstallButtonComponent {
     }
   `,
 })
-export class IosInstallHintComponent {
+export class IosInstallHint {
   readonly isIos = signal(/iPad|iPhone|iPod/.test(navigator.userAgent));
   readonly isStandalone = signal(window.matchMedia('(display-mode: standalone)').matches);
 }

@@ -89,7 +89,7 @@ Los formularios largos persisten un borrador en `localStorage` cada N segundos. 
 
 NgRx Effects se usan **solo** para lógica asíncrona del store global (`auth`, `workshops`, `catalogs`). **No** para data fetching de features.
 
-**Razón**: el data fetching de features se maneja con `resource` en los contenedores.
+**Razón**: el data fetching de features se maneja con `resource` en las páginas.
 
 ---
 
@@ -137,7 +137,7 @@ Los slices `auth` y `workshops` se persisten parcialmente. Los catálogos tambi�
 
 ## D-STATE-15: Invalidación de `resource` tras escritura
 
-Cuando una escritura afecta a un `resource` cacheado, el contenedor debe llamar a `resource.reload()`.
+Cuando una escritura afecta a un `resource` cacheado, la página debe llamar a `resource.reload()`.
 
 **Razón**: `resource` no tiene invalidación automática.
 

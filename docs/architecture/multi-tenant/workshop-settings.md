@@ -79,7 +79,7 @@ En `docs/architecture/data-model/tables/01-tenancy.md`.
 
 ### 5. Actualizar el frontend
 
-En `WorkshopStore`:
+En `WorkshopFacade`:
 
 ```typescript
 readonly maxPhotosPerOrder = computed(() => this.active()?.maxPhotosPerOrder ?? 20);
@@ -148,7 +148,7 @@ readonly maxPhotos = computed(() => this.active()?.settings?.['maxPhotosPerOrder
 1. **No agregar columnas preventivamente**. Solo cuando un taller lo pida.
 2. **Cada columna tiene default, tipo y CHECK**.
 3. **Documentar en `data-model/`**.
-4. **Exponer en `WorkshopStore`** del frontend.
+4. **Exponer en `WorkshopFacade`** del frontend.
 5. **Validar en backend** (RLS o RPC).
 
 ---

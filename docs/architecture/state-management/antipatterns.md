@@ -26,7 +26,7 @@ customersLoaded = createAction('[Customers] Loaded', props<{ customers: Customer
 **Bien**:
 
 ```typescript
-// resource en el contenedor
+// resource en la página
 readonly customers = resource({
   request: () => ({ workshopId: this.workshops.activeId() }),
   loader: ({ request }) => this.customersService.list(request.workshopId),
@@ -246,7 +246,7 @@ loadOrders$ = createEffect(() =>
 **Bien**:
 
 ```typescript
-// resource en el contenedor
+// resource en la página
 readonly orders = resource({
   request: () => ({ workshopId: this.workshops.activeId() }),
   loader: ({ request }) => this.ordersService.list(request.workshopId),

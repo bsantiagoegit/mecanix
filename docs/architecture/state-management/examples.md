@@ -15,7 +15,7 @@ Mostrar ejemplos concretos de cómo se combinan las herramientas de estado en ca
 
 ## Ejemplo 1: Lista de órdenes con filtros
 
-**Componente**: `WorkOrderListComponent` (container).
+**Componente**: `WorkOrderListPage` (página).
 
 **Estado utilizado**:
 
@@ -25,10 +25,10 @@ Mostrar ejemplos concretos de cómo se combinan las herramientas de estado en ca
 
 ```typescript
 @Component({...})
-export class WorkOrderListComponent {
+export class WorkOrderListPage {
   private readonly service = inject(WorkOrdersService);
   private readonly filters = inject(WorkOrderFiltersState);
-  private readonly workshops = inject(WorkshopStore);
+  private readonly workshops = inject(WorkshopFacade);
 
   readonly orders = resource({
     request: () => ({
@@ -67,7 +67,7 @@ export class WorkOrderFiltersState {
 
 ## Ejemplo 2: Formulario de creación de cliente
 
-**Componente**: `CustomerCreateComponent` (container).
+**Componente**: `CustomerCreatePage` (página).
 
 **Estado utilizado**:
 
@@ -78,9 +78,9 @@ export class WorkOrderFiltersState {
 
 ```typescript
 @Component({...})
-export class CustomerCreateComponent {
+export class CustomerCreatePage {
   private readonly service = inject(CustomersService);
-  private readonly workshops = inject(WorkshopStore);
+  private readonly workshops = inject(WorkshopFacade);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
 
@@ -118,7 +118,7 @@ export class CustomerCreateComponent {
 
 ## Ejemplo 3: Detalle de orden con tabs
 
-**Componente**: `WorkOrderDetailComponent` (container).
+**Componente**: `WorkOrderDetailPage` (página).
 
 **Estado utilizado**:
 
@@ -128,7 +128,7 @@ export class CustomerCreateComponent {
 
 ```typescript
 @Component({...})
-export class WorkOrderDetailComponent {
+export class WorkOrderDetailPage {
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(WorkOrdersService);
 
@@ -155,7 +155,7 @@ export class WorkOrderDetailComponent {
 
 ## Ejemplo 4: Cambio de taller activo
 
-**Componente**: `WorkshopSwitcherComponent` (presentacional).
+**Componente**: `WorkshopSwitcher` (presentacional).
 
 **Estado utilizado**:
 
@@ -163,7 +163,7 @@ export class WorkOrderDetailComponent {
 
 ```typescript
 @Component({...})
-export class WorkshopSwitcherComponent {
+export class WorkshopSwitcher {
   private readonly store = inject(Store);
 
   readonly available = this.store.selectSignal(selectAvailableWorkshops);
@@ -195,7 +195,7 @@ switchWorkshop$ = createEffect(() =>
 
 ## Ejemplo 5: Borrador de orden de trabajo
 
-**Componente**: `WorkOrderCreateComponent` (container).
+**Componente**: `WorkOrderCreatePage` (página).
 
 **Estado utilizado**:
 
@@ -204,7 +204,7 @@ switchWorkshop$ = createEffect(() =>
 
 ```typescript
 @Component({...})
-export class WorkOrderCreateComponent {
+export class WorkOrderCreatePage {
   private readonly draft = inject(WorkOrderDraftService);
 
   readonly form = inject(FormBuilder).group({
@@ -268,12 +268,12 @@ export class WorkOrderDraftService {
 
 ## Ejemplo 6: Selector de mecánico en formulario de orden
 
-**Componente**: `MechanicSelectComponent` (presentacional).
+**Componente**: `MechanicSelect` (presentacional).
 
 **Estado utilizado**:
 
 - `resource` para la lista de mecánicos.
-- `input()` + `output()` para comunicarse con el contenedor.
+- `input()` + `output()` para comunicarse con la página.
 
 ```typescript
 @Component({
@@ -287,9 +287,9 @@ export class WorkOrderDraftService {
     </select>
   `,
 })
-export class MechanicSelectComponent {
+export class MechanicSelect {
   private readonly service = inject(UsersService);
-  private readonly workshops = inject(WorkshopStore);
+  private readonly workshops = inject(WorkshopFacade);
 
   readonly selectedId = input<string | null>(null);
   readonly selected = output<string>();

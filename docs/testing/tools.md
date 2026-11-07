@@ -155,7 +155,7 @@ await client.connect();
 ```typescript
 import { render, screen, userEvent } from '@testing-library/angular';
 
-await render(CustomerCardComponent, {
+await render(CustomerCard, {
   inputs: { customer: customerMock },
 });
 ```
