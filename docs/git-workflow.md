@@ -2,7 +2,7 @@
 
 **Sistema de Gestión para Taller Mecánico Automotriz — SaaS Multi-Tenant**
 
-- **Versión:** 1.1
+- **Versión:** 1.2
 - **Fecha:** Noviembre 2026
 
 ---
@@ -18,11 +18,12 @@ Definir cómo se trabaja con ramas, commits y merges para que el historial de `m
 ## Principios
 
 1. `main` es lineal: nada de commits de merge.
-2. **Nunca** se commitea directo en `main`: todo cambio sale de una rama corta.
+2. **Nunca** se commitea ni se hace push directo a `main`: todo cambio sale de una rama corta y entra por **Pull Request** con el CI en verde.
 3. **Nunca** se hace `push --force` a `main`.
 4. Una rama, un propósito. Se borra al terminar.
 5. Cada commit debe dejar el proyecto compilando y con los tests en verde.
 6. Commits convencionales: `tipo(scope): descripción`.
+7. `main` está protegido por un ruleset de GitHub (ver [Protección de `main`](#protección-de-main)): lo que aquí se describe lo impone el servidor, no solo la costumbre.
 
 ---
 
@@ -77,7 +78,7 @@ git fetch origin
 git rebase origin/main
 ```
 
-El rebase reaplica los commits de la rama **encima** del `main` actual. Si hay conflictos, ver [Resolver conflictos](#resolver-conflictos-en-el-rebase).
+El rebase reaplica los commits de la rama **encima** del `main` actual. Si hay conflictos, ver [Resolver conflictos](#resolver-conflictos-en-el-rebase). GitHub exige que el PR esté al día con `main` para poder integrarlo.
 
 ### 4. Verificar
 
@@ -85,28 +86,42 @@ El rebase reaplica los commits de la rama **encima** del `main` actual. Si hay c
 pnpm format:check && pnpm typecheck && pnpm test && pnpm build
 ```
 
-### 5. Integrar en `main`
+### 5. Integrar en `main` (Pull Request)
 
-Hay dos vías. Ambas dejan el historial lineal.
-
-**A. Localmente (fast-forward)**
+`main` está protegido: un `git push origin main` es rechazado. Todo entra por Pull Request.
 
 ```bash
-git switch main
-git merge --ff-only feat/lo-que-sea
-git push origin main
+git push -u origin feat/lo-que-sea     # el hook pre-push corre typecheck y tests
 ```
 
-`--ff-only` avanza el puntero de `main` sin crear commit de merge. Si falla con `Not possible to fast-forward`, `main` avanzó mientras trabajabas: vuelve al paso 3.
-
-**B. Pull Request en GitHub**
-
-Abrir el PR y mergearlo con una de estas opciones (nunca "Create a merge commit"):
+1. Abre el PR en GitHub (tras el push aparece el aviso **Compare & pull request**). El **título** debe tener el formato de commit, `tipo(scope): descripción`: con Squash es el mensaje final del commit en `main`, y los hooks locales no corren en GitHub.
+2. Espera los dos checks de CI (ver [CI](#ci-github-actions)). Son obligatorios.
+3. Integra con una de estas opciones. "Create a merge commit" no existe: está desactivada.
 
 | Opción               | Resultado                                   | Cuándo                                             |
 | -------------------- | ------------------------------------------- | -------------------------------------------------- |
 | **Rebase and merge** | Cada commit de la rama pasa a `main`        | Commits ya limpios y atómicos (opción por defecto) |
 | **Squash and merge** | Un solo commit por PR (título convencional) | La rama tiene commits de trabajo en curso o ruido  |
+
+**Auto-merge**: en lugar de esperar al CI, pulsa **Enable auto-merge**; el PR se integra solo cuando los checks pasan.
+
+**Si `main` avanzó** y el PR muestra que la rama está desactualizada: haz `git fetch origin && git rebase origin/main && git push --force-with-lease`, o usa el botón **Update branch → Update with rebase**. **No** uses "Update with merge commit": mete un commit de merge en tu rama.
+
+### 6. Limpiar
+
+GitHub borra la rama remota al integrar el PR. En local:
+
+```bash
+git switch main && git pull
+git fetch --prune
+git branch -d feat/lo-que-sea
+```
+
+Con **Rebase and merge** y **Squash and merge**, `main` recibe commits con hashes nuevos, así que Git no reconoce la rama como integrada y `git branch -d` responde `not fully merged`. Si el PR figura como integrado en GitHub, bórrala con `git branch -D feat/lo-que-sea`.
+
+-------------------- | ------------------------------------------- | -------------------------------------------------- |
+| **Rebase and merge** | Cada commit de la rama pasa a `main` | Commits ya limpios y atómicos (opción por defecto) |
+| **Squash and merge** | Un solo commit por PR (título convencional) | La rama tiene commits de trabajo en curso o ruido |
 
 ### 6. Limpiar
 
@@ -162,13 +177,22 @@ git push --force-with-lease
 
 ### Dos ramas salen del mismo commit
 
-Es el caso que generaba los rombos. Se integra la primera; la segunda se **rebasea sobre el `main` actualizado** antes de integrarla:
+Es el caso que generaba los rombos. Se integra la primera por PR; la segunda se **rebasea sobre el `main` actualizado** antes de integrarla:
 
 ```bash
 git switch segunda-rama
 git fetch origin
 git rebase origin/main
+git push --force-with-lease
 ```
+
+### `git push origin main` es rechazado
+
+Es lo esperado: `main` solo se actualiza por Pull Request. Sube tu rama (`git push -u origin <rama>`) y abre el PR.
+
+### El CI está caído y no puedo integrar
+
+Los checks son obligatorios, así que un fallo de GitHub Actions bloquea la integración. Como último recurso: **Settings → Rules → Rulesets → `main protection` → Enforcement status → Disabled**, integra, y vuelve a ponerlo en **Active** de inmediato. Si pasa seguido, considera agregar un bypass para el administrador.
 
 ### Quiero deshacer algo ya publicado en `main`
 
@@ -218,24 +242,37 @@ El workflow `.github/workflows/ci.yml` corre en cada Pull Request y en cada push
 
 ## Prohibido
 
-- Commit directo en `main`.
+- Commit o push directo a `main` (el ruleset lo rechaza).
 - `git push --force` a `main` (ni siquiera con `--force-with-lease`).
-- Commits de merge: `git merge --no-ff`, "Create a merge commit" en GitHub.
+- Commits de merge: `git merge --no-ff`, "Create a merge commit" y "Update with merge commit" en GitHub.
 - Rebasear una rama que otra persona ya tomó como base.
 - Reescribir historial de `main` ya publicado.
 
 ---
 
-## Ajustes recomendados en GitHub
+## Protección de `main`
 
-En **Settings → Rules** (o Branches), regla para `main`:
+La protección vive en GitHub, no en el repositorio: si se recrea el repo o se cambia de organización hay que volver a aplicarla.
 
-- **Require linear history**: rechaza cualquier merge commit. Es la protección que sí se puede imponer a todo el equipo.
-- **Require status checks to pass** con los dos jobs de CI: `Quality (format, types, unit tests, build)` y `Database (RLS and triggers)`. Los nombres aparecen en la lista solo después de la primera ejecución del workflow.
-- **Require a pull request before merging** (cuando haya más de una persona).
-- **Block force pushes**.
-- En **Settings → General → Pull Requests**: desactivar **Allow merge commits** y dejar solo **Allow squash merging** y **Allow rebase merging**.
-- Activar **Automatically delete head branches**.
+**Ruleset `main protection`** (Settings → Rules → Rulesets). Estado `Active`, objetivo: la rama por defecto, lista de bypass vacía.
+
+| Regla                                 | Configuración                                                                                           |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Restrict deletions                    | Activada                                                                                                |
+| Block force pushes                    | Activada                                                                                                |
+| Require linear history                | Activada: rechaza commits de merge                                                                      |
+| Require a pull request before merging | Activada, 0 aprobaciones (proyecto de una persona), métodos permitidos: **Squash** y **Rebase**         |
+| Require status checks to pass         | `Quality (format, types, unit tests, build)` y `Database (RLS and triggers)`, con "up to date" activado |
+
+**Settings → General → Pull Requests**:
+
+- **Allow merge commits**: desactivado. **Allow squash merging** y **Allow rebase merging**: activados.
+- Squash, _Default commit message_: **Pull request title**.
+- **Always suggest updating pull request branches**: activado.
+- **Allow auto-merge**: activado.
+- **Automatically delete head branches**: activado.
+
+Con más de una persona, subir las aprobaciones requeridas por encima de 0.
 
 ---
 
@@ -252,4 +289,4 @@ El historial hasta el commit `32b18ca` contiene commits de merge, del flujo ante
 
 ---
 
-_Flujo de Git v1.1_
+_Flujo de Git v1.2_
