@@ -2,10 +2,10 @@
 
 **Sistema de Gestión para Taller Mecánico Automotriz — SaaS Multi-Tenant**
 
-- **Versión:** 1.0
+- **Versión:** 1.1
 - **Fecha:** Octubre 2026
-- **Tablas:** 27
-- **Próxima revisión:** Al implementar migraciones en Supabase
+- **Tablas:** 27 (las 27 ya tienen migración en `supabase/migrations/`)
+- **Próxima revisión:** Al añadir los RPC (`transition_work_order`, `add_photo`)
 
 ---
 
@@ -18,7 +18,7 @@ Transformar el modelo conceptual en un **esquema relacional concreto** para Post
 3. La estrategia de RLS (siguiente entregable).
 4. Los RPCs (siguiente entregable).
 
-**No incluye** RLS ni RPCs. **No incluye** migraciones ejecutables.
+**No incluye** RLS ni RPCs (ver [`../security/`](../security/README.md)). Las migraciones ejecutables viven en `supabase/migrations/`; si el esquema cambia, se actualiza primero este documento.
 
 ## Contenido
 
@@ -90,4 +90,4 @@ Transformar el modelo conceptual en un **esquema relacional concreto** para Post
 
 ---
 
-_Modelo Relacional PostgreSQL v1.0 — Documento vivo. Próxima revisión al implementar migraciones en Supabase._
+_Modelo Relacional PostgreSQL v1.1 — Documento vivo._

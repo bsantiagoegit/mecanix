@@ -17,7 +17,7 @@ ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
 CREATE POLICY customers_select_member ON customers
   FOR SELECT
   TO authenticated
-  USING (workshop_id = ANY(auth_workshop_ids()) AND deleted_at IS NULL);
+  USING (workshop_id = ANY(auth_workshop_ids()));
 
 CREATE POLICY customers_insert_advisor_owner ON customers
   FOR INSERT
@@ -33,6 +33,8 @@ CREATE POLICY customers_update_advisor_owner ON customers
 -- Sin DELETE. Soft delete = UPDATE deleted_at.
 ```
 
+**Soft delete y SELECT**: la policy de SELECT **no** filtra `deleted_at`. Postgres valida la fila nueva de un `UPDATE` contra las policies de SELECT; con `AND deleted_at IS NULL` el `UPDATE ... SET deleted_at` fallaba con `new row violates row-level security policy`. Los registros borrados se excluyen en las consultas (`.is('deleted_at', null)`). Misma regla para `vehicles`.
+
 **Nota sobre mechanic**: RLS no puede ocultar columnas. Para que el `mechanic` no vea `phone`, `email`, `address`, `identification`, se usa la vista `customers_public` (ver [`../views.md`](../views.md)).
 
 ---
@@ -47,7 +49,7 @@ ALTER TABLE vehicles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY vehicles_select_member ON vehicles
   FOR SELECT
   TO authenticated
-  USING (workshop_id = ANY(auth_workshop_ids()) AND deleted_at IS NULL);
+  USING (workshop_id = ANY(auth_workshop_ids()));
 
 CREATE POLICY vehicles_insert_advisor_owner ON vehicles
   FOR INSERT

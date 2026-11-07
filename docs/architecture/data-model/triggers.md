@@ -64,6 +64,9 @@ DECLARE
   v_next int;
 BEGIN
   IF OLD.status = 'draft' AND NEW.status = 'received' THEN
+    -- Lock por taller y año: dos recepciones simultáneas no calculan el mismo número.
+    PERFORM pg_advisory_xact_lock(hashtextextended(NEW.workshop_id::text || ':' || v_year, 0));
+
     SELECT COALESCE(MAX(sequence_number_annual), 0) + 1
       INTO v_next
       FROM work_orders
@@ -96,7 +99,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE TRIGGER trg_work_orders_status_history AFTER UPDATE ON work_orders
   FOR EACH ROW EXECUTE FUNCTION log_work_order_status_change();
@@ -106,32 +109,42 @@ CREATE TRIGGER trg_work_orders_status_history AFTER UPDATE ON work_orders
 
 ## Trigger: garantía automática
 
-Se dispara al pasar a `completed`.
+Se dispara al pasar a `completed`. Es **`BEFORE UPDATE`** (no `AFTER`): necesita fijar `NEW.completed_at`, y en un trigger `AFTER` ese cambio se descarta. Es **`SECURITY DEFINER`** porque `warranties` no tiene policy de INSERT para usuarios.
 
 ```sql
 CREATE OR REPLACE FUNCTION create_warranty_on_completion()
-RETURNS trigger AS $$
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
 DECLARE
   v_warranty_days int;
-  v_workshop_id uuid;
 BEGIN
   IF OLD.status IS DISTINCT FROM 'completed' AND NEW.status = 'completed' THEN
     SELECT warranty_days INTO v_warranty_days
       FROM workshops WHERE id = NEW.workshop_id;
+
     INSERT INTO warranties (workshop_id, work_order_id, description, starts_at, expires_at)
     VALUES (
       NEW.workshop_id,
       NEW.id,
       'Garantía estándar por mano de obra y repuestos.',
       now(),
-      now() + (v_warranty_days || ' days')::interval
+      now() + make_interval(days => v_warranty_days)
     );
+
     NEW.completed_at := now();
   END IF;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
-CREATE TRIGGER trg_work_orders_warranty AFTER UPDATE ON work_orders
+CREATE TRIGGER trg_work_orders_warranty BEFORE UPDATE ON work_orders
   FOR EACH ROW EXECUTE FUNCTION create_warranty_on_completion();
 ```
+
+## Notas
+
+- `log_work_order_status_change()` usa `auth.uid()` como `actor_id` (NOT NULL). Un `UPDATE` de `status` sin usuario autenticado (p. ej. con `service_role` o desde una migración) falla; quien actúe así debe fijar el usuario antes (`set_config('request.jwt.claim.sub', ...)`).
+- Los triggers `BEFORE UPDATE` de `work_orders` son `updated_at`, numeración y garantía; el de historial es `AFTER UPDATE`.
