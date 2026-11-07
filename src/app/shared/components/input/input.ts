@@ -4,18 +4,17 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 let nextId = 0;
 
 @Component({
-  standalone: true,
   selector: 'app-input',
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => InputComponent),
+      useExisting: forwardRef(() => Input),
       multi: true,
     },
   ],
   templateUrl: './input.html',
 })
-export class InputComponent implements ControlValueAccessor {
+export class Input implements ControlValueAccessor {
   readonly inputId = `input-${nextId++}`;
 
   readonly type = input<'text' | 'email' | 'tel' | 'number' | 'password' | 'search'>('text');

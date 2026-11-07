@@ -2,12 +2,10 @@ import { Component, input } from '@angular/core';
 import { cn } from '../../utils/cn';
 
 @Component({
-  standalone: true,
   selector: 'app-card',
   templateUrl: './card.html',
-  styleUrl: './card.scss',
 })
-export class CardComponent {
+export class Card {
   readonly padding = input<'none' | 'sm' | 'md' | 'lg'>('md');
 
   readonly classes = () =>

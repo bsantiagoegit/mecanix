@@ -1,12 +1,11 @@
 import { Component, inject } from '@angular/core';
-import { WorkshopStore } from '../../../../core/workshops';
-import { CardComponent } from '../../../../shared/components';
+import { WorkshopStore } from '@core/workshops';
+import { Card } from '@shared/components/card/card';
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [CardComponent],
+  imports: [Card],
   templateUrl: './dashboard-page.html',
-  styleUrl: './dashboard-page.scss',
 })
 export class DashboardPage {
   readonly workshop = inject(WorkshopStore);

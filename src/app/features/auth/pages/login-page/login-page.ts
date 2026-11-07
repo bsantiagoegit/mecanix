@@ -1,16 +1,18 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ButtonComponent, CardComponent, InputComponent } from '@shared/components';
-import { ToastService } from '@shared/services';
-import { AuthStore } from '../../../../core/auth';
+import { AuthStore } from '@core/auth';
+import { Button } from '@shared/components/button/button';
+import { Card } from '@shared/components/card/card';
+import { Input } from '@shared/components/input/input';
+import { ToastService } from '@shared/services/toast.service';
 
 @Component({
   selector: 'app-login-page',
-  imports: [ReactiveFormsModule, ButtonComponent, CardComponent, InputComponent],
+  imports: [ReactiveFormsModule, Button, Card, Input],
   templateUrl: './login-page.html',
 })
-export class LoginPageComponent {
+export class LoginPage {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);

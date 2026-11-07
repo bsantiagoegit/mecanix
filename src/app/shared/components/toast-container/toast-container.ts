@@ -2,12 +2,10 @@ import { Component, inject } from '@angular/core';
 import { ToastService } from '../../services/toast.service';
 
 @Component({
-  standalone: true,
-  selector: 'app-toast',
-  templateUrl: './toast.html',
-  styleUrl: './toast.scss',
+  selector: 'app-toast-container',
+  templateUrl: './toast-container.html',
 })
-export class ToastComponent {
+export class ToastContainer {
   readonly toastService = inject(ToastService);
 
   toastClass(type: string): string {

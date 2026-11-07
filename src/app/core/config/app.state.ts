@@ -1,6 +1,4 @@
-import { AuthState } from '../auth';
-import { CatalogsState } from '../catalogs';
-import { WorkshopState } from '../workshops';
+import { AuthState, CatalogsState, WorkshopState } from '@core/models';
 
 export interface AppState {
   auth: AuthState;

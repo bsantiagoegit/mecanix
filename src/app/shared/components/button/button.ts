@@ -5,12 +5,10 @@ export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'link
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 @Component({
-  standalone: true,
   selector: 'app-button',
   templateUrl: './button.html',
-  styleUrl: './button.scss',
 })
-export class ButtonComponent {
+export class Button {
   readonly variant = input<ButtonVariant>('primary');
   readonly size = input<ButtonSize>('md');
   readonly type = input<'button' | 'submit' | 'reset'>('button');
