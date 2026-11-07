@@ -51,7 +51,7 @@ Los integration tests corren contra **Supabase local** (`supabase start`).
 | ------------------ | --------- |
 | Data services      | 80%       |
 | Componentes (dumb) | 60%       |
-| Contenedores       | 50%       |
+| Páginas       | 50%       |
 | Guards             | 80%       |
 | Interceptors       | 80%       |
 | Stores NgRx        | 70%       |

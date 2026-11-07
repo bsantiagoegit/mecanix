@@ -254,7 +254,7 @@ export class WorkOrderDraftService {
 
 | Tipo                | Herramienta               | Ubicación                | Persistido |
 | ------------------- | ------------------------- | ------------------------ | ---------- |
-| Server state        | `resource` + data service | Contenedor               | No         |
+| Server state        | `resource` + data service | Página               | No         |
 | Global app state    | NgRx                      | `core/{slice}/`          | Parcial    |
 | Feature local state | Signals en servicio       | `features/{f}/services/` | No         |
 | Component state     | Signals locales           | Componente               | No         |

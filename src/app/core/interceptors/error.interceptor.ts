@@ -1,10 +1,10 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
-import { AuthStore } from '../auth';
+import { AuthFacade } from '@core/auth';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-  const auth = inject(AuthStore);
+  const auth = inject(AuthFacade);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {

@@ -4,27 +4,27 @@ export const AUTH_ROUTES: Routes = [
   {
     path: 'login',
     loadComponent: () =>
-      import('./containers/login-page/login-page.component').then((m) => m.LoginPageComponent),
+      import('./pages/login-page/login-page').then((m) => m.LoginPage),
   },
   {
     path: 'register',
     loadComponent: () =>
-      import('./containers/register-page/register-page.component').then(
-        (m) => m.RegisterPageComponent,
+      import('./pages/register-page/register-page').then(
+        (m) => m.RegisterPage,
       ),
   },
   {
     path: 'forgot-password',
     loadComponent: () =>
-      import('./containers/forgot-password-page/forgot-password-page.component').then(
-        (m) => m.ForgotPasswordPageComponent,
+      import('./pages/forgot-password-page/forgot-password-page').then(
+        (m) => m.ForgotPasswordPage,
       ),
   },
   {
     path: 'reset-password',
     loadComponent: () =>
-      import('./containers/reset-password-page/reset-password-page.component').then(
-        (m) => m.ResetPasswordPageComponent,
+      import('./pages/reset-password-page/reset-password-page').then(
+        (m) => m.ResetPasswordPage,
       ),
   },
   { path: '', redirectTo: 'login', pathMatch: 'full' },

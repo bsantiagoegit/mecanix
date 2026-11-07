@@ -1,7 +1,3 @@
-export * from '../models/workshop.models';
-export { WorkshopsActions } from './workshop.actions';
-export * from './workshop.effects';
-export * from './workshop.reducer';
-export * from './workshop.selectors';
+export * from './workshop.model';
 export * from './workshop.service';
-export * from './workshop.store';
+export * from './store/workshop.facade';

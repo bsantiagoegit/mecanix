@@ -31,9 +31,9 @@ export class NetworkService {
 
 ---
 
-## `OfflineBannerComponent`
+## `OfflineBanner`
 
-Ubicación: `shared/components/offline-banner/offline-banner.component.ts`.
+Ubicación: `shared/components/offline-banner/offline-banner.ts`.
 
 ```typescript
 @Component({
@@ -46,26 +46,26 @@ Ubicación: `shared/components/offline-banner/offline-banner.component.ts`.
     }
   `,
 })
-export class OfflineBannerComponent {
+export class OfflineBanner {
   readonly network = inject(NetworkService);
 }
 ```
 
 ---
 
-## Uso en `AppShellComponent`
+## Uso en `AppShell`
 
 ```typescript
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, OfflineBannerComponent, ToastContainerComponent],
+  imports: [RouterOutlet, OfflineBanner, ToastContainer],
   template: `
     <app-offline-banner />
     <router-outlet />
     <app-toast-container />
   `,
 })
-export class AppShellComponent {}
+export class AppShell {}
 ```
 
 ---
@@ -95,7 +95,7 @@ async onSubmit() {
 **Mitigación**:
 
 - Si una operación falla por red (error de fetch, timeout), el data service lanza `DataError`.
-- El contenedor captura el error y muestra un mensaje al usuario.
+- La página captura el error y muestra un mensaje al usuario.
 - Opcionalmente, se puede marcar como offline manualmente si múltiples operaciones fallan.
 
 **Decisión**: no se implementa detección proactiva de Internet en MVP. Se confía en `navigator.onLine` y en el manejo de errores.

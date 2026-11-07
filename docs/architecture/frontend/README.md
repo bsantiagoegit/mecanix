@@ -32,7 +32,7 @@ Define la arquitectura del frontend Angular: cómo se organiza el código, qué 
 
 1. **Feature-first**: organizar por dominio, no por tipo de archivo.
 2. **Tres capas de carpetas**: `core/`, `shared/`, `features/`.
-3. **Dumb vs smart**: componentes presentacionales vs contenedores.
+3. **Dumb vs smart**: componentes presentacionales vs páginas.
 4. **Data services**: encapsular Supabase, los componentes nunca lo tocan.
 5. **`resource` para data fetching**: no `subscribe` en `ngOnInit`.
 6. **Lazy loading**: cada feature se carga on-demand.

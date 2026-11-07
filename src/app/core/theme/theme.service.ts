@@ -1,5 +1,5 @@
 import { Injectable, effect, signal } from '@angular/core';
-import { Theme } from '@core/models';
+import { Theme } from './theme.model';
 
 const STORAGE_KEY = 'theme';
 
