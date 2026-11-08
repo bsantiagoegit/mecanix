@@ -1,6 +1,7 @@
 export * from './authentication.error';
 export * from './authorization.error';
 export * from './data.error';
+export * from './email-not-confirmed.error';
 export * from './global-error-handler';
 export * from './map-supabase-error';
 export * from './not-found.error';

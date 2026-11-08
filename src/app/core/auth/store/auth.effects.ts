@@ -1,7 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
-import { AuthenticationError, AuthorizationError, DataError } from '@core/errors';
+import {
+  AuthenticationError,
+  AuthorizationError,
+  DataError,
+  EmailNotConfirmedError,
+} from '@core/errors';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { EMPTY, catchError, filter, map, of, switchMap, tap, withLatestFrom } from 'rxjs';
@@ -11,6 +16,9 @@ import { selectIsAuthenticated, selectSessionWorkshopId } from './auth.selectors
 /** Mensaje para el usuario; los errores de dominio llevan texto técnico en inglés. */
 function loginErrorMessage(error: unknown): string {
   if (error instanceof AuthenticationError) return 'Email o contraseña incorrectos.';
+  if (error instanceof EmailNotConfirmedError) {
+    return 'Confirma tu correo para iniciar sesión: revisa tu bandeja de entrada.';
+  }
   if (error instanceof AuthorizationError) return 'Tu usuario no pertenece a ningún taller activo.';
   return 'No se pudo iniciar sesión. Inténtalo de nuevo.';
 }

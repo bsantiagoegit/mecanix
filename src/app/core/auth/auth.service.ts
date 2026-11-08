@@ -1,5 +1,10 @@
 import { Injectable, inject } from '@angular/core';
-import { AuthenticationError, AuthorizationError, mapSupabaseError } from '@core/errors';
+import {
+  AuthenticationError,
+  AuthorizationError,
+  EmailNotConfirmedError,
+  mapSupabaseError,
+} from '@core/errors';
 import { AuthSession, Role } from './auth.model';
 import { SupabaseService } from '@core/supabase';
 import { Observable, from, map } from 'rxjs';
@@ -70,7 +75,7 @@ export class AuthService {
       password,
       options: {
         data: { full_name: fullName },
-        emailRedirectTo: `${window.location.origin}/auth/login`,
+        emailRedirectTo: `${window.location.origin}/auth/login?confirmed=1`,
       },
     });
     if (error) throw mapSupabaseError(error);
@@ -96,6 +101,7 @@ export class AuthService {
 
   private async signIn(email: string, password: string): Promise<AuthSession> {
     const { data, error } = await this.supabase.auth.signInWithPassword({ email, password });
+    if (error?.code === 'email_not_confirmed') throw new EmailNotConfirmedError();
     if (error || !data.user) throw new AuthenticationError();
 
     try {
@@ -112,7 +118,14 @@ export class AuthService {
     if (error) throw mapSupabaseError(error);
     if (!data.session) return null;
 
-    return this.buildSession(data.session.user.id, preferredWorkshopId);
+    try {
+      return await this.buildSession(data.session.user.id, preferredWorkshopId);
+    } catch (err) {
+      // Pasa al confirmar el email: Supabase abre sesión desde el enlace, pero la cuenta aún
+      // no tiene taller. No se deja una sesión de Supabase sin sesión de aplicación.
+      if (err instanceof AuthorizationError) await this.supabase.auth.signOut();
+      throw err;
+    }
   }
 
   private async fetchRole(workshopId: string): Promise<Role> {

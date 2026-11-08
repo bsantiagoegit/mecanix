@@ -4,7 +4,7 @@ import { provideMockActions } from '@ngrx/effects/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { Subject, firstValueFrom, of, throwError } from 'rxjs';
 import { Action } from '@ngrx/store';
-import { DataError } from '@core/errors';
+import { DataError, EmailNotConfirmedError } from '@core/errors';
 import { AuthService } from '../auth.service';
 import { AuthActions } from './auth.actions';
 import { AuthEffects } from './auth.effects';
@@ -99,5 +99,30 @@ describe('AuthEffects register', () => {
   ])('maps %o to a readable message', async (original, message) => {
     register.mockReturnValue(throwError(() => new DataError(original)));
     expect(await resultOf(setup())).toEqual(AuthActions.registerFailure({ error: message }));
+  });
+});
+
+describe('AuthEffects login errors', () => {
+  const actions$ = new Subject<Action>();
+  const login = vi.fn();
+
+  it('asks the user to confirm the email when it is not confirmed', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        AuthEffects,
+        provideRouter([]),
+        provideMockActions(() => actions$),
+        provideMockStore({ initialState: { auth: initialAuthState } }),
+        { provide: AuthService, useValue: { login } },
+      ],
+    });
+    login.mockReturnValue(throwError(() => new EmailNotConfirmedError()));
+    const result = firstValueFrom(TestBed.inject(AuthEffects).login$);
+    actions$.next(AuthActions.login({ email: 'a@b.com', password: 'x' }));
+    expect(await result).toEqual(
+      AuthActions.loginFailure({
+        error: 'Confirma tu correo para iniciar sesión: revisa tu bandeja de entrada.',
+      }),
+    );
   });
 });
