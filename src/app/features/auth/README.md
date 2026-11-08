@@ -14,8 +14,9 @@ Definidos en [`docs/domain/use-cases/01-auth.md`](../../../../docs/domain/use-ca
 | UC-AUTH-04 | Cambiar contraseña                  | Fase 2    | No iniciado                                                                               |
 | UC-AUTH-05 | Iniciar sesión con Google           | Fase 2    | No iniciado: el botón de `login-page` muestra un aviso ("próximamente")                   |
 | UC-AUTH-06 | Autenticación biométrica            | Fase 3    | No iniciado                                                                               |
+| UC-AUTH-07 | Registrarse (crear cuenta)          | MVP       | **Implementado** (`register-page`): crea la cuenta sin taller                             |
 
-Fuera de los casos de uso documentados: el **registro** (`register-page`). No existe un UC de registro y, según [UC-WS-01 y UC-WS-04](../../../../docs/domain/use-cases/02-onboarding-taller.md), los talleres los crea el administrador del SaaS y los usuarios entran por invitación. Un usuario registrado por su cuenta no tendría taller y su login fallaría con `AuthorizationError`.
+El **registro** crea solo la cuenta. No da acceso: el `owner` debe agregar al usuario a su taller (UC-WS-03 y UC-WS-04, aún no implementados). Mientras tanto el login de una cuenta sin taller falla con `AuthorizationError` ("Tu usuario no pertenece a ningún taller activo").
 
 ## Estructura
 
@@ -28,7 +29,7 @@ features/auth/
 │   └── reset-password-form/  ← esqueleto vacío
 ├── pages/                    ← componentes enrutados
 │   ├── login-page/           ← implementada
-│   ├── register-page/        ← esqueleto ("register-page works!")
+│   ├── register-page/        ← implementada
 │   ├── forgot-password-page/ ← esqueleto
 │   └── reset-password-page/  ← esqueleto
 ├── auth.routes.ts
@@ -42,7 +43,7 @@ Cargadas con `loadChildren` bajo `/auth` (ver [`auth.routes.ts`](./auth.routes.t
 | Ruta                    | Página               | Estado       |
 | ----------------------- | -------------------- | ------------ |
 | `/auth/login`           | `LoginPage`          | Implementada |
-| `/auth/register`        | `RegisterPage`       | Esqueleto    |
+| `/auth/register`        | `RegisterPage`       | Implementada |
 | `/auth/forgot-password` | `ForgotPasswordPage` | Esqueleto    |
 | `/auth/reset-password`  | `ResetPasswordPage`  | Esqueleto    |
 
@@ -55,6 +56,12 @@ Cargadas con `loadChildren` bajo `/auth` (ver [`auth.routes.ts`](./auth.routes.t
 3. Si hay error, la página muestra un mensaje legible: credenciales incorrectas, usuario sin taller activo, o error genérico.
 4. Con sesión activa (`isAuthenticated`), la página navega a `returnUrl` (solo rutas internas) o a `/dashboard`.
 
+## Flujo de registro
+
+1. `RegisterPage` valida nombre, email, contraseña (mínimo 6, igual que `minimum_password_length` de `supabase/config.toml`) y su confirmación, y llama a `AuthFacade.register()`.
+2. `AuthService.register` crea la cuenta en Supabase Auth con `full_name` en el metadata; el trigger `handle_new_auth_user` crea la fila de `users`. Si Supabase abre sesión al registrar (sin confirmación por email) se cierra: la cuenta no tiene taller.
+3. Con éxito, la página muestra "Cuenta creada" y cómo continuar. Con error, un mensaje legible (email ya registrado, contraseña débil o genérico).
+
 ## Dependencias
 
 - `@core/auth`: `AuthFacade` (acciones y signals de la sesión).
@@ -64,12 +71,14 @@ Cargadas con `loadChildren` bajo `/auth` (ver [`auth.routes.ts`](./auth.routes.t
 ## Pendiente
 
 - Implementar `forgot-password-page` y `reset-password-page` (UC-AUTH-03). El servicio, las acciones y los effects ya existen en `core/auth`; falta la UI y los tests.
-- Decidir qué hacer con `register-page` y el login con Google, que no son MVP.
+- Login con Google (UC-AUTH-05, Fase 2): el botón sigue mostrando "próximamente".
+- Tras registrarse, el usuario no puede entrar hasta que el `owner` lo agregue a un taller: falta UC-WS-03/04 (invitar y aceptar). Con confirmación por email activada, la página deberá pedir revisar el correo.
 - Eliminar o implementar los cuatro `*-form` vacíos. `login-form` está duplicado por el formulario de `login-page`.
-- Los enlaces de `login-page` apuntan a pantallas esqueleto: hasta implementarlas, un usuario real llega a "works!".
+- El enlace "¿Olvidaste tu contraseña?" de `login-page` apunta a una pantalla esqueleto ("works!").
 
 ## Tests
 
 - `login-page.spec.ts`: navegación tras autenticar, `returnUrl` interno, mensaje de error y enlaces.
+- `register-page.spec.ts`: validaciones, envío con valores limpios, error, confirmación y enlaces.
 - Los demás specs de la feature son de arranque ("should create").
 - La lógica de sesión se prueba en `core/auth`: `auth.reducer.spec.ts` y las redirecciones de `auth.effects.spec.ts`. `auth.service.spec.ts` cubre `AuthService` (login, `restoreSession`, `roleIn`, registro, recuperación y cambio de contraseña, Google) con un cliente de Supabase falso. Los tests de integración de RLS están en `supabase/tests/`.

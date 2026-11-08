@@ -1,1 +1,84 @@
-<p>register-page works!</p>
+<div class="min-h-screen flex items-center justify-center p-4 bg-bg">
+  <app-card padding="lg" class="w-full max-w-md">
+    @if (auth.registeredEmail(); as email) {
+      <div class="text-center" role="status">
+        <h1 class="text-2xl font-bold text-fg">Cuenta creada</h1>
+        <p class="text-sm text-fg-muted mt-3">
+          Creamos la cuenta de <strong class="text-fg">{{ email }}</strong
+          >. Para usar la aplicación, el dueño de tu taller debe agregarte. Cuando lo haya hecho,
+          inicia sesión.
+        </p>
+        <a
+          routerLink="/auth/login"
+          class="mt-6 inline-block text-sm text-primary-600 hover:underline"
+        >
+          Ir a iniciar sesión
+        </a>
+      </div>
+    } @else {
+      <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold text-fg">Crear cuenta</h1>
+        <p class="text-sm text-fg-muted mt-1">Regístrate para unirte a un taller</p>
+      </div>
+
+      @if (auth.error(); as error) {
+        <p
+          role="alert"
+          class="mb-4 rounded-md border border-danger-100 bg-danger-50 px-3 py-2 text-sm text-danger-700"
+        >
+          {{ error }}
+        </p>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+        <app-input
+          label="Nombre completo"
+          placeholder="Ana Pérez"
+          autocomplete="name"
+          [required]="true"
+          formControlName="fullName"
+          [error]="fieldError('fullName')"
+        />
+
+        <app-input
+          type="email"
+          label="Email"
+          placeholder="tu@email.com"
+          autocomplete="email"
+          [required]="true"
+          formControlName="email"
+          [error]="fieldError('email')"
+        />
+
+        <app-input
+          type="password"
+          label="Contraseña"
+          autocomplete="new-password"
+          [required]="true"
+          [revealable]="true"
+          formControlName="password"
+          [error]="fieldError('password')"
+        />
+
+        <app-input
+          type="password"
+          label="Confirmar contraseña"
+          autocomplete="new-password"
+          [required]="true"
+          [revealable]="true"
+          formControlName="confirmPassword"
+          [error]="fieldError('confirmPassword')"
+        />
+
+        <app-button type="submit" [loading]="auth.isLoading()" [fullWidth]="true">
+          Crear cuenta
+        </app-button>
+      </form>
+
+      <div class="mt-6 text-center text-sm text-fg-muted">
+        ¿Ya tienes cuenta?
+        <a routerLink="/auth/login" class="text-primary-600 hover:underline">Inicia sesión</a>
+      </div>
+    }
+  </app-card>
+</div>
