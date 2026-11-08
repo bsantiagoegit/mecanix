@@ -5,6 +5,15 @@
       <p class="text-sm text-fg-muted mt-1">Accede a tu taller</p>
     </div>
 
+    @if (emailConfirmed) {
+      <p
+        role="status"
+        class="mb-4 rounded-md border border-success-100 bg-success-50 px-3 py-2 text-sm text-success-700"
+      >
+        Correo confirmado. Cuando el dueño de tu taller te agregue, podrás iniciar sesión.
+      </p>
+    }
+
     @if (auth.error(); as error) {
       <p
         role="alert"

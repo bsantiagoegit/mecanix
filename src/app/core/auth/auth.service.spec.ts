@@ -1,6 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
-import { AuthenticationError, AuthorizationError, DataError, ValidationError } from '@core/errors';
+import {
+  AuthenticationError,
+  AuthorizationError,
+  DataError,
+  EmailNotConfirmedError,
+  ValidationError,
+} from '@core/errors';
 import { SupabaseService } from '@core/supabase';
 import { AuthService } from './auth.service';
 
@@ -90,6 +96,17 @@ describe('AuthService', () => {
       expect(auth['signOut']).not.toHaveBeenCalled();
     });
 
+    it('email sin confirmar → EmailNotConfirmedError', async () => {
+      auth['signInWithPassword'].mockResolvedValue({
+        data: { user: null },
+        error: { code: 'email_not_confirmed', message: 'Email not confirmed' },
+      });
+
+      await expect(firstValueFrom(service.login('a@x.com', 'secret'))).rejects.toBeInstanceOf(
+        EmailNotConfirmedError,
+      );
+    });
+
     it('usuario sin taller activo → AuthorizationError y cierra la sesión de Supabase', async () => {
       results.workshop_members = ok([]);
 
@@ -128,12 +145,20 @@ describe('AuthService', () => {
       expect(session).toMatchObject({ activeWorkshopId: 'w1', role: 'owner' });
     });
 
-    it('sesión vigente pero sin talleres → AuthorizationError', async () => {
+    it('sesión vigente pero sin talleres → AuthorizationError y cierra la sesión de Supabase', async () => {
       results.workshop_members = ok([]);
 
       await expect(firstValueFrom(service.restoreSession(null))).rejects.toBeInstanceOf(
         AuthorizationError,
       );
+      expect(auth['signOut']).toHaveBeenCalledTimes(1);
+    });
+
+    it('un error de datos al restaurar no cierra la sesión de Supabase', async () => {
+      results.users = fail('boom');
+
+      await expect(firstValueFrom(service.restoreSession(null))).rejects.toBeInstanceOf(DataError);
+      expect(auth['signOut']).not.toHaveBeenCalled();
     });
 
     it('error de Supabase al leer la sesión se mapea', async () => {
@@ -180,7 +205,7 @@ describe('AuthService', () => {
   });
 
   describe('register', () => {
-    it('envía full_name y redirige al login', async () => {
+    it('envía full_name y redirige al login indicando que confirmó el correo', async () => {
       await firstValueFrom(service.register('a@x.com', 'secret', 'Ana Pérez'));
 
       expect(auth['signUp']).toHaveBeenCalledWith({
@@ -188,7 +213,7 @@ describe('AuthService', () => {
         password: 'secret',
         options: {
           data: { full_name: 'Ana Pérez' },
-          emailRedirectTo: `${window.location.origin}/auth/login`,
+          emailRedirectTo: `${window.location.origin}/auth/login?confirmed=1`,
         },
       });
     });
