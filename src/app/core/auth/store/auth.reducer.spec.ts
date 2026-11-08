@@ -56,4 +56,43 @@ describe('authReducer', () => {
     );
     expect(state).toMatchObject({ activeWorkshopId: 'w2', role: 'owner' });
   });
+
+  describe('registration', () => {
+    it('starts loading and clears previous error and confirmation', () => {
+      const state = authReducer(
+        { ...initialAuthState, error: 'x', registeredEmail: 'old@x.com' },
+        AuthActions.register({ email: 'a@b.com', password: 'secret', fullName: 'Ana' }),
+      );
+      expect(state).toMatchObject({ isLoading: true, error: null, registeredEmail: null });
+    });
+
+    it('keeps the user logged out and stores the new account email on success', () => {
+      const state = authReducer(
+        { ...initialAuthState, isLoading: true },
+        AuthActions.registerSuccess({ email: 'a@b.com' }),
+      );
+      expect(state).toMatchObject({
+        isLoading: false,
+        registeredEmail: 'a@b.com',
+        isAuthenticated: false,
+        user: null,
+      });
+    });
+
+    it('stores the error on failure', () => {
+      const state = authReducer(
+        { ...initialAuthState, isLoading: true },
+        AuthActions.registerFailure({ error: 'boom' }),
+      );
+      expect(state).toMatchObject({ isLoading: false, error: 'boom' });
+    });
+
+    it('clearError drops the error and the confirmation', () => {
+      const state = authReducer(
+        { ...initialAuthState, error: 'x', registeredEmail: 'a@b.com' },
+        AuthActions.clearError(),
+      );
+      expect(state).toMatchObject({ error: null, registeredEmail: null });
+    });
+  });
 });

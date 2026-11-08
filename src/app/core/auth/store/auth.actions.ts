@@ -30,6 +30,7 @@ export const AuthActions = createActionGroup({
     'Reset Password Failure': props<{ error: string }>(),
 
     // Sesión
+    'Clear Error': emptyProps(),
     Logout: emptyProps(),
     'Restore Session': emptyProps(),
     // wasAuthenticated: había sesión (hidratada) que resultó inválida; sin ella no hay nada que expulsar.

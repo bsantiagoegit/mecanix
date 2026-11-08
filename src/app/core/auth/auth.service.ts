@@ -65,7 +65,7 @@ export class AuthService {
   }
 
   private async registerImpl(email: string, password: string, fullName: string): Promise<void> {
-    const { error } = await this.supabase.auth.signUp({
+    const { data, error } = await this.supabase.auth.signUp({
       email,
       password,
       options: {
@@ -74,6 +74,10 @@ export class AuthService {
       },
     });
     if (error) throw mapSupabaseError(error);
+
+    // Sin confirmación por email, Supabase abre sesión al registrar. Una cuenta recién creada
+    // aún no tiene taller (no es una sesión de la aplicación), así que se cierra.
+    if (data.session) await this.supabase.auth.signOut();
   }
 
   private async forgotPasswordImpl(email: string): Promise<void> {
