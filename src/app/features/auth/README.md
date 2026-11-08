@@ -22,11 +22,6 @@ El **registro** crea solo la cuenta. No da acceso: el `owner` debe agregar al us
 
 ```
 features/auth/
-├── components/               ← presentacionales
-│   ├── login-form/           ← esqueleto vacío (el formulario vive hoy en login-page)
-│   ├── register-form/        ← esqueleto vacío
-│   ├── forgot-password-form/ ← esqueleto vacío
-│   └── reset-password-form/  ← esqueleto vacío
 ├── pages/                    ← componentes enrutados
 │   ├── login-page/           ← implementada
 │   ├── register-page/        ← implementada
@@ -35,6 +30,8 @@ features/auth/
 ├── auth.routes.ts
 └── README.md
 ```
+
+No tiene `components/`: cada formulario vive dentro de su página porque no se reutiliza. Si una página crece o un formulario se necesita en otro sitio, se extrae a un componente presentacional (`input()`/`output()`, sin facades), según [D-FE-04](../../../../docs/architecture/frontend/decisions.md).
 
 ## Rutas
 
@@ -77,7 +74,6 @@ Cargadas con `loadChildren` bajo `/auth` (ver [`auth.routes.ts`](./auth.routes.t
 - Implementar `forgot-password-page` y `reset-password-page` (UC-AUTH-03). El servicio, las acciones y los effects ya existen en `core/auth`; falta la UI y los tests.
 - Login con Google (UC-AUTH-05, Fase 2): el botón sigue mostrando "próximamente".
 - Tras registrarse, el usuario no puede entrar hasta que el `owner` lo agregue a un taller: falta UC-WS-03/04 (invitar y aceptar).
-- Eliminar o implementar los cuatro `*-form` vacíos. `login-form` está duplicado por el formulario de `login-page`.
 - El enlace "¿Olvidaste tu contraseña?" de `login-page` apunta a una pantalla esqueleto ("works!").
 
 ## Tests
