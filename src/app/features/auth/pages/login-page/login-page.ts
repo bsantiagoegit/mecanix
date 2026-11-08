@@ -25,6 +25,8 @@ export class LoginPage {
   });
 
   constructor() {
+    this.auth.clearError();
+
     // Con sesión activa (login recién hecho o sesión restaurada) esta pantalla no tiene sentido.
     effect(() => {
       if (this.auth.isAuthenticated()) {
