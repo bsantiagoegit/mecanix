@@ -4,7 +4,13 @@ import { initialAuthState } from '@core/auth/store/auth.state';
 import { provideTestStore } from '../../../../../testing/utils/store';
 import { LoginPage } from './login-page';
 
-function setup(options: { auth?: Partial<typeof initialAuthState>; returnUrl?: string } = {}) {
+function setup(
+  options: {
+    auth?: Partial<typeof initialAuthState>;
+    returnUrl?: string;
+    confirmed?: boolean;
+  } = {},
+) {
   TestBed.configureTestingModule({
     imports: [LoginPage],
     providers: [
@@ -14,9 +20,10 @@ function setup(options: { auth?: Partial<typeof initialAuthState>; returnUrl?: s
         provide: ActivatedRoute,
         useValue: {
           snapshot: {
-            queryParamMap: convertToParamMap(
-              options.returnUrl ? { returnUrl: options.returnUrl } : {},
-            ),
+            queryParamMap: convertToParamMap({
+              ...(options.returnUrl ? { returnUrl: options.returnUrl } : {}),
+              ...(options.confirmed ? { confirmed: '1' } : {}),
+            }),
           },
         },
       },
@@ -75,5 +82,23 @@ describe('LoginPage', () => {
     await fixture.whenStable();
     const hrefs = Array.from(element.querySelectorAll('a')).map((a) => a.getAttribute('href'));
     expect(hrefs).toEqual(expect.arrayContaining(['/auth/register', '/auth/forgot-password']));
+  });
+
+  it('tells the user their email was confirmed when coming from the email link', async () => {
+    const { fixture, element } = setup({ confirmed: true });
+    await fixture.whenStable();
+    expect(element.querySelector('[role="status"]')?.textContent).toContain('Correo confirmado');
+  });
+
+  it('does not show the confirmation notice otherwise', async () => {
+    const { fixture, element } = setup();
+    await fixture.whenStable();
+    expect(element.querySelector('[role="status"]')).toBeNull();
+  });
+
+  it('rejects an email without a real domain', () => {
+    const { fixture } = setup();
+    fixture.componentInstance.form.controls.email.setValue('ana@example');
+    expect(fixture.componentInstance.form.controls.email.valid).toBe(false);
   });
 });
