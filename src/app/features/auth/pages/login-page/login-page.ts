@@ -6,6 +6,8 @@ import { Button } from '@shared/components/button/button';
 import { Card } from '@shared/components/card/card';
 import { Input } from '@shared/components/input/input';
 import { ToastService } from '@shared/services/toast.service';
+import { emailValidator } from '@shared/utils/email.validator';
+import { trimOnChange } from '@shared/utils/trim-on-change';
 
 @Component({
   selector: 'app-login-page',
@@ -19,13 +21,17 @@ export class LoginPage {
   private readonly toast = inject(ToastService);
   readonly auth = inject(AuthFacade);
 
+  /** Viene del enlace de confirmación del correo (`?confirmed=1`). */
+  readonly emailConfirmed = this.route.snapshot.queryParamMap.get('confirmed') === '1';
+
   readonly form = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
+    email: ['', [Validators.required, emailValidator]],
     password: ['', Validators.required],
   });
 
   constructor() {
     this.auth.clearError();
+    trimOnChange(this.form.controls.email);
 
     // Con sesión activa (login recién hecho o sesión restaurada) esta pantalla no tiene sentido.
     effect(() => {

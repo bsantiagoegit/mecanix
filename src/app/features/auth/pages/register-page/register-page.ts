@@ -11,6 +11,8 @@ import { AuthFacade } from '@core/auth';
 import { Button } from '@shared/components/button/button';
 import { Card } from '@shared/components/card/card';
 import { Input } from '@shared/components/input/input';
+import { emailValidator } from '@shared/utils/email.validator';
+import { trimOnChange } from '@shared/utils/trim-on-change';
 
 /** Debe coincidir con `minimum_password_length` de supabase/config.toml. */
 const MIN_PASSWORD_LENGTH = 6;
@@ -33,7 +35,7 @@ export class RegisterPage {
   readonly form = this.fb.group(
     {
       fullName: ['', [Validators.required, Validators.maxLength(120)]],
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, emailValidator]],
       password: ['', [Validators.required, Validators.minLength(MIN_PASSWORD_LENGTH)]],
       confirmPassword: ['', Validators.required],
     },
@@ -43,6 +45,8 @@ export class RegisterPage {
   constructor() {
     // Un error de otra pantalla (p. ej. un login fallido) no debe verse aquí.
     this.auth.clearError();
+    trimOnChange(this.form.controls.email);
+    trimOnChange(this.form.controls.fullName);
   }
 
   onSubmit(): void {
@@ -51,7 +55,7 @@ export class RegisterPage {
       return;
     }
     const { email, password, fullName } = this.form.getRawValue();
-    this.auth.register(email!.trim(), password!, fullName!.trim());
+    this.auth.register(email!, password!, fullName!);
   }
 
   fieldError(field: string): string {

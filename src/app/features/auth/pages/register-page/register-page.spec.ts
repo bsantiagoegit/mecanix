@@ -59,6 +59,20 @@ describe('RegisterPage', () => {
     expect(component.fieldError('email')).toBe('Este campo es obligatorio');
   });
 
+  it('rejects an email without a real domain', () => {
+    const { component } = setup();
+    component.form.setValue({ ...valid, email: 'ana@example' });
+    component.form.markAllAsTouched();
+    expect(component.fieldError('email')).toBe('Email inválido');
+  });
+
+  it('strips spaces pasted around the email instead of flagging it', () => {
+    const { component } = setup();
+    component.form.controls.email.setValue('  ana@example.com ');
+    expect(component.form.controls.email.value).toBe('ana@example.com');
+    expect(component.form.controls.email.valid).toBe(true);
+  });
+
   it('rejects mismatched passwords', () => {
     const { component, dispatch } = setup();
     component.form.setValue({ ...valid, confirmPassword: 'otra-clave' });
@@ -87,7 +101,9 @@ describe('RegisterPage', () => {
     const { fixture, element } = setup({ registeredEmail: 'ana@example.com' });
     await fixture.whenStable();
     expect(element.querySelector('form')).toBeNull();
-    expect(element.querySelector('[role="status"]')?.textContent).toContain('ana@example.com');
+    const status = element.querySelector('[role="status"]')?.textContent ?? '';
+    expect(status).toContain('ana@example.com');
+    expect(status).toContain('correo de confirmación');
     expect(element.querySelector('a')?.getAttribute('href')).toBe('/auth/login');
   });
 
