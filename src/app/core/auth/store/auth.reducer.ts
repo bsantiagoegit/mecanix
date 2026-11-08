@@ -27,6 +27,31 @@ export const authReducer = createReducer(
     error,
   })),
 
+  on(AuthActions.register, (state) => ({
+    ...state,
+    isLoading: true,
+    error: null,
+    registeredEmail: null,
+  })),
+
+  on(AuthActions.registerSuccess, (state, { email }) => ({
+    ...state,
+    isLoading: false,
+    registeredEmail: email,
+  })),
+
+  on(AuthActions.registerFailure, (state, { error }) => ({
+    ...state,
+    isLoading: false,
+    error,
+  })),
+
+  on(AuthActions.clearError, (state) => ({
+    ...state,
+    error: null,
+    registeredEmail: null,
+  })),
+
   on(AuthActions.logout, AuthActions.restoreSessionFailure, () => initialAuthState),
 
   on(AuthActions.setActiveWorkshop, (state, { workshopId, role }) => ({

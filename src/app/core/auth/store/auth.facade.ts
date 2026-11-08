@@ -6,6 +6,7 @@ import {
   selectAuthError,
   selectIsAuthenticated,
   selectIsLoading,
+  selectRegisteredEmail,
   selectRole,
   selectSessionWorkshopId,
   selectUser,
@@ -25,9 +26,15 @@ export class AuthFacade {
   readonly error = this.store.selectSignal(selectAuthError);
   readonly activeWorkshopId = this.store.selectSignal(selectSessionWorkshopId);
   readonly role = this.store.selectSignal(selectRole);
+  readonly registeredEmail = this.store.selectSignal(selectRegisteredEmail);
 
   login(email: string, password: string): void {
     this.store.dispatch(AuthActions.login({ email, password }));
+  }
+
+  /** Descarta el error y el aviso de registro de una pantalla anterior. */
+  clearError(): void {
+    this.store.dispatch(AuthActions.clearError());
   }
 
   restoreSession(): void {

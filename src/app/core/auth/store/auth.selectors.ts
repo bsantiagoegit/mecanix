@@ -10,3 +10,4 @@ export const selectIsAuthenticated = createSelector(selectAuthState, (s) => s.is
 export const selectSessionWorkshopId = createSelector(selectAuthState, (s) => s.activeWorkshopId);
 export const selectIsLoading = createSelector(selectAuthState, (s) => s.isLoading);
 export const selectAuthError = createSelector(selectAuthState, (s) => s.error);
+export const selectRegisteredEmail = createSelector(selectAuthState, (s) => s.registeredEmail);

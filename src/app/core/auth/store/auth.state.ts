@@ -7,6 +7,8 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  /** Email de la cuenta recién creada (transitorio, no se persiste). */
+  registeredEmail: string | null;
 }
 
 export const initialAuthState: AuthState = {
@@ -16,4 +18,5 @@ export const initialAuthState: AuthState = {
   isAuthenticated: false,
   isLoading: false,
   error: null,
+  registeredEmail: null,
 };

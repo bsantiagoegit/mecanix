@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
-import { AuthenticationError, AuthorizationError } from '@core/errors';
+import { AuthenticationError, AuthorizationError, DataError } from '@core/errors';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { EMPTY, catchError, filter, map, of, switchMap, tap, withLatestFrom } from 'rxjs';
@@ -13,6 +13,25 @@ function loginErrorMessage(error: unknown): string {
   if (error instanceof AuthenticationError) return 'Email o contraseña incorrectos.';
   if (error instanceof AuthorizationError) return 'Tu usuario no pertenece a ningún taller activo.';
   return 'No se pudo iniciar sesión. Inténtalo de nuevo.';
+}
+
+/** Mensaje para el usuario ante un fallo de registro. */
+function registerErrorMessage(error: unknown): string {
+  const original = error instanceof DataError ? (error.originalError as AuthApiError) : null;
+  const code = original?.code ?? '';
+  const text = original?.message ?? '';
+  if (code === 'user_already_exists' || /already registered/i.test(text)) {
+    return 'Ya existe una cuenta con ese email. Inicia sesión.';
+  }
+  if (code === 'weak_password' || /password/i.test(text)) {
+    return 'La contraseña no cumple los requisitos de seguridad.';
+  }
+  return 'No se pudo crear la cuenta. Inténtalo de nuevo.';
+}
+
+interface AuthApiError {
+  code?: string;
+  message?: string;
 }
 
 @Injectable()
@@ -122,11 +141,7 @@ export class AuthEffects {
         this.service.register(email, password, fullName).pipe(
           map(() => AuthActions.registerSuccess({ email })),
           catchError((error: unknown) =>
-            of(
-              AuthActions.registerFailure({
-                error: error instanceof Error ? error.message : 'Error desconocido',
-              }),
-            ),
+            of(AuthActions.registerFailure({ error: registerErrorMessage(error) })),
           ),
         ),
       ),

@@ -49,7 +49,7 @@ describe('AuthService', () => {
         Promise.resolve({ data: { session: { user: { id: 'u1' } } }, error: null }),
       ),
       signInWithOAuth: vi.fn(() => Promise.resolve({ error: null })),
-      signUp: vi.fn(() => Promise.resolve({ error: null })),
+      signUp: vi.fn(() => Promise.resolve({ data: { session: null }, error: null })),
       resetPasswordForEmail: vi.fn(() => Promise.resolve({ error: null })),
       updateUser: vi.fn(() => Promise.resolve({ error: null })),
     };
@@ -193,8 +193,25 @@ describe('AuthService', () => {
       });
     });
 
+    it('cierra la sesión que Supabase abre al registrar (la cuenta aún no tiene taller)', async () => {
+      auth['signUp'].mockResolvedValue({ data: { session: { access_token: 't' } }, error: null });
+
+      await firstValueFrom(service.register('a@x.com', 'secret', 'Ana'));
+
+      expect(auth['signOut']).toHaveBeenCalledTimes(1);
+    });
+
+    it('no cierra sesión si no se abrió ninguna (confirmación por email)', async () => {
+      await firstValueFrom(service.register('a@x.com', 'secret', 'Ana'));
+
+      expect(auth['signOut']).not.toHaveBeenCalled();
+    });
+
     it('propaga el error mapeado (email duplicado → ValidationError)', async () => {
-      auth['signUp'].mockResolvedValue({ error: { message: 'dup', code: '23505' } });
+      auth['signUp'].mockResolvedValue({
+        data: { session: null },
+        error: { message: 'dup', code: '23505' },
+      });
 
       await expect(
         firstValueFrom(service.register('a@x.com', 'secret', 'Ana')),
