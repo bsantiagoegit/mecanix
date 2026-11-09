@@ -11,11 +11,12 @@ export const authReducer = createReducer(
     error: null,
   })),
 
-  on(AuthActions.loginSuccess, (state, { user, role, activeWorkshopId }) => ({
+  on(AuthActions.loginSuccess, (state, { user, role, activeWorkshopId, invitation }) => ({
     ...state,
     user,
     role,
     activeWorkshopId,
+    invitation,
     isAuthenticated: true,
     isLoading: false,
     error: null,
@@ -58,5 +59,6 @@ export const authReducer = createReducer(
     ...state,
     activeWorkshopId: workshopId,
     role,
+    invitation: null,
   })),
 );

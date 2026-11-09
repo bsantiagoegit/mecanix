@@ -5,6 +5,7 @@ import { AuthActions } from './auth.actions';
 import {
   selectAuthError,
   selectHasWorkshop,
+  selectInvitation,
   selectIsAuthenticated,
   selectIsLoading,
   selectRegisteredEmail,
@@ -28,6 +29,7 @@ export class AuthFacade {
   readonly activeWorkshopId = this.store.selectSignal(selectSessionWorkshopId);
   readonly role = this.store.selectSignal(selectRole);
   readonly hasWorkshop = this.store.selectSignal(selectHasWorkshop);
+  readonly invitation = this.store.selectSignal(selectInvitation);
   readonly registeredEmail = this.store.selectSignal(selectRegisteredEmail);
 
   login(email: string, password: string): void {

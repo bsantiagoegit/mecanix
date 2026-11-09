@@ -1,4 +1,4 @@
-import { Role, User } from '../auth.model';
+import { PendingInvitation, Role, User } from '../auth.model';
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 
 export const AuthActions = createActionGroup({
@@ -6,7 +6,12 @@ export const AuthActions = createActionGroup({
   events: {
     // Login con email/password
     Login: props<{ email: string; password: string }>(),
-    'Login Success': props<{ user: User; role: Role | null; activeWorkshopId: string | null }>(),
+    'Login Success': props<{
+      user: User;
+      role: Role | null;
+      activeWorkshopId: string | null;
+      invitation: PendingInvitation | null;
+    }>(),
     'Login Failure': props<{ error: string }>(),
 
     // Login con Google

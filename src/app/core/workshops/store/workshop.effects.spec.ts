@@ -29,14 +29,18 @@ describe('WorkshopEffects.loadOnSession$', () => {
   it('loads the workshops once a user with a workshop logs in', () => {
     const emitted: Action[] = [];
     setup().loadOnSession$.subscribe((a) => emitted.push(a));
-    actions$.next(AuthActions.loginSuccess({ user, role: 'owner', activeWorkshopId: 'w1' }));
+    actions$.next(
+      AuthActions.loginSuccess({ user, role: 'owner', activeWorkshopId: 'w1', invitation: null }),
+    );
     expect(emitted).toEqual([WorkshopsActions.loadAvailable()]);
   });
 
   it('loads nothing for a user who has no workshop yet', () => {
     const emitted: Action[] = [];
     setup().loadOnSession$.subscribe((a) => emitted.push(a));
-    actions$.next(AuthActions.loginSuccess({ user, role: null, activeWorkshopId: null }));
+    actions$.next(
+      AuthActions.loginSuccess({ user, role: null, activeWorkshopId: null, invitation: null }),
+    );
     expect(emitted).toEqual([]);
   });
 });

@@ -3,6 +3,7 @@ export * from './authorization.error';
 export * from './data.error';
 export * from './email-not-confirmed.error';
 export * from './global-error-handler';
+export * from './invitation-accept.error';
 export * from './invitation.error';
 export * from './map-supabase-error';
 export * from './not-found.error';
