@@ -149,6 +149,24 @@ CREATE TRIGGER trg_work_orders_warranty BEFORE UPDATE ON work_orders
 - `log_work_order_status_change()` usa `auth.uid()` como `actor_id` (NOT NULL). Un `UPDATE` de `status` sin usuario autenticado (p. ej. con `service_role` o desde una migración) falla; quien actúe así debe fijar el usuario antes (`set_config('request.jwt.claim.sub', ...)`).
 - Los triggers `BEFORE UPDATE` de `work_orders` son `updated_at`, numeración y garantía; el de historial es `AFTER UPDATE`.
 
+## Triggers: mismo taller en las tablas de unión
+
+`repair_findings` y `quote_items` no tienen `workshop_id`, así que no pueden usar una FK compuesta. Un trigger `BEFORE INSERT OR UPDATE` comprueba que sus dos referencias sean del mismo taller y, si no, lanza `cross_workshop_reference` (`ERRCODE 23514`, que la app trata como error de validación). Son `SECURITY DEFINER` con `search_path` fijo para que la comprobación no dependa de lo que la RLS deje ver a quien escribe.
+
+```sql
+-- repair_findings: findings.workshop_id = recommended_repairs.workshop_id
+CREATE TRIGGER trg_repair_findings_same_workshop
+  BEFORE INSERT OR UPDATE ON repair_findings
+  FOR EACH ROW EXECUTE FUNCTION enforce_repair_finding_same_workshop();
+
+-- quote_items: quotes.workshop_id = items_catalog.workshop_id (si hay item_catalog_id)
+CREATE TRIGGER trg_quote_items_same_workshop
+  BEFORE INSERT OR UPDATE ON quote_items
+  FOR EACH ROW EXECUTE FUNCTION enforce_quote_item_same_workshop();
+```
+
+Ver [D-RLS-11](../security/decisions.md).
+
 ## Trigger: protección de membresías
 
 Aplica solo al rol `authenticated` (dentro de las funciones `SECURITY DEFINER`, `current_user` es otro).
