@@ -11,7 +11,7 @@ Definidos en [`docs/domain/use-cases/02-onboarding-taller.md`](../../../../docs/
 | UC-WS-08 | Crear mi propio taller           | MVP       | **Implementado** (`create-workshop-page`) |
 | UC-WS-02 | Configurar taller                | MVP       | Pendiente                                 |
 | UC-WS-03 | Invitar usuario a taller         | MVP       | **Parcial** (`team-page`; falta reenviar) |
-| UC-WS-04 | Aceptar invitación               | MVP       | Pendiente                                 |
+| UC-WS-04 | Aceptar invitación               | MVP       | **Implementado** (en `features/auth`)     |
 | UC-WS-05 | Asignar o cambiar el rol         | MVP       | **Implementado** (`team-page`)            |
 | UC-WS-01 | Crear taller manualmente (admin) | Fase 2    | No iniciado                               |
 | UC-WS-06 | Desactivar usuario de taller     | Fase 2    | No iniciado                               |

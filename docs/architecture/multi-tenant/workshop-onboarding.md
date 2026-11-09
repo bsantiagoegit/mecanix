@@ -26,7 +26,7 @@ Describir cómo una persona llega a pertenecer a un taller: creándolo ella mism
 
 ## Estados de la sesión
 
-Tras autenticarse, la app resuelve en qué situación está el usuario. "Sin taller" es una sesión válida con `role` y `activeWorkshopId` en `null`, no un error. **Implementado**: "con taller" y "sin taller". "Invitación pendiente" llega con la pantalla de aceptar la invitación (la Edge Function `invite-user` ya existe).
+Tras autenticarse, la app resuelve en qué situación está el usuario. "Sin taller" es una sesión válida con `role` y `activeWorkshopId` en `null`, no un error. **Implementado** los tres. La invitación pendiente se guarda en `AuthSession.invitation` (taller y rol, vía `get_pending_invitation()`) y solo existe mientras no haya taller.
 
 | Estado                   | Condición                           | Destino                       |
 | ------------------------ | ----------------------------------- | ----------------------------- |
@@ -34,7 +34,7 @@ Tras autenticarse, la app resuelve en qué situación está el usuario. "Sin tal
 | **Invitación pendiente** | Membresía `invited`                 | `/auth/accept-invitation`     |
 | **Sin taller**           | Sin membresía `active` ni `invited` | `/onboarding/create-workshop` |
 
-Guards (`core/auth/auth.guard.ts`): `workshopGuard` protege las rutas de la app (exige sesión y taller; sin taller lleva a crear el suyo); `onboardingGuard` protege `/onboarding` (exige sesión y ausencia de taller; quien ya tiene uno vuelve a `/`); `authGuard` solo exige sesión (para la pantalla de aceptar invitación).
+Guards (`core/auth/auth.guard.ts`): `workshopGuard` protege las rutas de la app (exige sesión y taller; sin taller lleva a aceptar la invitación si la tiene, o a crear el suyo); `onboardingGuard` protege `/onboarding` (exige sesión y ausencia de taller; con invitación pendiente va a aceptarla; con taller vuelve a `/`); `invitationGuard` protege `/auth/accept-invitation` (exige una invitación pendiente); `authGuard` solo exige sesión.
 
 ---
 
@@ -129,6 +129,8 @@ El logo se sube **después** de crear el taller porque solo el `owner` puede esc
 ```
 
 Mientras no acepte, el usuario no tiene contraseña ni acceso: la invitación no concede nada hasta el paso 6.
+
+**Detalles de implementación**: la contraseña se guarda antes de aceptar y solo una vez (si aceptar falla y se reintenta no se vuelve a guardar, porque Supabase rechaza la misma contraseña). Si la invitación ya no existe (el `owner` la canceló), `accept_invitation()` responde `no_pending_invitation`; la app sincroniza la sesión y, sin invitación ni taller, el usuario va a crear el suyo. Si el enlace caducó o ya se usó, no hay sesión y se llega al login: hace falta reenviar la invitación (pendiente).
 
 ---
 

@@ -6,15 +6,16 @@ Pantallas de autenticación: iniciar sesión, registro y recuperación de contra
 
 Definidos en [`docs/domain/use-cases/01-auth.md`](../../../../docs/domain/use-cases/01-auth.md).
 
-| ID         | Caso de uso                         | Prioridad | Estado                                                                                    |
-| ---------- | ----------------------------------- | --------- | ----------------------------------------------------------------------------------------- |
-| UC-AUTH-01 | Iniciar sesión con email y password | MVP       | **Implementado** (`login-page`)                                                           |
-| UC-AUTH-02 | Cerrar sesión                       | MVP       | **Implementado**, pero el botón vive en el shell (`app/layout/shell`), no en esta feature |
-| UC-AUTH-03 | Recuperar contraseña                | MVP       | **Pendiente de UI**: `forgot-password-page` y `reset-password-page` son esqueletos        |
-| UC-AUTH-04 | Cambiar contraseña                  | Fase 2    | No iniciado                                                                               |
-| UC-AUTH-05 | Iniciar sesión con Google           | Fase 2    | No iniciado: el botón de `login-page` muestra un aviso ("próximamente")                   |
-| UC-AUTH-06 | Autenticación biométrica            | Fase 3    | No iniciado                                                                               |
-| UC-AUTH-07 | Registrarse (crear cuenta)          | MVP       | **Implementado** (`register-page`): crea la cuenta (con confirmación de email) sin taller |
+| ID         | Caso de uso                           | Prioridad | Estado                                                                                                                                     |
+| ---------- | ------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| UC-AUTH-01 | Iniciar sesión con email y password   | MVP       | **Implementado** (`login-page`)                                                                                                            |
+| UC-AUTH-02 | Cerrar sesión                         | MVP       | **Implementado**, pero el botón vive en el shell (`app/layout/shell`), no en esta feature                                                  |
+| UC-AUTH-03 | Recuperar contraseña                  | MVP       | **Pendiente de UI**: `forgot-password-page` y `reset-password-page` son esqueletos                                                         |
+| UC-AUTH-04 | Cambiar contraseña                    | Fase 2    | No iniciado                                                                                                                                |
+| UC-AUTH-05 | Iniciar sesión con Google             | Fase 2    | No iniciado: el botón de `login-page` muestra un aviso ("próximamente")                                                                    |
+| UC-AUTH-06 | Autenticación biométrica              | Fase 3    | No iniciado                                                                                                                                |
+| UC-WS-04   | Aceptar invitación y acceder a la app | MVP       | **Implementado** (`accept-invitation-page`), definido en [onboarding de taller](../../../../docs/domain/use-cases/02-onboarding-taller.md) |
+| UC-AUTH-07 | Registrarse (crear cuenta)            | MVP       | **Implementado** (`register-page`): crea la cuenta (con confirmación de email) sin taller                                                  |
 
 El **registro** crea solo la cuenta. Quien se registra crea luego su propio taller y queda como `owner` (UC-WS-08, [ADR-012](../../../../docs/architecture/adr/ADR-012-onboarding-self-service.md), feature [`workshops`](../workshops/README.md)); los asesores y mecánicos entran por invitación del `owner` (UC-WS-03/04, aún no implementada). Un usuario autenticado sin taller es una sesión válida con `role` y `activeWorkshopId` en `null`. Flujos y estados en [onboarding de taller](../../../../docs/architecture/multi-tenant/workshop-onboarding.md).
 
@@ -25,6 +26,7 @@ features/auth/
 ├── pages/                    ← componentes enrutados
 │   ├── login-page/           ← implementada
 │   ├── register-page/        ← implementada
+│   ├── accept-invitation-page/ ← implementada: el invitado elige su contraseña y entra
 │   ├── forgot-password-page/ ← esqueleto
 │   └── reset-password-page/  ← esqueleto
 ├── auth.routes.ts
@@ -35,16 +37,17 @@ No tiene `components/`: cada formulario vive dentro de su página porque no se r
 
 ## Rutas
 
-Cargadas con `loadChildren` bajo `/auth` (ver [`auth.routes.ts`](./auth.routes.ts)); son públicas, sin guard.
+Cargadas con `loadChildren` bajo `/auth` (ver [`auth.routes.ts`](./auth.routes.ts)); son públicas, salvo `accept-invitation`, que exige `invitationGuard`.
 
-| Ruta                    | Página               | Estado       |
-| ----------------------- | -------------------- | ------------ |
-| `/auth/login`           | `LoginPage`          | Implementada |
-| `/auth/register`        | `RegisterPage`       | Implementada |
-| `/auth/forgot-password` | `ForgotPasswordPage` | Esqueleto    |
-| `/auth/reset-password`  | `ResetPasswordPage`  | Esqueleto    |
+| Ruta                      | Página                 | Estado                           |
+| ------------------------- | ---------------------- | -------------------------------- |
+| `/auth/login`             | `LoginPage`            | Implementada                     |
+| `/auth/register`          | `RegisterPage`         | Implementada                     |
+| `/auth/accept-invitation` | `AcceptInvitationPage` | Implementada (`invitationGuard`) |
+| `/auth/forgot-password`   | `ForgotPasswordPage`   | Esqueleto                        |
+| `/auth/reset-password`    | `ResetPasswordPage`    | Esqueleto                        |
 
-`/auth` redirige a `/auth/login`. Las rutas protegidas (`/dashboard` y las que vengan) están bajo el shell con `workshopGuard`: sin sesión redirige a `/auth/login?returnUrl=...` y sin taller a `/onboarding/create-workshop`. Los guards (`authGuard`, `workshopGuard`, `onboardingGuard`) viven en [`core/auth/auth.guard.ts`](../../core/auth/auth.guard.ts).
+`/auth` redirige a `/auth/login`. Las rutas protegidas (`/dashboard` y las que vengan) están bajo el shell con `workshopGuard`: sin sesión redirige a `/auth/login?returnUrl=...` y sin taller a `/onboarding/create-workshop`. Un usuario con una invitación pendiente no va a crear taller: `workshopGuard` y `onboardingGuard` lo mandan a `/auth/accept-invitation`. Los guards (`authGuard`, `workshopGuard`, `onboardingGuard`, `invitationGuard`) viven en [`core/auth/auth.guard.ts`](../../core/auth/auth.guard.ts).
 
 ## Flujo de inicio de sesión
 
@@ -76,10 +79,19 @@ Cargadas con `loadChildren` bajo `/auth` (ver [`auth.routes.ts`](./auth.routes.t
 - Invitaciones (UC-WS-03/04): el estado "invitación pendiente" y la pantalla de aceptar llegan con la Edge Function `invite-user`.
 - El enlace "¿Olvidaste tu contraseña?" de `login-page` apunta a una pantalla esqueleto ("works!").
 
+## Aceptar una invitación (UC-WS-04)
+
+1. El invitado abre el enlace del correo. Supabase valida el token, confirma el correo y vuelve a `/auth/accept-invitation` con una sesión abierta (`detectSessionInUrl`).
+2. `AuthService` resuelve la sesión: sin membresía activa, consulta `get_pending_invitation()` y la guarda en `AuthSession.invitation` (taller y rol). Se persiste con el resto de la sesión para que recargar la página no lo mande a crear un taller.
+3. `AcceptInvitationPage` muestra el taller y el rol, y pide la contraseña. Al enviar: guarda la contraseña (`AuthService.resetPassword`, es `updateUser`), activa la membresía con `accept_invitation()` y vuelve a resolver la sesión; con taller, entra a `/dashboard`.
+4. La contraseña se guarda **una sola vez**: si aceptar falla y el usuario reintenta, no se vuelve a guardar, porque Supabase rechaza fijar la misma contraseña.
+5. Si la invitación ya no existe (la cancelaron), se sincroniza la sesión y, al no tener invitación ni taller, el usuario queda en `/onboarding/create-workshop`.
+
 ## Tests
 
 - `login-page.spec.ts`: navegación tras autenticar, `returnUrl` interno, mensaje de error y enlaces.
 - `register-page.spec.ts`: validaciones (incluido el dominio del email y los espacios), envío, error, aviso de correo enviado y enlaces.
+- `accept-invitation-page.spec.ts`: taller y rol visibles, validaciones, orden contraseña → aceptar, reintento sin volver a guardar la contraseña, invitación cancelada, sesión expirada y entrada al dashboard.
 - `@shared/utils`: `email.validator.spec.ts` y `trim-on-change.spec.ts`.
 - Los demás specs de la feature son de arranque ("should create").
 - La lógica de sesión se prueba en `core/auth`: `auth.reducer.spec.ts` y las redirecciones de `auth.effects.spec.ts`. `auth.service.spec.ts` cubre `AuthService` (login, `restoreSession`, `roleIn`, registro, recuperación y cambio de contraseña, Google) con un cliente de Supabase falso. Los tests de integración de RLS están en `supabase/tests/`.
