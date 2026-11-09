@@ -71,7 +71,7 @@ describe('Logo del taller: workshops.logo_url y bucket logos', () => {
     });
   });
 
-  describe('bucket logos (requiere el contenedor de Storage)', () => {
+  describe('bucket logos (requiere el esquema storage)', () => {
     const insertSql = `INSERT INTO storage.objects (bucket_id, name, owner_id) VALUES ('logos', $1, $2)`;
     const fileA = `${WORKSHOP_A}/3f2a9c1e-0000-4000-8000-000000000001.png`;
     const fileB = `${WORKSHOP_B}/3f2a9c1e-0000-4000-8000-000000000002.png`;
@@ -180,10 +180,13 @@ describe('Logo del taller: workshops.logo_url y bucket logos', () => {
     });
   });
 
-  describe('API de Storage con sesión real (requiere el contenedor de Storage)', () => {
+  describe('API de Storage con sesión real (requiere storage-api en marcha)', () => {
     const API = environment.supabaseUrl;
     const KEY = environment.supabaseAnonKey;
     const tokens: Record<string, string> = {};
+    // El esquema `storage` existe aunque no corra el contenedor storage-api (stack mínimo de la
+    // CI): las pruebas por SQL aplican siempre, estas necesitan además la API HTTP.
+    let apiAvailable = false;
     const uploaded: string[] = [];
 
     // PNG válido de 1×1 píxel.
@@ -223,19 +226,27 @@ describe('Logo del taller: workshops.logo_url y bucket logos', () => {
 
     beforeAll(async () => {
       if (!storageAvailable) return;
-      tokens['ownerA'] = await signIn('owner@workshop-a.com');
-      tokens['mechanicA'] = await signIn('mechanic@workshop-a.com');
-      tokens['ownerB'] = await signIn('owner@workshop-b.com');
+      try {
+        // Con la API caída, el gateway responde 5xx ("name resolution failed").
+        const probe = await fetch(`${API}/storage/v1/object/public/logos/${crypto.randomUUID()}`);
+        apiAvailable = probe.status < 500;
+        if (!apiAvailable) return;
+        tokens['ownerA'] = await signIn('owner@workshop-a.com');
+        tokens['mechanicA'] = await signIn('mechanic@workshop-a.com');
+        tokens['ownerB'] = await signIn('owner@workshop-b.com');
+      } catch {
+        apiAvailable = false;
+      }
     });
 
     afterAll(async () => {
-      if (!storageAvailable) return;
+      if (!apiAvailable) return;
       await Promise.all(uploaded.map((path) => remove(tokens['ownerA'], path).catch(() => null)));
       await Promise.all(uploaded.map((path) => remove(tokens['ownerB'], path).catch(() => null)));
     });
 
     it('el owner sube un logo y cualquiera lo ve por su URL pública, sin sesión', async (ctx) => {
-      if (!storageAvailable) return ctx.skip();
+      if (!apiAvailable) return ctx.skip();
       const path = fresh(WORKSHOP_A);
       const res = await upload(tokens['ownerA'], path, PNG);
       expect(res.ok).toBe(true);
@@ -247,7 +258,7 @@ describe('Logo del taller: workshops.logo_url y bucket logos', () => {
     });
 
     it('el mechanic no sube logos', async (ctx) => {
-      if (!storageAvailable) return ctx.skip();
+      if (!apiAvailable) return ctx.skip();
       const path = fresh(WORKSHOP_A);
       const res = await upload(tokens['mechanicA'], path, PNG);
       expect(res.ok).toBe(false);
@@ -256,7 +267,7 @@ describe('Logo del taller: workshops.logo_url y bucket logos', () => {
     });
 
     it('un owner no sube a la carpeta de otro taller', async (ctx) => {
-      if (!storageAvailable) return ctx.skip();
+      if (!apiAvailable) return ctx.skip();
       const path = fresh(WORKSHOP_B);
       const res = await upload(tokens['ownerA'], path, PNG);
       expect(res.ok).toBe(false);
@@ -264,7 +275,7 @@ describe('Logo del taller: workshops.logo_url y bucket logos', () => {
     });
 
     it('rechaza SVG y archivos de más de 1 MB', async (ctx) => {
-      if (!storageAvailable) return ctx.skip();
+      if (!apiAvailable) return ctx.skip();
       const svg = await upload(
         tokens['ownerA'],
         fresh(WORKSHOP_A, 'svg'),
@@ -278,7 +289,7 @@ describe('Logo del taller: workshops.logo_url y bucket logos', () => {
     });
 
     it('el owner elimina su logo; mechanic y otro owner no pueden', async (ctx) => {
-      if (!storageAvailable) return ctx.skip();
+      if (!apiAvailable) return ctx.skip();
       const path = fresh(WORKSHOP_A);
       expect((await upload(tokens['ownerA'], path, PNG)).ok).toBe(true);
       uploaded.push(path);
