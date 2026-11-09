@@ -7,5 +7,6 @@ export * from './invitation-accept.error';
 export * from './invitation.error';
 export * from './map-supabase-error';
 export * from './not-found.error';
+export * from './password-recovery.error';
 export * from './validation.error';
 export * from './workshop-creation.error';

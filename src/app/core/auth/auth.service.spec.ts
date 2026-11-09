@@ -295,6 +295,17 @@ describe('AuthService', () => {
       });
     });
 
+    it('el límite de envíos se reporta como rate_limited', async () => {
+      auth['resetPasswordForEmail'].mockResolvedValue({
+        error: { code: 'over_email_send_rate_limit', message: 'x' },
+      });
+
+      await expect(firstValueFrom(service.forgotPassword('a@x.com'))).rejects.toMatchObject({
+        name: 'PasswordRecoveryError',
+        reason: 'rate_limited',
+      });
+    });
+
     it('propaga el error mapeado', async () => {
       auth['resetPasswordForEmail'].mockResolvedValue({ error: { message: 'x' } });
 
@@ -304,17 +315,77 @@ describe('AuthService', () => {
     });
   });
 
-  describe('resetPassword', () => {
+  describe('setPassword', () => {
     it('actualiza la contraseña del usuario', async () => {
-      await firstValueFrom(service.resetPassword('nueva-clave'));
+      await firstValueFrom(service.setPassword('nueva-clave'));
 
       expect(auth['updateUser']).toHaveBeenCalledWith({ password: 'nueva-clave' });
     });
 
-    it('propaga el error mapeado', async () => {
+    it.each([
+      ['same_password', 'same_password'],
+      ['weak_password', 'weak_password'],
+      ['session_not_found', 'no_session'],
+    ])('traduce el código "%s" a PasswordRecoveryError "%s"', async (code, reason) => {
+      auth['updateUser'].mockResolvedValue({ error: { code, message: 'x' } });
+
+      await expect(firstValueFrom(service.setPassword('x'))).rejects.toMatchObject({
+        name: 'PasswordRecoveryError',
+        reason,
+      });
+    });
+
+    it('sin sesión de Supabase se reporta como no_session', async () => {
+      auth['updateUser'].mockResolvedValue({ error: { message: 'Auth session missing!' } });
+
+      await expect(firstValueFrom(service.setPassword('x'))).rejects.toMatchObject({
+        reason: 'no_session',
+      });
+    });
+
+    it('un error desconocido se mapea como error de datos', async () => {
       auth['updateUser'].mockResolvedValue({ error: { message: 'x' } });
 
-      await expect(firstValueFrom(service.resetPassword('x'))).rejects.toBeInstanceOf(DataError);
+      await expect(firstValueFrom(service.setPassword('x'))).rejects.toBeInstanceOf(DataError);
+    });
+  });
+
+  describe('recoverPassword', () => {
+    it('fija la contraseña y cierra las demás sesiones', async () => {
+      await firstValueFrom(service.recoverPassword('nueva-clave'));
+
+      expect(auth['updateUser']).toHaveBeenCalledWith({ password: 'nueva-clave' });
+      expect(auth['signOut']).toHaveBeenCalledWith({ scope: 'others' });
+    });
+
+    it('si no se pudo fijar la contraseña no cierra ninguna sesión', async () => {
+      auth['updateUser'].mockResolvedValue({ error: { code: 'weak_password', message: 'x' } });
+
+      await expect(firstValueFrom(service.recoverPassword('x'))).rejects.toMatchObject({
+        reason: 'weak_password',
+      });
+      expect(auth['signOut']).not.toHaveBeenCalled();
+    });
+
+    it('un fallo al cerrar las demás sesiones no revierte el cambio', async () => {
+      auth['signOut'].mockRejectedValue(new Error('network'));
+
+      await expect(firstValueFrom(service.recoverPassword('nueva-clave'))).resolves.toBeUndefined();
+    });
+  });
+
+  describe('hasSession', () => {
+    it('es true con sesión y false sin ella', async () => {
+      expect(await firstValueFrom(service.hasSession())).toBe(true);
+
+      auth['getSession'].mockResolvedValue({ data: { session: null }, error: null });
+      expect(await firstValueFrom(service.hasSession())).toBe(false);
+    });
+
+    it('un error de Supabase se mapea', async () => {
+      auth['getSession'].mockResolvedValue({ data: { session: null }, error: { message: 'x' } });
+
+      await expect(firstValueFrom(service.hasSession())).rejects.toBeInstanceOf(DataError);
     });
   });
 

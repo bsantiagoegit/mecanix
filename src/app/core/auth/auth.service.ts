@@ -4,6 +4,8 @@ import {
   AuthorizationError,
   EmailNotConfirmedError,
   InvitationAcceptError,
+  PasswordRecoveryError,
+  PasswordRecoveryReason,
   mapSupabaseError,
 } from '@core/errors';
 import { AuthSession, PendingInvitation, Role } from './auth.model';
@@ -56,8 +58,25 @@ export class AuthService {
     return from(this.forgotPasswordImpl(email)).pipe(map(() => undefined));
   }
 
-  resetPassword(newPassword: string): Observable<void> {
-    return from(this.resetPasswordImpl(newPassword)).pipe(map(() => undefined));
+  /**
+   * Fija la contraseña del usuario con sesión (p. ej. el invitado que acepta su invitación).
+   * `PasswordRecoveryError` indica si es débil, igual a la actual o si no hay sesión.
+   */
+  setPassword(newPassword: string): Observable<void> {
+    return from(this.setPasswordImpl(newPassword));
+  }
+
+  /**
+   * Cierra el flujo de recuperar la contraseña: la fija y, por seguridad, cierra las demás
+   * sesiones de la cuenta (quien la tuviera abierta con la contraseña vieja ya no entra).
+   */
+  recoverPassword(newPassword: string): Observable<void> {
+    return from(this.recoverPasswordImpl(newPassword));
+  }
+
+  /** ¿Hay una sesión de Supabase? Espera a que el cliente procese el enlace del correo. */
+  hasSession(): Observable<boolean> {
+    return from(this.hasSessionImpl());
   }
 
   /**
@@ -107,14 +126,39 @@ export class AuthService {
     const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset-password`,
     });
+    if (error?.code === 'over_email_send_rate_limit') {
+      throw new PasswordRecoveryError('rate_limited');
+    }
     if (error) throw mapSupabaseError(error);
   }
 
-  private async resetPasswordImpl(newPassword: string): Promise<void> {
-    const { error } = await this.supabase.auth.updateUser({
-      password: newPassword,
-    });
+  private async setPasswordImpl(newPassword: string): Promise<void> {
+    const { error } = await this.supabase.auth.updateUser({ password: newPassword });
+    if (!error) return;
+    const reasons: Record<string, PasswordRecoveryReason> = {
+      same_password: 'same_password',
+      weak_password: 'weak_password',
+      session_not_found: 'no_session',
+      session_expired: 'no_session',
+      not_authenticated: 'no_session',
+    };
+    const reason = error.code ? reasons[error.code] : undefined;
+    // Sin sesión, `updateUser` falla con "Auth session missing!" (AuthSessionMissingError).
+    if (!reason && /session missing/i.test(error.message))
+      throw new PasswordRecoveryError('no_session');
+    throw reason ? new PasswordRecoveryError(reason) : mapSupabaseError(error);
+  }
+
+  private async recoverPasswordImpl(newPassword: string): Promise<void> {
+    await this.setPasswordImpl(newPassword);
+    // Mejor esfuerzo: la contraseña ya cambió, esto solo endurece la cuenta.
+    await this.supabase.auth.signOut({ scope: 'others' }).catch(() => undefined);
+  }
+
+  private async hasSessionImpl(): Promise<boolean> {
+    const { data, error } = await this.supabase.auth.getSession();
     if (error) throw mapSupabaseError(error);
+    return data.session !== null;
   }
 
   private async signIn(email: string, password: string): Promise<AuthSession> {

@@ -13,11 +13,11 @@ const invitation = { workshopName: 'Taller Pérez', role: 'mechanic' as const };
 function setup(
   options: {
     auth?: Partial<typeof initialAuthState>;
-    resetPassword?: ReturnType<typeof vi.fn>;
+    setPassword?: ReturnType<typeof vi.fn>;
     acceptInvitation?: ReturnType<typeof vi.fn>;
   } = {},
 ) {
-  const resetPassword = options.resetPassword ?? vi.fn(() => of(undefined));
+  const setPassword = options.setPassword ?? vi.fn(() => of(undefined));
   const acceptInvitation = options.acceptInvitation ?? vi.fn(() => of(undefined));
   TestBed.configureTestingModule({
     imports: [AcceptInvitationPage],
@@ -32,7 +32,7 @@ function setup(
           ...options.auth,
         },
       }),
-      { provide: AuthService, useValue: { resetPassword, acceptInvitation } },
+      { provide: AuthService, useValue: { setPassword, acceptInvitation } },
     ],
   });
   const dispatch = vi.spyOn(TestBed.inject(MockStore), 'dispatch');
@@ -40,7 +40,7 @@ function setup(
   const fixture = TestBed.createComponent(AcceptInvitationPage);
   return {
     fixture,
-    resetPassword,
+    setPassword,
     acceptInvitation,
     dispatch,
     navigate,
@@ -61,9 +61,9 @@ describe('AcceptInvitationPage', () => {
   });
 
   it('does nothing with an invalid form', async () => {
-    const { component, resetPassword, acceptInvitation } = setup();
+    const { component, setPassword, acceptInvitation } = setup();
     await component.onSubmit();
-    expect(resetPassword).not.toHaveBeenCalled();
+    expect(setPassword).not.toHaveBeenCalled();
     expect(acceptInvitation).not.toHaveBeenCalled();
     expect(component.fieldError('password')).toBe('Este campo es obligatorio');
   });
@@ -77,13 +77,13 @@ describe('AcceptInvitationPage', () => {
   });
 
   it('saves the password, accepts the invitation and then refreshes the session', async () => {
-    const { component, resetPassword, acceptInvitation, dispatch } = setup();
+    const { component, setPassword, acceptInvitation, dispatch } = setup();
     component.form.setValue(valid);
     await component.onSubmit();
 
-    expect(resetPassword).toHaveBeenCalledWith('secreto123');
+    expect(setPassword).toHaveBeenCalledWith('secreto123');
     expect(acceptInvitation).toHaveBeenCalled();
-    expect(resetPassword.mock.invocationCallOrder[0]).toBeLessThan(
+    expect(setPassword.mock.invocationCallOrder[0]).toBeLessThan(
       acceptInvitation.mock.invocationCallOrder[0],
     );
     expect(dispatch).toHaveBeenCalledWith(AuthActions.restoreSession());
@@ -91,7 +91,7 @@ describe('AcceptInvitationPage', () => {
 
   it('shows the loading state while the request is in flight', () => {
     const pending = new Subject<void>();
-    const { component } = setup({ resetPassword: vi.fn(() => pending) });
+    const { component } = setup({ setPassword: vi.fn(() => pending) });
     component.form.setValue(valid);
     void component.onSubmit();
     expect(component.isSubmitting()).toBe(true);
@@ -99,7 +99,7 @@ describe('AcceptInvitationPage', () => {
 
   it('does not accept the invitation when the password cannot be saved', async () => {
     const { component, acceptInvitation } = setup({
-      resetPassword: vi.fn(() => throwError(() => new Error('weak'))),
+      setPassword: vi.fn(() => throwError(() => new Error('weak'))),
     });
     component.form.setValue(valid);
     await component.onSubmit();
@@ -113,14 +113,14 @@ describe('AcceptInvitationPage', () => {
       .fn()
       .mockReturnValueOnce(throwError(() => new Error('network')))
       .mockReturnValue(of(undefined));
-    const { component, resetPassword, dispatch } = setup({ acceptInvitation });
+    const { component, setPassword, dispatch } = setup({ acceptInvitation });
     component.form.setValue(valid);
 
     await component.onSubmit();
     expect(component.error()).toContain('No se pudo aceptar la invitación');
 
     await component.onSubmit();
-    expect(resetPassword).toHaveBeenCalledTimes(1);
+    expect(setPassword).toHaveBeenCalledTimes(1);
     expect(acceptInvitation).toHaveBeenCalledTimes(2);
     expect(component.error()).toBeNull();
     expect(dispatch).toHaveBeenCalledWith(AuthActions.restoreSession());

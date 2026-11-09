@@ -24,16 +24,6 @@ export const AuthActions = createActionGroup({
     'Register Success': props<{ email: string }>(),
     'Register Failure': props<{ error: string }>(),
 
-    // Recuperación de contraseña
-    'Forgot Password': props<{ email: string }>(),
-    'Forgot Password Success': emptyProps(),
-    'Forgot Password Failure': props<{ error: string }>(),
-
-    // Reset de contraseña
-    'Reset Password': props<{ newPassword: string }>(),
-    'Reset Password Success': emptyProps(),
-    'Reset Password Failure': props<{ error: string }>(),
-
     // Sesión
     'Clear Error': emptyProps(),
     Logout: emptyProps(),
