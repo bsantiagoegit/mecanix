@@ -77,20 +77,31 @@ Todas las tablas de negocio tienen `workshop_id uuid NOT NULL REFERENCES worksho
 
 ---
 
+## D-T-11: FK compuestas entre tablas del taller
+
+Toda FK entre dos tablas con `workshop_id` incluye `workshop_id`: `FOREIGN KEY (workshop_id, columna) REFERENCES padre (workshop_id, id)`. Para eso cada tabla padre tiene `UNIQUE (workshop_id, id)` (`customers`, `vehicles`, `work_orders`, `work_iterations`, `inspections`, `findings`, `recommended_repairs`, `performed_repairs`, `items_catalog`, `suppliers`, `quotes`). Las referencias a personas apuntan a `workshop_members (workshop_id, user_id)`.
+
+**Razón**: impide por construcción que una fila de un taller referencie datos de otro ([D-RLS-11](../security/decisions.md)). Una referencia opcional vacía (`NULL`) no se valida; con `ON DELETE SET NULL` solo se anula la columna de la referencia (`SET NULL (columna)`), nunca `workshop_id`.
+
+**Coste**: un índice único extra por tabla padre. El nombre de las FK se mantiene (`<tabla>_<columna>_fkey`).
+
+---
+
 ## Resumen
 
-| ID     | Decisión                           |
-| ------ | ---------------------------------- |
-| D-T-01 | UUID v4 como PK                    |
-| D-T-02 | `timestamptz` en todo timestamp    |
-| D-T-03 | `text` sin `varchar(n)`            |
-| D-T-04 | `numeric(12,2)` para dinero        |
-| D-T-05 | `jsonb` solo en metadata           |
-| D-T-06 | Soft delete selectivo              |
-| D-T-07 | Auditoría básica                   |
-| D-T-08 | CHECK constraints para enums       |
-| D-T-09 | `ON DELETE` explícito              |
-| D-T-10 | `workshop_id` en tablas de negocio |
+| ID     | Decisión                              |
+| ------ | ------------------------------------- |
+| D-T-01 | UUID v4 como PK                       |
+| D-T-02 | `timestamptz` en todo timestamp       |
+| D-T-03 | `text` sin `varchar(n)`               |
+| D-T-04 | `numeric(12,2)` para dinero           |
+| D-T-05 | `jsonb` solo en metadata              |
+| D-T-06 | Soft delete selectivo                 |
+| D-T-07 | Auditoría básica                      |
+| D-T-08 | CHECK constraints para enums          |
+| D-T-09 | `ON DELETE` explícito                 |
+| D-T-10 | `workshop_id` en tablas de negocio    |
+| D-T-11 | FK compuestas entre tablas del taller |
 
 ---
 

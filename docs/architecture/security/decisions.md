@@ -109,6 +109,33 @@ Todas las policies usan `auth.uid()` (función de Supabase que devuelve el UUID 
 
 ---
 
+## D-RLS-11: Las referencias entre filas no cruzan de un taller a otro
+
+Una clave foránea normal solo comprueba que el `id` referenciado exista, **sin pasar por RLS**. Con `WITH CHECK (auth_is_advisor_or_owner_in(workshop_id))` un asesor del taller A podía insertar una fila de su taller (`workshop_id = A`) que apuntara al cliente, vehículo u orden del taller B: la policy valida la fila, no a quién apunta.
+
+La base de datos lo impide, para cualquier rol (también `service_role` y las funciones `SECURITY DEFINER`):
+
+- Las FK entre tablas con `workshop_id` son **compuestas**: `(workshop_id, columna) → padre (workshop_id, id)`. Cada tabla padre expone `UNIQUE (workshop_id, id)` ([D-T-11](../data-model/decisions.md)).
+- Las personas de una fila (`advisor_id`, `mechanic_id`, `created_by`, `approved_by`) deben ser **miembros del mismo taller**: `(workshop_id, user_id) → workshop_members`. La membresía conserva su fila al desactivarse (`inactive`), así que el historial sigue siendo válido.
+- Las tablas de unión sin `workshop_id` (`repair_findings`, `quote_items`) lo comprueban con un trigger (`cross_workshop_reference`, `ERRCODE 23514`).
+
+**Excepciones deliberadas**: `photos.uploaded_by` lo fija la policy (`= auth.uid()`) y `work_order_status_history.actor_id` lo fija un trigger; `photos.entity_id` es polimórfico y no admite FK, así que lo valida `add_photo()` (pendiente). Un test recorre el catálogo y falla si aparece una FK de una sola columna entre dos tablas con `workshop_id`, para que las tablas futuras no la olviden.
+
+**Razón**: RLS decide quién puede escribir una fila, no qué referencias son legítimas. Con claves compuestas la integridad entre talleres es declarativa y no depende de que cada policy, función o Edge Function recuerde validarla.
+
+---
+
+## D-RLS-12: Los datos de contacto del cliente solo los leen `owner` y `advisor`
+
+RLS no oculta columnas, y "la app consulta la vista" es una convención, no una garantía: con la policy `USING (workshop_id = ANY(auth_workshop_ids()))` un `mechanic` podía hacer `SELECT phone, email FROM customers` directamente.
+
+- `customers`: `SELECT` solo para `owner` y `advisor` (`customers_select_advisor_owner`). Para el `mechanic` devuelve cero filas.
+- `customers_public` (nombre, sin contacto) pasa a ser una vista **del propietario** (sin `security_invoker`) con su propio filtro `workshop_id = ANY(auth_workshop_ids())`. Así el `mechanic` ve el nombre de los clientes de **su** taller y nada más; `anon` no tiene acceso.
+
+**Contrapartida**: una vista del propietario no aplica la RLS de `customers`, por eso el filtro de taller va dentro de la vista y los tests lo cubren (aislamiento entre talleres, columnas expuestas, `anon`). Si se añade una columna a `customers_public`, hay que revisar que no sea de contacto.
+
+---
+
 ## Resumen
 
 | ID       | Decisión                                                            |
@@ -123,6 +150,8 @@ Todas las policies usan `auth.uid()` (función de Supabase que devuelve el UUID 
 | D-RLS-08 | Sin `WITH CHECK` en SELECT                                          |
 | D-RLS-09 | `service_role` solo en el servidor; flujos de usuario vía funciones |
 | D-RLS-10 | `auth.uid()` como fuente de verdad                                  |
+| D-RLS-11 | Las referencias entre filas no cruzan de un taller a otro           |
+| D-RLS-12 | Datos de contacto del cliente solo para `owner` y `advisor`         |
 
 ---
 

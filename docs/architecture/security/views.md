@@ -9,7 +9,7 @@
 
 ## Propósito
 
-RLS no puede ocultar columnas. Cuando un rol necesita ver solo parte de una tabla, se crea una vista. Las vistas usan `security_invoker = true` para que RLS de la tabla base siga aplicando.
+RLS no puede ocultar columnas. Cuando un rol necesita ver solo parte de una tabla, se crea una vista. Por defecto una vista corre con los permisos de su propietario y no aplica la RLS de la tabla base; `security_invoker = true` hace lo contrario. Cada vista documenta cuál usa y por qué.
 
 ---
 
@@ -17,11 +17,10 @@ RLS no puede ocultar columnas. Cuando un rol necesita ver solo parte de una tabl
 
 **Problema**: el `mechanic` necesita ver el nombre del cliente (para saber de quién es el vehículo) pero **no** debe ver `phone`, `email`, `address`, `identification`.
 
-**Solución**: vista que expone solo los campos permitidos. La app usa `customers_public` cuando el usuario es `mechanic` y `customers` cuando es `owner` o `advisor`.
+**Solución**: vista que expone solo los campos permitidos. La app usa `customers_public` cuando el usuario es `mechanic` y `customers` cuando es `owner` o `advisor`. Y la base de datos lo hace cumplir ([D-RLS-12](./decisions.md)): la policy de `customers` solo deja leer a `owner` y `advisor`, así que un `mechanic` que consulte `customers` directamente recibe cero filas.
 
 ```sql
 CREATE OR REPLACE VIEW customers_public
-WITH (security_invoker = true)
 AS
 SELECT
   id,
@@ -31,10 +30,14 @@ SELECT
   created_at,
   updated_at,
   deleted_at
-FROM customers;
+FROM customers
+WHERE workshop_id = ANY(auth_workshop_ids());
+
+REVOKE ALL ON customers_public FROM PUBLIC, anon;
+GRANT SELECT ON customers_public TO authenticated;
 ```
 
-**Nota sobre `security_invoker = true`**: la vista corre con los permisos del usuario que consulta, no del creador. Así RLS de `customers` sigue aplicando. Si se omitiera, la vista correría con permisos del creador y podría bypasear RLS.
+**Nota sobre la vista del propietario**: a diferencia de la versión 1.0, `customers_public` **no** usa `security_invoker`. Con `security_invoker = true` aplicaría la RLS de `customers` y el `mechanic`, que ya no puede leer esa tabla, no vería nada. Corre con los permisos del propietario (que se salta la RLS) y por eso lleva su propio filtro `workshop_id = ANY(auth_workshop_ids())`: sin él mostraría los clientes de todos los talleres. `anon` no tiene acceso.
 
 **Uso en Angular**: el data service de `customers` decide qué vista consultar según el rol del usuario autenticado. El `mechanic` nunca hace `SELECT * FROM customers` directamente.
 

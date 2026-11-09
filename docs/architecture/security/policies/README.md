@@ -36,7 +36,7 @@
 | `workshops`                 | member                 | —             | owner         | —             |
 | `users`                     | self + shared          | —             | self          | —             |
 | `workshop_members`          | self + owner           | owner         | owner         | —             |
-| `customers`                 | member                 | advisor/owner | advisor/owner | —             |
+| `customers`                 | advisor/owner          | advisor/owner | advisor/owner | —             |
 | `vehicles`                  | member                 | advisor/owner | advisor/owner | —             |
 | `vehicle_ownerships`        | member                 | advisor/owner | advisor/owner | —             |
 | `work_orders`               | member                 | advisor/owner | member        | —             |

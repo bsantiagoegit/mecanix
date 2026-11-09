@@ -9,15 +9,15 @@
 
 ## `customers`
 
-**Regla**: cualquier miembro del taller ve los clientes. `owner` y `advisor` crean y editan. `mechanic` solo ve nombre (vía vista `customers_public`).
+**Regla**: `owner` y `advisor` ven, crean y editan los clientes. `mechanic` no lee `customers`: solo ve el nombre por la vista `customers_public` ([D-RLS-12](../decisions.md)).
 
 ```sql
 ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY customers_select_member ON customers
+CREATE POLICY customers_select_advisor_owner ON customers
   FOR SELECT
   TO authenticated
-  USING (workshop_id = ANY(auth_workshop_ids()));
+  USING (workshop_id = ANY(auth_workshop_ids()) AND auth_is_advisor_or_owner_in(workshop_id));
 
 CREATE POLICY customers_insert_advisor_owner ON customers
   FOR INSERT
@@ -35,7 +35,9 @@ CREATE POLICY customers_update_advisor_owner ON customers
 
 **Soft delete y SELECT**: la policy de SELECT **no** filtra `deleted_at`. Postgres valida la fila nueva de un `UPDATE` contra las policies de SELECT; con `AND deleted_at IS NULL` el `UPDATE ... SET deleted_at` fallaba con `new row violates row-level security policy`. Los registros borrados se excluyen en las consultas (`.is('deleted_at', null)`). Misma regla para `vehicles`.
 
-**Nota sobre mechanic**: RLS no puede ocultar columnas. Para que el `mechanic` no vea `phone`, `email`, `address`, `identification`, se usa la vista `customers_public` (ver [`../views.md`](../views.md)).
+**Nota sobre mechanic**: RLS no puede ocultar columnas, así que se separa por filas: la tabla es solo para `owner` y `advisor`, y el `mechanic` consulta la vista `customers_public`, que expone únicamente el nombre (ver [`../views.md`](../views.md)). Antes (v1.0) la policy dejaba leer a cualquier miembro y la separación dependía de que la app consultara la vista.
+
+**Referencias**: `vehicle_ownerships.customer_id` y `vehicle_id` son FK compuestas con `workshop_id` ([D-RLS-11](../decisions.md)): una propiedad no puede apuntar a un cliente o vehículo de otro taller.
 
 ---
 
