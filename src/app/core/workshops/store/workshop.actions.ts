@@ -11,6 +11,8 @@ export const WorkshopsActions = createActionGroup({
     }>(),
     'Load Available Failure': props<{ error: string }>(),
 
+    'Update Success': props<{ workshop: Workshop }>(),
+
     'Switch Workshop': props<{ workshopId: string }>(),
     'Switch Workshop Success': props<{ workshop: Workshop }>(),
     'Switch Workshop Failure': props<{ error: string }>(),

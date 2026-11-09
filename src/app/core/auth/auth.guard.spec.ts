@@ -8,7 +8,7 @@ import {
 } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
 import { Observable, firstValueFrom } from 'rxjs';
-import { authGuard, onboardingGuard, workshopGuard } from './auth.guard';
+import { authGuard, onboardingGuard, roleGuard, workshopGuard } from './auth.guard';
 import { initialAuthState } from './store/auth.state';
 
 function run(guard: CanActivateFn, auth: Partial<typeof initialAuthState>, url = '/clientes') {
@@ -79,6 +79,31 @@ describe('session guards', () => {
     it('sends a visitor to the login', async () => {
       expect(urlOf(await run(onboardingGuard, {}, '/onboarding/create-workshop'))).toBe(
         '/auth/login?returnUrl=%2Fonboarding%2Fcreate-workshop',
+      );
+    });
+  });
+
+  describe('roleGuard', () => {
+    const owner = { ...withWorkshop, role: 'owner' as const };
+    const advisor = { ...withWorkshop, role: 'advisor' as const };
+
+    it('lets a listed role through', async () => {
+      expect(await run(roleGuard('owner'), owner)).toBe(true);
+      TestBed.resetTestingModule();
+      expect(await run(roleGuard('owner', 'advisor'), advisor)).toBe(true);
+    });
+
+    it('sends a user with another role back to the app', async () => {
+      expect(urlOf(await run(roleGuard('owner'), advisor, '/settings'))).toBe('/');
+    });
+
+    it('keeps the session and workshop requirements', async () => {
+      expect(urlOf(await run(roleGuard('owner'), {}, '/settings'))).toBe(
+        '/auth/login?returnUrl=%2Fsettings',
+      );
+      TestBed.resetTestingModule();
+      expect(urlOf(await run(roleGuard('owner'), withoutWorkshop, '/settings'))).toBe(
+        '/onboarding/create-workshop',
       );
     });
   });

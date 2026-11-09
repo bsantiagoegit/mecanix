@@ -19,6 +19,11 @@ export const workshopReducer = createReducer(
     isLoading: false,
     error,
   })),
+  on(WorkshopsActions.updateSuccess, (state, { workshop }) => ({
+    ...state,
+    available: state.available.map((w) => (w.id === workshop.id ? workshop : w)),
+    active: state.active?.id === workshop.id ? workshop : state.active,
+  })),
   on(WorkshopsActions.switchWorkshopSuccess, (state, { workshop }) => ({
     ...state,
     active: workshop,

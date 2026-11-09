@@ -1,8 +1,14 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router, UrlTree } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { filter, map, take } from 'rxjs';
-import { selectHasWorkshop, selectIsAuthenticated, selectIsLoading } from './store/auth.selectors';
+import { Observable, filter, map, take } from 'rxjs';
+import { Role } from './auth.model';
+import {
+  selectHasWorkshop,
+  selectIsAuthenticated,
+  selectIsLoading,
+  selectRole,
+} from './store/auth.selectors';
 
 type Requirement = 'authenticated' | 'workshop' | 'no-workshop';
 
@@ -40,3 +46,22 @@ export const workshopGuard: CanActivateFn = sessionGuard('workshop');
 
 /** Onboarding: exige sesión **sin** taller. Quien ya tiene taller vuelve a la app. */
 export const onboardingGuard: CanActivateFn = sessionGuard('no-workshop');
+
+/**
+ * Exige sesión, taller y que el rol sea uno de `roles`; si no, vuelve a la app (`/`).
+ * La interfaz oculta lo que no corresponde, pero la autoridad real es la RLS.
+ */
+export function roleGuard(...roles: Role[]): CanActivateFn {
+  const withWorkshop = sessionGuard('workshop');
+  return (route, state) => {
+    const store = inject(Store);
+    const router = inject(Router);
+    return (withWorkshop(route, state) as Observable<boolean | UrlTree>).pipe(
+      map((result) => {
+        if (result !== true) return result;
+        const role = store.selectSignal(selectRole)();
+        return role !== null && roles.includes(role) ? true : router.createUrlTree(['/']);
+      }),
+    );
+  };
+}
