@@ -27,6 +27,20 @@ const EXTENSIONS: Record<string, string> = {
   'image/webp': 'webp',
 };
 
+/** `null` si el archivo es admisible como logo; si no, el motivo. Pura: no usa red. */
+export function validateLogoFile(file: File): LogoErrorReason | null {
+  if (!LOGO_ALLOWED_TYPES.includes(file.type)) return 'invalid_type';
+  if (file.size > LOGO_MAX_ORIGINAL_BYTES) return 'too_large';
+  return null;
+}
+
+/** Texto para el usuario de cada motivo de rechazo del logo. */
+export const LOGO_ERROR_MESSAGES: Record<LogoErrorReason, string> = {
+  invalid_type: 'El logo debe ser una imagen JPG, PNG o WebP.',
+  too_large: 'El logo es demasiado pesado (máximo 5 MB).',
+  upload_failed: 'No se pudo subir el logo. Inténtalo de nuevo.',
+};
+
 /** Sube y elimina el logo del taller en el bucket público `logos` (ADR-014). */
 @Injectable({ providedIn: 'root' })
 export class WorkshopLogoService {
@@ -34,9 +48,7 @@ export class WorkshopLogoService {
 
   /** `null` si el archivo es admisible; si no, el motivo. */
   validate(file: File): LogoErrorReason | null {
-    if (!LOGO_ALLOWED_TYPES.includes(file.type)) return 'invalid_type';
-    if (file.size > LOGO_MAX_ORIGINAL_BYTES) return 'too_large';
-    return null;
+    return validateLogoFile(file);
   }
 
   /**

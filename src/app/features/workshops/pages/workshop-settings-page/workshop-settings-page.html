@@ -17,43 +17,11 @@
     <app-card padding="lg">
       <h2 class="text-lg font-semibold text-fg mb-4">Datos del taller</h2>
 
-      <div class="flex items-center gap-4 mb-6">
-        <div
-          class="h-20 w-20 shrink-0 rounded-md border border-border bg-bg flex items-center justify-center overflow-hidden"
-        >
-          @if (shownLogo(); as logo) {
-            <img [src]="logo" alt="Logo del taller" class="h-full w-full object-contain" />
-          } @else {
-            <span class="text-xs text-fg-muted text-center px-1">Sin logo</span>
-          }
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <div class="flex flex-wrap gap-3">
-            <label class="text-sm text-primary-600 hover:underline cursor-pointer">
-              {{ shownLogo() ? 'Cambiar logo' : 'Subir logo' }}
-              <input
-                type="file"
-                class="sr-only"
-                accept="image/jpeg,image/png,image/webp"
-                (change)="onLogoSelected($event)"
-              />
-            </label>
-            @if (shownLogo()) {
-              <button
-                type="button"
-                class="text-sm text-fg-muted hover:text-danger-600"
-                (click)="onRemoveLogo()"
-              >
-                Quitar logo
-              </button>
-            }
-          </div>
-          <p class="text-xs text-fg-muted">JPG, PNG o WebP. Se ajusta a 512 px.</p>
-          @if (logoError(); as message) {
-            <p role="alert" class="text-xs text-danger-700">{{ message }}</p>
-          }
-        </div>
+      <div class="mb-6">
+        <app-logo-picker
+          [currentUrl]="workshops.active()?.logoUrl ?? null"
+          (changed)="logo.set($event)"
+        />
       </div>
 
       <div class="flex flex-col gap-4">

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { AuthorizationError } from '@core/errors';
 import { Workshop } from '@core/workshops';
@@ -7,7 +8,8 @@ import { WorkshopsActions } from '@core/workshops/store/workshop.actions';
 import { MockStore } from '@ngrx/store/testing';
 import { ToastService } from '@shared/services/toast.service';
 import { provideTestStore } from '../../../../../testing/utils/store';
-import { LogoError, WorkshopLogoService } from '../../services/workshop-logo.service';
+import { LogoPicker } from '../../components/logo-picker/logo-picker';
+import { LogoError } from '../../services/workshop-logo.service';
 import { WorkshopSettingsService } from '../../services/workshop-settings.service';
 import { WorkshopSettingsPage } from './workshop-settings-page';
 
@@ -27,7 +29,6 @@ const workshop: Workshop = {
 
 function setup(active: Workshop | null = workshop) {
   const save = vi.fn().mockResolvedValue({ ...workshop, name: 'Nuevo nombre' });
-  const validate = vi.fn().mockReturnValue(null);
   TestBed.configureTestingModule({
     imports: [WorkshopSettingsPage],
     providers: [
@@ -36,7 +37,6 @@ function setup(active: Workshop | null = workshop) {
         workshops: { ...initialWorkshopState, available: active ? [active] : [], active },
       }),
       { provide: WorkshopSettingsService, useValue: { save } },
-      { provide: WorkshopLogoService, useValue: { validate } },
     ],
   });
   const dispatch = vi.spyOn(TestBed.inject(MockStore), 'dispatch');
@@ -44,7 +44,6 @@ function setup(active: Workshop | null = workshop) {
   return {
     fixture,
     save,
-    validate,
     dispatch,
     toast: TestBed.inject(ToastService),
     component: fixture.componentInstance,
@@ -52,19 +51,9 @@ function setup(active: Workshop | null = workshop) {
   };
 }
 
-const pickFile = (component: WorkshopSettingsPage, file: File) => {
-  const input = document.createElement('input');
-  Object.defineProperty(input, 'files', { value: [file] });
-  component.onLogoSelected({ target: input } as unknown as Event);
-};
 const png = () => new File(['x'], 'logo.png', { type: 'image/png' });
 
 describe('WorkshopSettingsPage', () => {
-  beforeEach(() => {
-    URL.createObjectURL = vi.fn(() => 'blob:preview');
-    URL.revokeObjectURL = vi.fn();
-  });
-
   it('loads the active workshop into the form', async () => {
     const { fixture, component } = setup();
     await fixture.whenStable();
@@ -144,44 +133,37 @@ describe('WorkshopSettingsPage', () => {
     expect(component.isSaving()).toBe(false);
   });
 
-  it('previews a new logo and sends it on save', async () => {
+  it('sends the logo the picker reports and resets the picker after saving', async () => {
     const { fixture, component, save } = setup();
     await fixture.whenStable();
     const file = png();
 
-    pickFile(component, file);
-    expect(component.shownLogo()).toBe('blob:preview');
+    const picker = fixture.debugElement.query(By.directive(LogoPicker));
+    picker.triggerEventHandler('changed', { file, remove: false });
     await component.onSubmit();
 
     expect(save).toHaveBeenCalledWith(workshop, expect.anything(), { file, remove: false });
-    expect(component.shownLogo()).toBe('https://x.test/old.png');
-    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:preview');
+    expect(component.logo()).toEqual({ file: null, remove: false });
   });
 
-  it('rejects an invalid logo with a message and keeps the current one', async () => {
-    const { fixture, component, validate } = setup();
-    await fixture.whenStable();
-    validate.mockReturnValue('invalid_type');
-
-    pickFile(component, new File(['x'], 'a.svg', { type: 'image/svg+xml' }));
-
-    expect(component.logoError()).toContain('JPG, PNG o WebP');
-    expect(component.newLogo()).toBeNull();
-    expect(component.shownLogo()).toBe('https://x.test/old.png');
-  });
-
-  it('removes the current logo on request, and a new pick undoes it', async () => {
+  it('asks to remove the current logo when the picker says so', async () => {
     const { fixture, component, save } = setup();
     await fixture.whenStable();
 
-    component.onRemoveLogo();
-    expect(component.shownLogo()).toBeNull();
+    fixture.debugElement
+      .query(By.directive(LogoPicker))
+      .triggerEventHandler('changed', { file: null, remove: true });
     await component.onSubmit();
-    expect(save).toHaveBeenCalledWith(workshop, expect.anything(), { file: null, remove: true });
 
-    component.onRemoveLogo();
-    pickFile(component, png());
-    expect(component.removeLogo()).toBe(false);
+    expect(save).toHaveBeenCalledWith(workshop, expect.anything(), { file: null, remove: true });
+  });
+
+  it('gives the picker the current logo', async () => {
+    const { fixture } = setup();
+    await fixture.whenStable();
+    expect(
+      fixture.debugElement.query(By.directive(LogoPicker)).componentInstance.currentUrl(),
+    ).toBe('https://x.test/old.png');
   });
 
   it('shows a readable message for each kind of failure', async () => {

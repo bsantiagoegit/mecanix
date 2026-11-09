@@ -106,4 +106,30 @@ describe('WorkshopSettingsService', () => {
     ).rejects.toThrow('upload');
     expect(update).not.toHaveBeenCalled();
   });
+
+  describe('attachLogo', () => {
+    it('uploads the logo and saves its URL on the workshop', async () => {
+      update.mockReturnValue(of(workshop('https://x/new.png')));
+
+      await service.attachLogo('w1', file);
+
+      expect(upload).toHaveBeenCalledWith('w1', file);
+      expect(update).toHaveBeenCalledWith('w1', { logoUrl: 'https://x/new.png' });
+      expect(remove).not.toHaveBeenCalled();
+    });
+
+    it('removes the uploaded file when it cannot be associated, and rethrows', async () => {
+      const failure = new Error('db down');
+      update.mockReturnValue(throwError(() => failure));
+
+      await expect(service.attachLogo('w1', file)).rejects.toBe(failure);
+      expect(remove).toHaveBeenCalledWith('https://x/new.png');
+    });
+
+    it('saves nothing when the upload fails', async () => {
+      upload.mockRejectedValue(new Error('upload'));
+      await expect(service.attachLogo('w1', file)).rejects.toThrow('upload');
+      expect(update).not.toHaveBeenCalled();
+    });
+  });
 });
