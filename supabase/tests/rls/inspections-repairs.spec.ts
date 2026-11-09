@@ -159,7 +159,8 @@ describe('RLS: inspections, findings, diagnoses, repairs, approvals, labor', () 
           `INSERT INTO repair_findings (recommended_repair_id, finding_id) VALUES ($1, $2)`,
           [REPAIR_B, FINDING_A],
         ),
-      ).rejects.toThrow(RLS_VIOLATION);
+        // El trigger de mismo taller salta antes que la policy.
+      ).rejects.toThrow(/cross_workshop_reference|row-level security|policy/i);
     });
   });
 

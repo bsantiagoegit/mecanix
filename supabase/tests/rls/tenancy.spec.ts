@@ -134,7 +134,11 @@ describe('RLS: tenancy', () => {
     });
 
     it('un owner ve todas las membresías de su taller y de ningún otro', async () => {
-      const { rows } = await ownerA.query('SELECT workshop_id FROM workshop_members');
+      // Solo las activas: la suite de invite-user crea invitados (status invited) en el taller A
+      // mientras corre en paralelo y los borra al terminar.
+      const { rows } = await ownerA.query(
+        `SELECT workshop_id FROM workshop_members WHERE status = 'active'`,
+      );
       expect(rows).toHaveLength(3);
       expect(rows.every((r) => r.workshop_id === WORKSHOP_A)).toBe(true);
     });
