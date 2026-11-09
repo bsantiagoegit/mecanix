@@ -40,13 +40,16 @@ Negocio que repara vehículos. En el sistema, es la unidad de aislamiento multi-
 - **Atributos:** nombre, dirección, teléfono, logo, capacidad máxima de vehículos simultáneos, configuración regional (moneda, zona horaria, formato de fecha), mínimo de fotos de intake (default 4), días de expiración de cotización (default 7).
 
 **Usuario (User)**
-Persona que accede al sistema con credenciales. Puede ser dueño, asesor o mecánico. Un usuario pertenece a uno o más talleres (relación muchos-a-muchos). Su identidad es global (email + password), pero su rol es específico por taller.
+Persona que accede al sistema con credenciales. Puede ser dueño, asesor o mecánico. En el MVP un usuario pertenece a **un solo taller** (ADR-012). Su identidad es global (email + password); su rol es el que tiene en su taller.
 
 **Miembro de taller (Workshop Member)**
-Relación entre un usuario y un taller, con un rol asignado. Un usuario puede ser `owner` en un taller y `mechanic` en otro. Esta entidad existe porque la relación no es solo "pertenece", tiene atributos: rol, fecha de ingreso, estado (activo/inactivo).
+Relación entre un usuario y un taller, con un rol asignado. Esta entidad existe porque la relación no es solo "pertenece", tiene atributos: rol, fecha de ingreso, estado (`active`, `inactive`, `invited`). En el MVP cada usuario tiene como máximo una membresía activa o invitada.
 
 **Dueño / Administrador (Owner)**
-Rol de máximo privilegio en un taller. Ve todo, gestiona usuarios, ve reportes, configura el taller.
+Rol de máximo privilegio en un taller. Ve todo, gestiona usuarios, ve reportes, configura el taller. Es quien crea el taller, es único por taller y es el único que puede invitar usuarios.
+
+**Invitación (Invitation)**
+Membresía de taller en estado `invited`: el `owner` registró a un asesor o mecánico (nombre, correo, teléfono y rol) y se le envió un correo con un enlace. Hasta que el invitado la acepta y fija su contraseña no tiene acceso.
 
 **Asesor / Cotizador (Advisor)**
 Rol que atiende al cliente, registra el problema reportado, cotiza, contacta al cliente, gestiona la aprobación de reparaciones. En este taller, es la persona que cotiza y también hace trabajos de mecánica.

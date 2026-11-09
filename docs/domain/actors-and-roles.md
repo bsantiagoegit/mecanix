@@ -14,9 +14,9 @@
 
 | Recurso                           | Owner | Advisor | Mechanic            |
 | --------------------------------- | ----- | ------- | ------------------- |
-| Crear taller                      | ✅    | ❌      | ❌                  |
+| Crear su propio taller            | ✅ ¹  | ❌      | ❌                  |
 | Configurar taller                 | ✅    | ❌      | ❌                  |
-| Invitar usuarios                  | ✅    | ❌      | ❌                  |
+| Invitar usuarios                  | ✅ ²  | ❌      | ❌                  |
 | Ver todos los clientes            | ✅    | ✅      | ⚠️ solo nombre      |
 | Editar cliente                    | ✅    | ✅      | ❌                  |
 | Eliminar cliente (soft)           | ✅    | ❌      | ❌                  |
@@ -42,10 +42,14 @@
 
 **Leyenda**: ✅ permitido | ❌ denegado | ⚠️ parcial (ver notas)
 
+¹ Lo hace quien se registra y aún no tiene taller; queda como `owner` (UC-WS-08). Solo se puede tener un taller por cuenta.
+² Solo el `owner` invita, y solo a `advisor` o `mechanic` (UC-WS-03).
+
 ## Notas
 
-- Un usuario puede tener múltiples roles en el mismo taller (ej: Owner + Advisor).
-- En MVP, simplificar a un rol principal por taller.
+- **MVP**: un usuario pertenece a **un solo taller** y tiene **un solo rol** en él.
+- El taller tiene un único `owner`: quien lo crea. El `owner` no se invita ni se transfiere en el MVP.
+- Fase 2+: varios talleres por cuenta y varios roles se evaluarán más adelante.
 - El Mechanic solo ve el nombre del cliente, no teléfono/dirección/email.
 - El Mechanic solo ve órdenes abiertas o las que él trabajó.
 
