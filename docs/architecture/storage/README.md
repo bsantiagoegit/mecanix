@@ -4,14 +4,14 @@
 
 - **Versión:** 1.1
 - **Fecha:** Octubre 2026
-- **Bucket:** 1 (`photos`)
+- **Buckets:** 2 (`photos` privado, `logos` público)
 - **Próxima revisión:** Al implementar migraciones en Supabase
 
 ---
 
 ## Propósito
 
-Define cómo se almacenan, organizan, sirven y protegen los archivos binarios (fotos) en Supabase Storage.
+Define cómo se almacenan, organizan, sirven y protegen los archivos binarios en Supabase Storage: las fotos de las órdenes (`photos`) y el logo del taller (`logos`).
 
 **No incluye RPCs** de creación de fotos (van con los casos de uso específicos).
 
@@ -21,8 +21,8 @@ Define cómo se almacenan, organizan, sirven y protegen los archivos binarios (f
 
 ## Orden de lectura
 
-1. [`decisions.md`](./decisions.md) — Decisiones transversales (D-ST-01 a D-ST-13). **Empieza aquí.**
-2. [`buckets.md`](./buckets.md) — Definición del bucket.
+1. [`decisions.md`](./decisions.md) — Decisiones transversales (D-ST-01 a D-ST-14). **Empieza aquí.**
+2. [`buckets.md`](./buckets.md) — Definición de los buckets.
 3. [`paths.md`](./paths.md) — Estructura de paths y naming convention.
 4. [`policies.md`](./policies.md) — Policies de Storage.
 5. [`upload-flow.md`](./upload-flow.md) — Flujo de upload desde cliente.
@@ -32,7 +32,7 @@ Define cómo se almacenan, organizan, sirven y protegen los archivos binarios (f
 
 ## Principios
 
-1. **Bucket privado**. Nunca público. El acceso es vía URLs firmadas.
+1. **`photos` es privado**: el acceso es vía URLs firmadas. El único bucket público es `logos` (D-ST-14, ADR-014), solo para el logo del taller.
 2. **Multi-tenant desde el path**. El primer segmento es el `workshop_id`.
 3. **Compresión obligatoria** en cliente. Nunca se sube el original.
 4. **UUID como nombre**. Nunca el nombre original del archivo.
@@ -46,10 +46,10 @@ Define cómo se almacenan, organizan, sirven y protegen los archivos binarios (f
 
 | Documento        | Versión | Estado     |
 | ---------------- | ------- | ---------- |
-| `decisions.md`   | 1.1     | ✅ Estable |
-| `buckets.md`     | 1.1     | ✅ Estable |
-| `paths.md`       | 1.1     | ✅ Estable |
-| `policies.md`    | 1.1     | ✅ Estable |
+| `decisions.md`   | 1.2     | ✅ Estable |
+| `buckets.md`     | 1.2     | ✅ Estable |
+| `paths.md`       | 1.2     | ✅ Estable |
+| `policies.md`    | 1.2     | ✅ Estable |
 | `upload-flow.md` | 1.1     | ✅ Estable |
 | `limits.md`      | 1.1     | ✅ Estable |
 

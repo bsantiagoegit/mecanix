@@ -43,14 +43,18 @@ Guards (`core/auth/auth.guard.ts`): `workshopGuard` protege las rutas de la app 
 ```
 1. La persona se registra (UC-AUTH-07) y confirma su correo.
 2. Inicia sesión → estado "sin taller" → /onboarding/create-workshop.
-3. Completa nombre, dirección y teléfono del taller.
+3. Completa nombre, dirección y teléfono del taller, y opcionalmente elige un logo.
 4. La app llama a la función create_workshop(name, address, phone).
 5. La función, en una sola transacción:
      - rechaza si el usuario ya tiene una membresía no inactiva (un taller por cuenta)
      - inserta el taller con los valores por defecto
      - inserta la membresía { role: 'owner', status: 'active', joined_at: now() }
-6. La app refresca la sesión → estado "con taller" → dashboard.
+6. Si eligió un logo (el usuario ya es owner): la app lo redimensiona, lo sube al bucket
+   público `logos` en {workshop_id}/{uuid}.{ext} y guarda la URL en workshops.logo_url.
+7. La app refresca la sesión → estado "con taller" → dashboard.
 ```
+
+El logo se sube **después** de crear el taller porque solo el `owner` puede escribir en `logos` y el usuario lo es recién tras el paso 5. Si la subida falla, el taller ya existe: la app avisa "Taller creado, pero no se pudo subir el logo" y el `owner` puede subirlo desde la configuración (UC-WS-02). No se bloquea el onboarding por el logo.
 
 `create_workshop` es `SECURITY DEFINER` con `search_path` fijo y toma el usuario de `auth.uid()`. El resto de la configuración (capacidad, fotos mínimas, expiración de cotización, garantía, moneda, zona horaria) se ajusta luego en UC-WS-02.
 
@@ -130,13 +134,14 @@ Ver [PWA online-first](../adr/ADR-006-pwa-online-first.md) y [`pwa-offline/`](..
 
 ## Cambios en la base de datos
 
-| Cambio                                                                                               | Para qué                                  |
-| ---------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| Índice único parcial `workshop_members(user_id)` donde `status IN ('active','invited')`              | Un taller por cuenta                      |
-| Índice único parcial `workshop_members(workshop_id)` donde `role = 'owner'` y `status <> 'inactive'` | Un solo `owner` por taller                |
-| Función `create_workshop(name, address, phone)`                                                      | Flujo 1                                   |
-| Función `accept_invitation()`                                                                        | Flujo 3                                   |
-| Eliminar la policy `workshop_members_insert_owner`                                                   | Nadie inserta membresías desde el cliente |
+| Cambio                                                                                                                 | Para qué                                  |
+| ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| Índice único parcial `workshop_members(user_id)` donde `status IN ('active','invited')`                                | Un taller por cuenta                      |
+| Índice único parcial `workshop_members(workshop_id)` donde `role = 'owner'` y `status <> 'inactive'`                   | Un solo `owner` por taller                |
+| Función `create_workshop(name, address, phone)`                                                                        | Flujo 1                                   |
+| Función `accept_invitation()`                                                                                          | Flujo 3                                   |
+| Eliminar la policy `workshop_members_insert_owner`                                                                     | Nadie inserta membresías desde el cliente |
+| Bucket público `logos` y sus policies de escritura para el `owner` ([ADR-014](../adr/ADR-014-bucket-publico-logos.md)) | Logo del taller (UC-WS-08 y UC-WS-02)     |
 
 ### Errores de las funciones
 
