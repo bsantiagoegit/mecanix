@@ -47,13 +47,16 @@ CREATE TABLE workshops (
   CONSTRAINT workshops_min_photos_positive CHECK (min_intake_photos >= 1),
   CONSTRAINT workshops_quote_days_positive CHECK (quote_expiration_days > 0),
   CONSTRAINT workshops_warranty_days_positive CHECK (warranty_days > 0),
-  CONSTRAINT workshops_currency_iso CHECK (currency ~ '^[A-Z]{3}$')
+  CONSTRAINT workshops_currency_iso CHECK (currency ~ '^[A-Z]{3}$'),
+  CONSTRAINT workshops_logo_url_valid CHECK (
+    logo_url IS NULL OR (logo_url ~ '^https?://' AND length(logo_url) <= 2048)
+  )
 );
 
 CREATE INDEX idx_workshops_deleted_at ON workshops(deleted_at) WHERE deleted_at IS NULL;
 ```
 
-**`logo_url`**: URL pública completa del logo en el bucket `logos` ([ADR-014](../../adr/ADR-014-bucket-publico-logos.md)); `NULL` si el taller no tiene logo. Solo el `owner` la actualiza (policy `workshops_update_owner`).
+**`logo_url`**: URL pública completa del logo en el bucket `logos` ([ADR-014](../../adr/ADR-014-bucket-publico-logos.md)); `NULL` si el taller no tiene logo. Solo el `owner` la actualiza (policy `workshops_update_owner`). El CHECK `workshops_logo_url_valid` exige `http(s)://` y un máximo de 2048 caracteres, para que no se guarde un esquema como `javascript:` o un `data:`.
 
 ---
 

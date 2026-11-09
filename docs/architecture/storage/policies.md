@@ -84,6 +84,8 @@ CREATE POLICY "logos_delete_owner" ON storage.objects
   );
 ```
 
+**Eliminar**: Storage bloquea el `DELETE` directo sobre `storage.objects` por SQL ("Direct deletion from storage tables is not allowed"). El borrado del logo anterior se hace siempre con la API de Storage (`supabase.storage.from('logos').remove([...])`), que sí respeta la policy `logos_delete_owner`.
+
 `auth_is_owner_in(p_workshop_id)` ya comprueba que el usuario sea `owner` **activo** de ese taller, así que no hace falta combinarlo con `auth_workshop_ids()`.
 
 ---
