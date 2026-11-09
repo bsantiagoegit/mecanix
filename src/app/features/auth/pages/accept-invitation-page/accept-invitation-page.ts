@@ -81,7 +81,7 @@ export class AcceptInvitationPage {
 
     try {
       if (!this.passwordSaved) {
-        await firstValueFrom(this.authService.resetPassword(this.form.getRawValue().password!));
+        await firstValueFrom(this.authService.setPassword(this.form.getRawValue().password!));
         this.passwordSaved = true;
       }
       await firstValueFrom(this.authService.acceptInvitation());

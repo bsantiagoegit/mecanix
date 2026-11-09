@@ -62,12 +62,4 @@ export class AuthFacade {
   register(email: string, password: string, fullName: string): void {
     this.store.dispatch(AuthActions.register({ email, password, fullName }));
   }
-
-  forgotPassword(email: string): void {
-    this.store.dispatch(AuthActions.forgotPassword({ email }));
-  }
-
-  resetPassword(newPassword: string): void {
-    this.store.dispatch(AuthActions.resetPassword({ newPassword }));
-  }
 }
