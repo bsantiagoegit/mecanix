@@ -1,0 +1,65 @@
+<div class="min-h-screen flex items-center justify-center p-4 bg-bg">
+  <app-card padding="lg" class="w-full max-w-md">
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-bold text-fg">Crea tu taller</h1>
+      @if (auth.user(); as user) {
+        <p class="text-sm text-fg-muted mt-1">
+          Hola, {{ user.fullName }}. Cuéntanos sobre tu taller para empezar.
+        </p>
+      }
+    </div>
+
+    @if (error(); as message) {
+      <p
+        role="alert"
+        class="mb-4 rounded-md border border-danger-100 bg-danger-50 px-3 py-2 text-sm text-danger-700"
+      >
+        {{ message }}
+      </p>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+      <app-input
+        label="Nombre del taller"
+        placeholder="Taller Mecánico Pérez"
+        autocomplete="organization"
+        [required]="true"
+        formControlName="name"
+        [error]="fieldError('name')"
+      />
+
+      <app-input
+        label="Dirección"
+        placeholder="Av. Principal 123, Quito"
+        autocomplete="street-address"
+        [required]="true"
+        formControlName="address"
+        [error]="fieldError('address')"
+      />
+
+      <app-input
+        type="tel"
+        label="Teléfono"
+        placeholder="0999999999"
+        autocomplete="tel"
+        [required]="true"
+        formControlName="phone"
+        [error]="fieldError('phone')"
+      />
+
+      <app-button type="submit" [loading]="isSubmitting()" [fullWidth]="true">
+        Crear taller
+      </app-button>
+    </form>
+
+    <p class="mt-4 text-xs text-fg-muted text-center">
+      Serás el dueño del taller y podrás invitar a tu equipo más adelante.
+    </p>
+
+    <div class="mt-6 text-center text-sm text-fg-muted">
+      <button type="button" class="text-primary-600 hover:underline" (click)="logout()">
+        Cerrar sesión
+      </button>
+    </div>
+  </app-card>
+</div>
