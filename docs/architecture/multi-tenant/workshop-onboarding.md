@@ -138,6 +138,21 @@ Ver [PWA online-first](../adr/ADR-006-pwa-online-first.md) y [`pwa-offline/`](..
 | Función `accept_invitation()`                                                                        | Flujo 3                                   |
 | Eliminar la policy `workshop_members_insert_owner`                                                   | Nadie inserta membresías desde el cliente |
 
+### Errores de las funciones
+
+Las funciones lanzan una excepción cuyo `message` es un código estable que la app traduce a un texto para el usuario.
+
+| Función             | `message`                   | Cuándo                                            |
+| ------------------- | --------------------------- | ------------------------------------------------- |
+| `create_workshop`   | `not_authenticated`         | Sin sesión                                        |
+|                     | `email_not_confirmed`       | El correo del usuario no está confirmado          |
+|                     | `invalid_workshop_data`     | Nombre, dirección o teléfono vacíos               |
+|                     | `user_already_has_workshop` | Ya tiene una membresía `active` o `invited`       |
+| `accept_invitation` | `not_authenticated`         | Sin sesión                                        |
+|                     | `no_pending_invitation`     | No hay una membresía `invited` del propio usuario |
+
+El trigger `protect_workshop_member_update` solo restringe al rol `authenticated`: dentro de las funciones `SECURITY DEFINER` y con `service_role` no aplica. Rechaza con `workshop_member_identity_immutable` (cambiar `user_id` o `workshop_id`) e `invitation_must_be_accepted_by_invitee` (pasar de `invited` a `active`).
+
 Detalle en [tablas de tenancy](../data-model/tables/01-tenancy.md) y [policies de tenancy](../security/policies/01-tenancy.md).
 
 ---

@@ -107,6 +107,8 @@ CREATE POLICY workshop_members_update_owner ON workshop_members
 -- Sin DELETE. Desactivar = UPDATE status = 'inactive'.
 ```
 
+**Trigger de protección**: aunque la policy de `UPDATE` deja al `owner` modificar membresías de su taller, el trigger `protect_workshop_member_update` le impide cambiar `user_id` o `workshop_id` y pasar una invitación de `invited` a `active` (solo `accept_invitation()` puede). Sí puede cancelar una invitación (`inactive`) y cambiar el rol entre `advisor` y `mechanic`.
+
 **Nota**: un `owner` no puede degradarse a sí mismo si es el único owner. Esa validación va en un RPC, no en RLS.
 
 ---

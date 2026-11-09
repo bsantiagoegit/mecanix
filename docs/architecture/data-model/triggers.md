@@ -148,3 +148,29 @@ CREATE TRIGGER trg_work_orders_warranty BEFORE UPDATE ON work_orders
 
 - `log_work_order_status_change()` usa `auth.uid()` como `actor_id` (NOT NULL). Un `UPDATE` de `status` sin usuario autenticado (p. ej. con `service_role` o desde una migración) falla; quien actúe así debe fijar el usuario antes (`set_config('request.jwt.claim.sub', ...)`).
 - Los triggers `BEFORE UPDATE` de `work_orders` son `updated_at`, numeración y garantía; el de historial es `AFTER UPDATE`.
+
+## Trigger: protección de membresías
+
+Aplica solo al rol `authenticated` (dentro de las funciones `SECURITY DEFINER`, `current_user` es otro).
+
+```sql
+CREATE OR REPLACE FUNCTION protect_workshop_member_update()
+RETURNS trigger AS $$
+BEGIN
+  IF current_user = 'authenticated' THEN
+    IF NEW.user_id <> OLD.user_id OR NEW.workshop_id <> OLD.workshop_id THEN
+      RAISE EXCEPTION 'workshop_member_identity_immutable' USING ERRCODE = '42501';
+    END IF;
+    IF OLD.status = 'invited' AND NEW.status = 'active' THEN
+      RAISE EXCEPTION 'invitation_must_be_accepted_by_invitee' USING ERRCODE = '42501';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_workshop_members_protect BEFORE UPDATE ON workshop_members
+  FOR EACH ROW EXECUTE FUNCTION protect_workshop_member_update();
+```
+
+Las funciones `create_workshop` y `accept_invitation` están descritas en [onboarding de taller](../multi-tenant/workshop-onboarding.md).
