@@ -1,0 +1,137 @@
+<div class="max-w-2xl mx-auto flex flex-col gap-6">
+  <div>
+    <h1 class="text-2xl font-bold text-fg">Configuración del taller</h1>
+    <p class="text-sm text-fg-muted mt-1">Datos de tu taller y reglas con las que trabaja.</p>
+  </div>
+
+  @if (error(); as message) {
+    <p
+      role="alert"
+      class="rounded-md border border-danger-100 bg-danger-50 px-3 py-2 text-sm text-danger-700"
+    >
+      {{ message }}
+    </p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-6">
+    <app-card padding="lg">
+      <h2 class="text-lg font-semibold text-fg mb-4">Datos del taller</h2>
+
+      <div class="flex items-center gap-4 mb-6">
+        <div
+          class="h-20 w-20 shrink-0 rounded-md border border-border bg-bg flex items-center justify-center overflow-hidden"
+        >
+          @if (shownLogo(); as logo) {
+            <img [src]="logo" alt="Logo del taller" class="h-full w-full object-contain" />
+          } @else {
+            <span class="text-xs text-fg-muted text-center px-1">Sin logo</span>
+          }
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <div class="flex flex-wrap gap-3">
+            <label class="text-sm text-primary-600 hover:underline cursor-pointer">
+              {{ shownLogo() ? 'Cambiar logo' : 'Subir logo' }}
+              <input
+                type="file"
+                class="sr-only"
+                accept="image/jpeg,image/png,image/webp"
+                (change)="onLogoSelected($event)"
+              />
+            </label>
+            @if (shownLogo()) {
+              <button
+                type="button"
+                class="text-sm text-fg-muted hover:text-danger-600"
+                (click)="onRemoveLogo()"
+              >
+                Quitar logo
+              </button>
+            }
+          </div>
+          <p class="text-xs text-fg-muted">JPG, PNG o WebP. Se ajusta a 512 px.</p>
+          @if (logoError(); as message) {
+            <p role="alert" class="text-xs text-danger-700">{{ message }}</p>
+          }
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-4">
+        <app-input
+          label="Nombre del taller"
+          [required]="true"
+          formControlName="name"
+          [error]="fieldError('name')"
+        />
+        <app-input
+          label="Dirección"
+          autocomplete="street-address"
+          [required]="true"
+          formControlName="address"
+          [error]="fieldError('address')"
+        />
+        <app-input
+          type="tel"
+          label="Teléfono"
+          autocomplete="tel"
+          [required]="true"
+          formControlName="phone"
+          [error]="fieldError('phone')"
+        />
+      </div>
+    </app-card>
+
+    <app-card padding="lg">
+      <h2 class="text-lg font-semibold text-fg mb-4">Reglas del taller</h2>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <app-input
+          type="number"
+          label="Capacidad (vehículos a la vez)"
+          [required]="true"
+          formControlName="capacity"
+          [error]="fieldError('capacity')"
+        />
+        <app-input
+          type="number"
+          label="Fotos mínimas de ingreso"
+          [required]="true"
+          formControlName="minIntakePhotos"
+          [error]="fieldError('minIntakePhotos')"
+        />
+        <app-input
+          type="number"
+          label="Días de validez de la cotización"
+          [required]="true"
+          formControlName="quoteExpirationDays"
+          [error]="fieldError('quoteExpirationDays')"
+        />
+        <app-input
+          type="number"
+          label="Días de garantía"
+          [required]="true"
+          formControlName="warrantyDays"
+          [error]="fieldError('warrantyDays')"
+        />
+        <app-input
+          label="Moneda"
+          hint="Código de 3 letras, ej. USD"
+          [required]="true"
+          formControlName="currency"
+          [error]="fieldError('currency')"
+        />
+        <app-input
+          label="Zona horaria"
+          hint="Ej. America/Guayaquil"
+          [required]="true"
+          formControlName="timezone"
+          [error]="fieldError('timezone')"
+        />
+      </div>
+    </app-card>
+
+    <div class="flex justify-end">
+      <app-button type="submit" [loading]="isSaving()">Guardar cambios</app-button>
+    </div>
+  </form>
+</div>

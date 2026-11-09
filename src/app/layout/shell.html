@@ -10,6 +10,9 @@
       </div>
 
       <div class="flex items-center gap-3">
+        @if (auth.role() === 'owner') {
+          <a routerLink="/settings" class="text-sm text-fg-muted hover:text-fg">Configuración</a>
+        }
         @if (auth.user(); as user) {
           <span class="text-sm text-fg-muted">{{ user.fullName }}</span>
         }
