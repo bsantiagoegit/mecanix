@@ -57,6 +57,20 @@ describe('authReducer', () => {
     expect(state).toMatchObject({ activeWorkshopId: 'w2', role: 'owner' });
   });
 
+  it('accepts a session without workshop (a user who must still create theirs)', () => {
+    const state = authReducer(
+      { ...initialAuthState, isLoading: true },
+      AuthActions.loginSuccess({ user: session.user, role: null, activeWorkshopId: null }),
+    );
+    expect(state).toMatchObject({
+      user: session.user,
+      role: null,
+      activeWorkshopId: null,
+      isAuthenticated: true,
+      isLoading: false,
+    });
+  });
+
   describe('registration', () => {
     it('starts loading and clears previous error and confirmation', () => {
       const state = authReducer(

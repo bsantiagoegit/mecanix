@@ -7,8 +7,13 @@ export interface User {
   phone: string | null;
 }
 
+/**
+ * Sesión de la aplicación. Un usuario autenticado que aún no pertenece a ningún taller
+ * (recién registrado) tiene `role` y `activeWorkshopId` en `null` y debe crear el suyo
+ * (UC-WS-08, ADR-012).
+ */
 export interface AuthSession {
   user: User;
-  role: Role;
-  activeWorkshopId: string;
+  role: Role | null;
+  activeWorkshopId: string | null;
 }

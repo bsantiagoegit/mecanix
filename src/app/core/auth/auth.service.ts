@@ -118,14 +118,7 @@ export class AuthService {
     if (error) throw mapSupabaseError(error);
     if (!data.session) return null;
 
-    try {
-      return await this.buildSession(data.session.user.id, preferredWorkshopId);
-    } catch (err) {
-      // Pasa al confirmar el email: Supabase abre sesión desde el enlace, pero la cuenta aún
-      // no tiene taller. No se deja una sesión de Supabase sin sesión de aplicación.
-      if (err instanceof AuthorizationError) await this.supabase.auth.signOut();
-      throw err;
-    }
+    return this.buildSession(data.session.user.id, preferredWorkshopId);
   }
 
   private async fetchRole(workshopId: string): Promise<Role> {
@@ -168,10 +161,10 @@ export class AuthService {
     if (userRes.error) throw mapSupabaseError(userRes.error);
     if (membersRes.error) throw mapSupabaseError(membersRes.error);
 
+    // Sin membresía activa la sesión es válida, pero sin taller: debe crear el suyo.
     const memberships = membersRes.data;
     const membership =
-      memberships.find((m) => m.workshop_id === preferredWorkshopId) ?? memberships[0];
-    if (!membership) throw new AuthorizationError();
+      memberships.find((m) => m.workshop_id === preferredWorkshopId) ?? memberships[0] ?? null;
 
     const row = userRes.data;
     return {
@@ -181,8 +174,8 @@ export class AuthService {
         fullName: row.full_name,
         phone: row.phone,
       },
-      role: membership.role,
-      activeWorkshopId: membership.workshop_id,
+      role: membership?.role ?? null,
+      activeWorkshopId: membership?.workshop_id ?? null,
     };
   }
 }

@@ -6,7 +6,7 @@ export const AuthActions = createActionGroup({
   events: {
     // Login con email/password
     Login: props<{ email: string; password: string }>(),
-    'Login Success': props<{ user: User; role: Role; activeWorkshopId: string }>(),
+    'Login Success': props<{ user: User; role: Role | null; activeWorkshopId: string | null }>(),
     'Login Failure': props<{ error: string }>(),
 
     // Login con Google

@@ -11,3 +11,8 @@ export const selectSessionWorkshopId = createSelector(selectAuthState, (s) => s.
 export const selectIsLoading = createSelector(selectAuthState, (s) => s.isLoading);
 export const selectAuthError = createSelector(selectAuthState, (s) => s.error);
 export const selectRegisteredEmail = createSelector(selectAuthState, (s) => s.registeredEmail);
+/** Autenticado y con taller. Sin taller el usuario debe crear el suyo (UC-WS-08). */
+export const selectHasWorkshop = createSelector(
+  selectAuthState,
+  (s) => s.activeWorkshopId !== null,
+);
