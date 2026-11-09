@@ -139,15 +139,14 @@ describe('RLS: tenancy', () => {
       expect(rows.every((r) => r.workshop_id === WORKSHOP_A)).toBe(true);
     });
 
-    it('un owner invita a un usuario a su taller', async () => {
-      await withRollback(ownerA, async () => {
-        const res = await ownerA.query(
+    it('ni siquiera un owner inserta membresías: se crean por funciones (ADR-013)', async () => {
+      await expect(
+        ownerA.query(
           `INSERT INTO workshop_members (workshop_id, user_id, role, status)
            VALUES ($1, $2, 'mechanic', 'invited')`,
           [WORKSHOP_A, USER_ADVISOR_B],
-        );
-        expect(res.rowCount).toBe(1);
-      });
+        ),
+      ).rejects.toThrow(RLS_VIOLATION);
     });
 
     it('un advisor no invita usuarios', async () => {
