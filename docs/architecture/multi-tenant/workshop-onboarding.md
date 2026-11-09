@@ -26,7 +26,7 @@ Describir cómo una persona llega a pertenecer a un taller: creándolo ella mism
 
 ## Estados de la sesión
 
-Tras autenticarse, la app resuelve en qué situación está el usuario. Hoy "sin taller" es un error que cierra la sesión; pasa a ser un estado propio.
+Tras autenticarse, la app resuelve en qué situación está el usuario. "Sin taller" es una sesión válida con `role` y `activeWorkshopId` en `null`, no un error. **Implementado**: "con taller" y "sin taller". "Invitación pendiente" llega con la Edge Function `invite-user`.
 
 | Estado                   | Condición                           | Destino                       |
 | ------------------------ | ----------------------------------- | ----------------------------- |
@@ -34,7 +34,7 @@ Tras autenticarse, la app resuelve en qué situación está el usuario. Hoy "sin
 | **Invitación pendiente** | Membresía `invited`                 | `/auth/accept-invitation`     |
 | **Sin taller**           | Sin membresía `active` ni `invited` | `/onboarding/create-workshop` |
 
-El guard de rutas protegidas exige "con taller". Las pantallas de aceptar invitación y de crear taller exigen sesión, pero no taller.
+Guards (`core/auth/auth.guard.ts`): `workshopGuard` protege las rutas de la app (exige sesión y taller; sin taller lleva a crear el suyo); `onboardingGuard` protege `/onboarding` (exige sesión y ausencia de taller; quien ya tiene uno vuelve a `/`); `authGuard` solo exige sesión (para la pantalla de aceptar invitación).
 
 ---
 
