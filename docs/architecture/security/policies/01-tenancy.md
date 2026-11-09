@@ -26,7 +26,7 @@ CREATE POLICY roles_select_authenticated ON roles
 
 ## `workshops`
 
-**Regla**: un usuario ve los talleres a los que pertenece. Solo `owner` modifica. `INSERT` solo vía `service_role` (tú, manualmente en MVP).
+**Regla**: un usuario ve los talleres a los que pertenece. Solo `owner` modifica. No hay policy de `INSERT`: el taller se crea con la función `create_workshop()` (`SECURITY DEFINER`, [ADR-012](../../adr/ADR-012-onboarding-self-service.md)) o con `service_role`.
 
 ```sql
 ALTER TABLE workshops ENABLE ROW LEVEL SECURITY;
@@ -42,7 +42,7 @@ CREATE POLICY workshops_update_owner ON workshops
   USING (auth_is_owner_in(id))
   WITH CHECK (auth_is_owner_in(id));
 
--- Sin INSERT (solo service_role). Sin DELETE (soft delete vía UPDATE deleted_at).
+-- Sin INSERT directo: create_workshop() o service_role. Sin DELETE (soft delete vía UPDATE deleted_at).
 ```
 
 ---
@@ -79,7 +79,7 @@ CREATE POLICY users_update_self ON users
 
 ## `workshop_members`
 
-**Regla**: un usuario ve sus propias membresías. Un `owner` ve todas las membresías de su taller. Solo `owner` invita y desactiva. Nadie elimina membresías.
+**Regla**: un usuario ve sus propias membresías. Un `owner` ve todas las membresías de su taller. Solo `owner` invita y desactiva, pero **nadie inserta membresías directamente**: se crean en `create_workshop()` (el `owner`), en la Edge Function `invite-user` (invitados, con `service_role`) y se activan en `accept_invitation()`. Nadie elimina membresías.
 
 ```sql
 ALTER TABLE workshop_members ENABLE ROW LEVEL SECURITY;
@@ -94,10 +94,9 @@ CREATE POLICY workshop_members_select_owner ON workshop_members
   TO authenticated
   USING (auth_is_owner_in(workshop_id));
 
-CREATE POLICY workshop_members_insert_owner ON workshop_members
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (auth_is_owner_in(workshop_id));
+-- Sin INSERT para usuarios (ver regla). La policy workshop_members_insert_owner de la migración
+-- inicial se elimina en la migración de onboarding: permitía crear membresías `active`
+-- sin que el invitado las aceptara.
 
 CREATE POLICY workshop_members_update_owner ON workshop_members
   FOR UPDATE

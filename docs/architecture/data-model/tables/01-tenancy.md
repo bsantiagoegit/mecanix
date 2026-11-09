@@ -98,4 +98,16 @@ CREATE TABLE workshop_members (
 
 CREATE INDEX idx_workshop_members_user ON workshop_members(user_id);
 CREATE INDEX idx_workshop_members_workshop ON workshop_members(workshop_id);
+
+-- Un taller por cuenta (ADR-012): a lo sumo una membresía activa o invitada por usuario.
+CREATE UNIQUE INDEX idx_workshop_members_one_workshop ON workshop_members(user_id)
+  WHERE status IN ('active', 'invited');
+
+-- Un solo owner por taller: quien lo crea.
+CREATE UNIQUE INDEX idx_workshop_members_one_owner ON workshop_members(workshop_id)
+  WHERE role = 'owner' AND status <> 'inactive';
 ```
+
+**Un taller por cuenta**: el primer índice lo garantiza en la base de datos. Desactivar una membresía (`inactive`) libera al usuario para unirse a otro taller. Relajar la regla en el futuro es quitar ese índice.
+
+**Estado `invited`**: la membresía es la invitación. La crea la Edge Function `invite-user` y la activa `accept_invitation()`. Ver [onboarding de taller](../../multi-tenant/workshop-onboarding.md).
