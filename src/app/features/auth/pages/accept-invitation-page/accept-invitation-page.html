@@ -1,0 +1,59 @@
+<div class="min-h-screen flex items-center justify-center p-4 bg-bg">
+  <app-card padding="lg" class="w-full max-w-md">
+    @if (auth.invitation(); as invitation) {
+      <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold text-fg">Te invitaron a un taller</h1>
+        @if (auth.user(); as user) {
+          <p class="text-sm text-fg-muted mt-1">Hola, {{ user.fullName }}.</p>
+        }
+        <p class="text-sm text-fg-muted mt-3">
+          <strong class="text-fg">{{ invitation.workshopName }}</strong> te invitó a su equipo como
+          <strong class="text-fg">{{ roleLabels[invitation.role] }}</strong
+          >. Elige una contraseña para aceptar la invitación y entrar.
+        </p>
+      </div>
+
+      @if (error(); as message) {
+        <p
+          role="alert"
+          class="mb-4 rounded-md border border-danger-100 bg-danger-50 px-3 py-2 text-sm text-danger-700"
+        >
+          {{ message }}
+        </p>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+        <app-input
+          type="password"
+          label="Contraseña"
+          autocomplete="new-password"
+          [required]="true"
+          [revealable]="true"
+          formControlName="password"
+          [error]="fieldError('password')"
+        />
+
+        <app-input
+          type="password"
+          label="Confirmar contraseña"
+          autocomplete="new-password"
+          [required]="true"
+          [revealable]="true"
+          formControlName="confirmPassword"
+          [error]="fieldError('confirmPassword')"
+        />
+
+        <app-button type="submit" [fullWidth]="true" [loading]="isSubmitting()">
+          Aceptar invitación
+        </app-button>
+      </form>
+
+      <p class="text-center text-sm text-fg-muted mt-6">
+        ¿No eres tú?
+        <button type="button" (click)="logout()" class="text-primary-600 hover:underline">
+          Cerrar sesión
+        </button>
+      </p>
+    }
+  </app-card>
+</div>
