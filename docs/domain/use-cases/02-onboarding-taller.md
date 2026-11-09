@@ -30,17 +30,25 @@ Decisiones: [ADR-012](../../architecture/adr/ADR-012-onboarding-self-service.md)
 - **Precondición**: no pertenece a ningún taller (ni activo ni con invitación pendiente).
 - **Flujo principal**:
   1. El usuario inicia sesión y el sistema lo lleva a "Crea tu taller".
-  2. Ingresa nombre, dirección y teléfono del taller.
+  2. Ingresa nombre, dirección y teléfono del taller, y opcionalmente elige el logo.
   3. El sistema crea el taller con los valores por defecto y lo asigna como `owner` activo.
-  4. El sistema lo lleva al dashboard.
-- **Flujo alternativo**: si ya pertenece a un taller, el sistema rechaza la creación.
+  4. Si eligió un logo, el sistema lo sube y lo asocia al taller.
+  5. El sistema lo lleva al dashboard.
+- **Flujos alternativos**:
+  - Si ya pertenece a un taller, el sistema rechaza la creación.
+  - Si el logo no se puede subir, el taller se crea igual y el sistema avisa; el `owner` puede subirlo después desde la configuración (UC-WS-02).
 - **Postcondición**: existe un taller y su único `owner`.
 
 ## UC-WS-02: Configurar taller
 
-- **Actor**: `owner`.
-- **Flujo principal**: el `owner` edita nombre, dirección, teléfono, logo, capacidad, mínimo de fotos de ingreso, días de expiración de cotización, días de garantía, moneda y zona horaria.
-- **Reglas**: los valores respetan las restricciones de `workshops` (por ejemplo, capacidad y fotos mínimas positivas, moneda de 3 letras).
+- **Actor**: `owner`. Los demás roles no ven la configuración.
+- **Acceso**: apartado "Configuración" en el dashboard.
+- **Flujo principal**: el `owner` edita los datos del taller y guarda.
+  - **Datos del taller**: nombre, dirección, teléfono y **logo** (subir, cambiar o quitar).
+  - **Reglas operativas**: capacidad, mínimo de fotos de ingreso, días de expiración de cotización, días de garantía, moneda y zona horaria.
+- **Logo**: se admite `jpeg`, `png` o `webp` de hasta 1 MB (el sistema lo redimensiona a un máximo de 512 px por lado). Al cambiarlo, el archivo anterior se elimina. Ver [ADR-014](../../architecture/adr/ADR-014-bucket-publico-logos.md).
+- **Reglas**: los valores respetan las restricciones de `workshops` (por ejemplo, capacidad y fotos mínimas positivas, moneda de 3 letras). El nombre, la dirección y el teléfono son obligatorios.
+- **Postcondición**: los cambios se ven en toda la app (el nombre y el logo aparecen en el encabezado).
 
 ## UC-WS-03: Invitar usuario a taller
 
