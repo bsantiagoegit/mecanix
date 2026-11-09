@@ -54,6 +54,13 @@ function setup(active: Workshop | null = workshop) {
 const png = () => new File(['x'], 'logo.png', { type: 'image/png' });
 
 describe('WorkshopSettingsPage', () => {
+  it('offers a way back to the dashboard', async () => {
+    const { fixture, element } = setup();
+    await fixture.whenStable();
+    const back = element.querySelector('a[href="/dashboard"]');
+    expect(back?.textContent).toContain('Volver al dashboard');
+  });
+
   it('loads the active workshop into the form', async () => {
     const { fixture, component } = setup();
     await fixture.whenStable();

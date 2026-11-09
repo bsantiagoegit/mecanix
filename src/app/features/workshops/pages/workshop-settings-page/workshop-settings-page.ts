@@ -6,6 +6,7 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { AuthorizationError } from '@core/errors';
 import { Workshop, WorkshopFacade } from '@core/workshops';
 import { Button } from '@shared/components/button/button';
@@ -34,7 +35,7 @@ function timezoneValidator(control: AbstractControl): ValidationErrors | null {
 /** UC-WS-02: el `owner` edita los datos del taller, su logo y las reglas operativas. */
 @Component({
   selector: 'app-workshop-settings-page',
-  imports: [ReactiveFormsModule, Button, Card, Input, LogoPicker],
+  imports: [ReactiveFormsModule, RouterLink, Button, Card, Input, LogoPicker],
   templateUrl: './workshop-settings-page.html',
 })
 export class WorkshopSettingsPage {
