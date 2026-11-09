@@ -36,6 +36,13 @@
         >
         @if (auth.role() === 'owner') {
           <a
+            routerLink="/team"
+            routerLinkActive="text-fg font-semibold"
+            ariaCurrentWhenActive="page"
+            class="text-sm text-fg-muted hover:text-fg"
+            >Equipo</a
+          >
+          <a
             routerLink="/settings"
             routerLinkActive="text-fg font-semibold"
             ariaCurrentWhenActive="page"

@@ -25,6 +25,12 @@ export const routes: Routes = [
           import('./features/workshops/workshops.routes').then((m) => m.WORKSHOP_ROUTES),
       },
       {
+        path: 'team',
+        canActivate: [roleGuard('owner')],
+        loadChildren: () =>
+          import('./features/workshops/workshops.routes').then((m) => m.TEAM_ROUTES),
+      },
+      {
         path: 'dashboard',
         loadChildren: () =>
           import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),

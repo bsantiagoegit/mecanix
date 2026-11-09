@@ -10,3 +10,11 @@ export const WORKSHOP_ROUTES: Routes = [
       ),
   },
 ];
+
+/** Rutas del equipo, montadas en `/team` (bajo el shell, solo `owner`). */
+export const TEAM_ROUTES: Routes = [
+  {
+    path: '',
+    loadComponent: () => import('./pages/team-page/team-page').then((m) => m.TeamPage),
+  },
+];

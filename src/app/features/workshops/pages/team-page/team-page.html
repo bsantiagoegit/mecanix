@@ -1,0 +1,151 @@
+<div class="max-w-3xl mx-auto flex flex-col gap-6">
+  <div class="flex flex-wrap items-end justify-between gap-3">
+    <div>
+      <a routerLink="/dashboard" class="text-sm text-primary-600 hover:underline">
+        ← Volver al dashboard
+      </a>
+      <h1 class="text-2xl font-bold text-fg mt-2">Equipo</h1>
+      <p class="text-sm text-fg-muted mt-1">Las personas que trabajan en tu taller.</p>
+    </div>
+    <app-button (clicked)="toggleForm()" [variant]="formOpen() ? 'secondary' : 'primary'">
+      {{ formOpen() ? 'Cerrar' : 'Invitar usuario' }}
+    </app-button>
+  </div>
+
+  @if (formOpen()) {
+    <app-card padding="lg">
+      <h2 class="text-lg font-semibold text-fg mb-1">Invitar usuario</h2>
+      <p class="text-sm text-fg-muted mb-4">
+        Le enviaremos un correo para que acepte la invitación y elija su contraseña.
+      </p>
+
+      @if (inviteError(); as message) {
+        <p
+          role="alert"
+          class="mb-4 rounded-md border border-danger-100 bg-danger-50 px-3 py-2 text-sm text-danger-700"
+        >
+          {{ message }}
+        </p>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onInvite()" class="flex flex-col gap-4">
+        <div class="grid gap-4 sm:grid-cols-2">
+          <app-input
+            label="Nombre completo"
+            autocomplete="off"
+            [required]="true"
+            formControlName="fullName"
+            [error]="fieldError('fullName')"
+          />
+          <app-input
+            type="email"
+            label="Correo electrónico"
+            autocomplete="off"
+            [required]="true"
+            formControlName="email"
+            [error]="fieldError('email')"
+          />
+          <app-input
+            type="tel"
+            label="Teléfono"
+            autocomplete="off"
+            [required]="true"
+            formControlName="phone"
+            [error]="fieldError('phone')"
+          />
+          <div class="flex flex-col gap-1.5">
+            <label for="invite-role" class="text-sm font-medium text-fg">Rol</label>
+            <select
+              id="invite-role"
+              formControlName="role"
+              class="h-11 w-full px-3 rounded-md border border-border bg-surface text-base text-fg focus:outline-none focus:ring-2 focus:border-primary-500 focus:ring-primary-500/20"
+            >
+              @for (role of invitableRoles; track role) {
+                <option [value]="role">{{ roleLabels[role] }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <app-button type="submit" [loading]="isInviting()">Enviar invitación</app-button>
+        </div>
+      </form>
+    </app-card>
+  }
+
+  <app-card padding="none">
+    @if (isLoading()) {
+      <p class="p-6 text-sm text-fg-muted">Cargando equipo…</p>
+    } @else if (loadError(); as message) {
+      <p role="alert" class="p-6 text-sm text-danger-700">{{ message }}</p>
+    } @else {
+      <ul class="divide-y divide-border" aria-label="Miembros del equipo">
+        @for (member of members(); track member.userId) {
+          <li class="flex flex-wrap items-center justify-between gap-3 p-4">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-fg">{{ member.fullName }}</p>
+              <p class="text-sm text-fg-muted">{{ member.email }}</p>
+              @if (member.phone) {
+                <p class="text-sm text-fg-muted">{{ member.phone }}</p>
+              }
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+              <span
+                class="rounded-full px-2 py-0.5 text-xs font-medium"
+                [class]="
+                  member.status === 'invited'
+                    ? 'bg-warning-50 text-warning-700'
+                    : 'bg-success-50 text-success-700'
+                "
+              >
+                {{ member.status === 'invited' ? 'Invitado' : 'Activo' }}
+              </span>
+
+              @if (isInvitable(member.role)) {
+                <select
+                  class="h-9 rounded-md border border-border bg-surface px-2 text-sm text-fg"
+                  [attr.aria-label]="'Rol de ' + member.fullName"
+                  [value]="member.role"
+                  [disabled]="busyUserId() === member.userId"
+                  (change)="onRoleChange(member, $any($event.target).value)"
+                >
+                  @for (role of invitableRoles; track role) {
+                    <option [value]="role" [selected]="role === member.role">
+                      {{ roleLabels[role] }}
+                    </option>
+                  }
+                </select>
+              } @else {
+                <span class="text-sm text-fg-muted">{{ roleLabels[member.role] }}</span>
+              }
+
+              @if (member.status === 'invited') {
+                @if (confirmingCancel() === member.userId) {
+                  <span class="text-sm text-fg">¿Cancelar la invitación?</span>
+                  <app-button size="sm" variant="danger" (clicked)="confirmCancel(member)">
+                    Sí, cancelar
+                  </app-button>
+                  <app-button size="sm" variant="ghost" (clicked)="dismissCancel()">
+                    No
+                  </app-button>
+                } @else {
+                  <app-button
+                    size="sm"
+                    variant="ghost"
+                    [disabled]="busyUserId() === member.userId"
+                    (clicked)="askCancel(member)"
+                  >
+                    Cancelar invitación
+                  </app-button>
+                }
+              }
+            </div>
+          </li>
+        } @empty {
+          <li class="p-6 text-sm text-fg-muted">Aún no hay miembros.</li>
+        }
+      </ul>
+    }
+  </app-card>
+</div>
