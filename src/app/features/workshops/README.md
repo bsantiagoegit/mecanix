@@ -10,9 +10,9 @@ Definidos en [`docs/domain/use-cases/02-onboarding-taller.md`](../../../../docs/
 | -------- | -------------------------------- | --------- | ----------------------------------------- |
 | UC-WS-08 | Crear mi propio taller           | MVP       | **Implementado** (`create-workshop-page`) |
 | UC-WS-02 | Configurar taller                | MVP       | Pendiente                                 |
-| UC-WS-03 | Invitar usuario a taller         | MVP       | Pendiente (Edge Function `invite-user`)   |
+| UC-WS-03 | Invitar usuario a taller         | MVP       | **Parcial** (`team-page`; falta reenviar) |
 | UC-WS-04 | Aceptar invitación               | MVP       | Pendiente                                 |
-| UC-WS-05 | Asignar o cambiar el rol         | MVP       | Pendiente                                 |
+| UC-WS-05 | Asignar o cambiar el rol         | MVP       | **Implementado** (`team-page`)            |
 | UC-WS-01 | Crear taller manualmente (admin) | Fase 2    | No iniciado                               |
 | UC-WS-06 | Desactivar usuario de taller     | Fase 2    | No iniciado                               |
 | UC-WS-07 | Reactivar usuario de taller      | Fase 2    | No iniciado                               |
@@ -25,10 +25,12 @@ Decisiones: [ADR-012](../../../../docs/architecture/adr/ADR-012-onboarding-self-
 features/workshops/
 ├── pages/
 │   ├── create-workshop-page/     ← onboarding: nombre, dirección, teléfono y logo opcional
+│   ├── team-page/                ← equipo: lista, invitar, cambiar rol, cancelar (owner)
 │   └── workshop-settings-page/   ← configuración del taller (owner)
 ├── components/
 │   └── logo-picker/              ← selector de logo presentacional (vista previa y validación)
 ├── services/
+│   ├── team.service.ts               ← lista el equipo, invita (Edge Function) y edita membresías
 │   ├── workshop-logo.service.ts      ← sube y elimina el logo en el bucket `logos`
 │   └── workshop-settings.service.ts  ← guarda datos + logo de forma ordenada
 ├── onboarding.routes.ts
@@ -42,8 +44,9 @@ features/workshops/
 | ----------------------------- | ---------------------- | --------------------------------------------------------------------- |
 | `/onboarding/create-workshop` | `CreateWorkshopPage`   | `onboardingGuard`: sin sesión va al login; con taller vuelve a la app |
 | `/settings`                   | `WorkshopSettingsPage` | `roleGuard('owner')` bajo el shell: otro rol vuelve a `/dashboard`    |
+| `/team`                       | `TeamPage`             | `roleGuard('owner')` bajo el shell: otro rol vuelve a `/dashboard`    |
 
-Ver [`app.routes.ts`](../../app.routes.ts). El enlace "Configuración" del encabezado solo lo ve el `owner`; la autoridad real es la RLS (`workshops_update_owner`), no la interfaz.
+Ver [`app.routes.ts`](../../app.routes.ts). Los enlaces "Equipo" y "Configuración" del encabezado solo los ve el `owner`; la autoridad real es la RLS (`workshops_update_owner`), no la interfaz.
 
 ## Flujo de creación
 
@@ -70,6 +73,23 @@ Al guardar, `WorkshopSettingsService.save` hace, en este orden ([ADR-014](../../
 4. Si el guardado **falla** después de subir, elimina el logo recién subido y se conserva el anterior.
 
 La página actualiza el store (`WorkshopFacade.applyUpdate`), así el nombre y el logo del encabezado cambian al instante, y confirma con un toast.
+
+## Equipo (UC-WS-03 y UC-WS-05)
+
+`TeamPage` lista a los miembros `active` e `invited` del taller (los `inactive` no se muestran) y permite al `owner`:
+
+- **Invitar**: formulario con nombre, correo, teléfono y rol (`advisor` o `mechanic`). `TeamService.invite` llama a la Edge Function `invite-user` y traduce su respuesta a `InvitationError` (correo ya registrado, no es owner, datos inválidos…). Si va bien, avisa con un toast y recarga la lista.
+- **Cambiar el rol** de un miembro entre asesor y mecánico (`select` en la fila). El `owner` no se edita.
+- **Cancelar una invitación pendiente**, con confirmación en la propia fila: la membresía pasa a `inactive`.
+
+La identidad de un miembro es `(workshop_id, user_id)`: `workshop_members` no tiene columna `id`. Las operaciones se limitan con `.eq` a ese par y piden la fila de vuelta; si no vuelve ninguna (la RLS lo impidió o la invitación ya no estaba pendiente) se lanza `AuthorizationError`.
+
+Para listar a los invitados, el `owner` necesita leer su perfil en `users`: lo permite la policy `users_select_invited_by_owner` (helper `auth_owner_invited`).
+
+**Limitaciones conocidas** (siguiente PR de invitaciones):
+
+- **Reenviar** no existe todavía: la Edge Function aún no admite reenviar a una cuenta ya invitada.
+- Cancelar solo desactiva la membresía: la cuenta de Auth creada por la invitación sigue existiendo, así que volver a invitar ese correo da "ya tiene una cuenta". El enlace del correo ya no da acceso al taller (`accept_invitation` exige la membresía `invited`).
 
 ## Logo en el encabezado
 

@@ -108,6 +108,8 @@ El logo se sube **después** de crear el taller porque solo el `owner` puede esc
 
 ### Reenviar y cancelar
 
+> **Estado**: la pantalla "Equipo" ya permite cancelar. Reenviar y borrar la cuenta de Auth al cancelar quedan para una iteración posterior de la Edge Function; mientras tanto, volver a invitar un correo cancelado responde `409`.
+
 - **Reenviar**: mientras la membresía esté `invited`, el `owner` puede pedir otro envío (la función vuelve a invocar la invitación). Sirve cuando el enlace caducó (`otp_expiry`) o el correo se perdió.
 - **Cancelar**: el `owner` pasa la membresía de `invited` a `inactive`. El enlace deja de dar acceso a un taller.
 
