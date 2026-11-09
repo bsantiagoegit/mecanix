@@ -16,7 +16,7 @@ Definidos en [`docs/domain/use-cases/01-auth.md`](../../../../docs/domain/use-ca
 | UC-AUTH-06 | Autenticación biométrica            | Fase 3    | No iniciado                                                                               |
 | UC-AUTH-07 | Registrarse (crear cuenta)          | MVP       | **Implementado** (`register-page`): crea la cuenta (con confirmación de email) sin taller |
 
-El **registro** crea solo la cuenta. No da acceso: el `owner` debe agregar al usuario a su taller (UC-WS-03 y UC-WS-04, aún no implementados). Mientras tanto el login de una cuenta sin taller falla con `AuthorizationError` ("Tu usuario no pertenece a ningún taller activo").
+El **registro** crea solo la cuenta. Quien se registra crea luego su propio taller y queda como `owner` (UC-WS-08, [ADR-012](../../../../docs/architecture/adr/ADR-012-onboarding-self-service.md)); los asesores y mecánicos entran por invitación del `owner` (UC-WS-03/04). **Hoy esas pantallas aún no existen**: el login de una cuenta sin taller falla con `AuthorizationError` ("Tu usuario no pertenece a ningún taller activo"). Flujos y estados de la sesión en [onboarding de taller](../../../../docs/architecture/multi-tenant/workshop-onboarding.md).
 
 ## Estructura
 
@@ -73,7 +73,7 @@ Cargadas con `loadChildren` bajo `/auth` (ver [`auth.routes.ts`](./auth.routes.t
 
 - Implementar `forgot-password-page` y `reset-password-page` (UC-AUTH-03). El servicio, las acciones y los effects ya existen en `core/auth`; falta la UI y los tests.
 - Login con Google (UC-AUTH-05, Fase 2): el botón sigue mostrando "próximamente".
-- Tras registrarse, el usuario no puede entrar hasta que el `owner` lo agregue a un taller: falta UC-WS-03/04 (invitar y aceptar).
+- Tras registrarse, el usuario no puede entrar: falta el estado "autenticado sin taller" y la pantalla "Crea tu taller" (UC-WS-08), y las pantallas de invitación (UC-WS-03/04).
 - El enlace "¿Olvidaste tu contraseña?" de `login-page` apunta a una pantalla esqueleto ("works!").
 
 ## Tests

@@ -4,7 +4,7 @@
 
 - **Versión:** 1.2
 - **Fecha:** Octubre 2026
-- **Total:** 74 MVP + 28 Fase 2 + 4 Fase 3 = 106 casos de uso
+- **Total:** 74 MVP + 30 Fase 2 + 3 Fase 3 = 107 casos de uso
 - **Próxima revisión:** Al cierre del modelo conceptual
 
 ## Propósito
@@ -17,8 +17,8 @@ Este directorio contiene la definición de **qué construye el sistema**, featur
 
 | #   | Feature                  | Archivo                                                        | MVP    | Fase 2 | Fase 3 |
 | --- | ------------------------ | -------------------------------------------------------------- | ------ | ------ | ------ |
-| 01  | Autenticación y Sesión   | [01-auth.md](./01-auth.md)                                     | 3      | 2      | 1      |
-| 02  | Onboarding de Taller     | [02-onboarding-taller.md](./02-onboarding-taller.md)           | 5      | 2      | 1      |
+| 01  | Autenticación y Sesión   | [01-auth.md](./01-auth.md)                                     | 4      | 2      | 1      |
+| 02  | Onboarding de Taller     | [02-onboarding-taller.md](./02-onboarding-taller.md)           | 5      | 3      | 0      |
 | 03  | Clientes                 | [03-clientes.md](./03-clientes.md)                             | 5      | 1      | 1      |
 | 04  | Vehículos                | [04-vehiculos.md](./04-vehiculos.md)                           | 5      | 2      | 0      |
 | 05  | Órdenes de Trabajo       | [05-ordenes-trabajo.md](./05-ordenes-trabajo.md)               | 10     | 4      | 0      |
@@ -31,8 +31,8 @@ Este directorio contiene la definición de **qué construye el sistema**, featur
 | 12  | Fotos y Evidencia        | [12-fotos-evidencia.md](./12-fotos-evidencia.md)               | 5      | 1      | 0      |
 | 13  | Documentos PDF           | [13-documentos-pdf.md](./13-documentos-pdf.md)                 | 5      | 1      | 0      |
 | 14  | Reportes                 | [14-reportes.md](./14-reportes.md)                             | 3      | 4      | 0      |
-| 15  | Administración SaaS      | [15-administracion-saas.md](./15-administracion-saas.md)       | 2      | 4      | 1      |
-|     | **Total**                |                                                                | **74** | **28** | **4**  |
+| 15  | Administración SaaS      | [15-administracion-saas.md](./15-administracion-saas.md)       | 1      | 5      | 1      |
+|     | **Total**                |                                                                | **74** | **30** | **3**  |
 
 ## Orden de implementación
 
