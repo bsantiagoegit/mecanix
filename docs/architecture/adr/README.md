@@ -47,19 +47,21 @@ Crear ADR cuando la decisión:
 
 ## Índice de ADRs
 
-| #                                             | Título                                          | Estado      | Fecha   |
-| --------------------------------------------- | ----------------------------------------------- | ----------- | ------- |
-| [ADR-001](./ADR-001-angular-21.md)            | Angular 21 como framework frontend              | ✅ Aceptado | 2026-10 |
-| [ADR-002](./ADR-002-supabase.md)              | Supabase como backend-as-a-service              | ✅ Aceptado | 2026-10 |
-| [ADR-003](./ADR-003-multi-tenant.md)          | Multi-tenant desde el día 1                     | ✅ Aceptado | 2026-10 |
-| [ADR-004](./ADR-004-uuid-pks.md)              | UUID v4 como primary keys                       | ✅ Aceptado | 2026-10 |
-| [ADR-005](./ADR-005-estrategia-estado.md)     | Estrategia de estado: signals + NgRx selectivo  | ✅ Aceptado | 2026-10 |
-| [ADR-006](./ADR-006-pwa-online-first.md)      | PWA con estrategia online-first                 | ✅ Aceptado | 2026-10 |
-| [ADR-007](./ADR-007-orden-iteraciones.md)     | Orden de trabajo con iteraciones                | ✅ Aceptado | 2026-10 |
-| [ADR-008](./ADR-008-aprobacion-individual.md) | Aprobación por reparación individual            | ✅ Aceptado | 2026-10 |
-| [ADR-009](./ADR-009-storage-privado.md)       | Storage privado con URLs firmadas               | ✅ Aceptado | 2026-10 |
-| [ADR-010](./ADR-010-un-bucket.md)             | Un solo bucket (`photos`), PDFs no se almacenan | ✅ Aceptado | 2026-10 |
-| [ADR-011](./ADR-011-feature-flags.md)         | Feature flags                                   | ✅ Aceptado | 2026-10 |
+| #                                                  | Título                                                       | Estado      | Fecha   |
+| -------------------------------------------------- | ------------------------------------------------------------ | ----------- | ------- |
+| [ADR-001](./ADR-001-angular-21.md)                 | Angular 21 como framework frontend                           | ✅ Aceptado | 2026-10 |
+| [ADR-002](./ADR-002-supabase.md)                   | Supabase como backend-as-a-service                           | ✅ Aceptado | 2026-10 |
+| [ADR-003](./ADR-003-multi-tenant.md)               | Multi-tenant desde el día 1                                  | ✅ Aceptado | 2026-10 |
+| [ADR-004](./ADR-004-uuid-pks.md)                   | UUID v4 como primary keys                                    | ✅ Aceptado | 2026-10 |
+| [ADR-005](./ADR-005-estrategia-estado.md)          | Estrategia de estado: signals + NgRx selectivo               | ✅ Aceptado | 2026-10 |
+| [ADR-006](./ADR-006-pwa-online-first.md)           | PWA con estrategia online-first                              | ✅ Aceptado | 2026-10 |
+| [ADR-007](./ADR-007-orden-iteraciones.md)          | Orden de trabajo con iteraciones                             | ✅ Aceptado | 2026-10 |
+| [ADR-008](./ADR-008-aprobacion-individual.md)      | Aprobación por reparación individual                         | ✅ Aceptado | 2026-10 |
+| [ADR-009](./ADR-009-storage-privado.md)            | Storage privado con URLs firmadas                            | ✅ Aceptado | 2026-10 |
+| [ADR-010](./ADR-010-un-bucket.md)                  | Un solo bucket (`photos`), PDFs no se almacenan              | ✅ Aceptado | 2026-10 |
+| [ADR-011](./ADR-011-feature-flags.md)              | Feature flags                                                | ✅ Aceptado | 2026-10 |
+| [ADR-012](./ADR-012-onboarding-self-service.md)    | Onboarding self-service con un taller por cuenta             | ✅ Aceptado | 2026-11 |
+| [ADR-013](./ADR-013-invitaciones-edge-function.md) | Invitaciones por Edge Function e invitación de Supabase Auth | ✅ Aceptado | 2026-11 |
 
 ---
 
