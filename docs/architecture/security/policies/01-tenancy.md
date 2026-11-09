@@ -49,7 +49,7 @@ CREATE POLICY workshops_update_owner ON workshops
 
 ## `users`
 
-**Regla**: un usuario ve su propio perfil. Ve los perfiles de otros usuarios con los que comparte taller (necesario para mostrar "mecánico asignado").
+**Regla**: un usuario ve su propio perfil. Ve los perfiles de otros usuarios con los que comparte taller (necesario para mostrar "mecánico asignado"). Además, el `owner` ve el perfil de quienes invitó mientras la invitación está pendiente (`invited`); al aceptarse aplica la regla de taller compartido y al cancelarse deja de verlo.
 
 ```sql
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
@@ -63,6 +63,12 @@ CREATE POLICY users_select_shared_workshop ON users
   FOR SELECT
   TO authenticated
   USING (auth_shares_workshop_with(id));
+
+-- El owner ve a quienes invitó (membresía `invited`) para listarlos en "Equipo".
+CREATE POLICY users_select_invited_by_owner ON users
+  FOR SELECT
+  TO authenticated
+  USING (auth_owner_invited(id));
 
 CREATE POLICY users_update_self ON users
   FOR UPDATE

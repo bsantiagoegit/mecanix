@@ -175,6 +175,32 @@ $$;
 
 ---
 
+## Helper 7: `auth_owner_invited(p_user_id uuid)`
+
+Devuelve `true` si `p_user_id` tiene una membresía `invited` en un taller del que el usuario autenticado es `owner`.
+
+```sql
+CREATE OR REPLACE FUNCTION auth_owner_invited(p_user_id uuid)
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+      FROM workshop_members wm
+     WHERE wm.user_id = p_user_id
+       AND wm.status = 'invited'
+       AND auth_is_owner_in(wm.workshop_id)
+  );
+$$;
+```
+
+**Uso típico**: `USING (auth_owner_invited(id))` en `users`. Existe porque `auth_shares_workshop_with` exige que ambos estén `active`, y el `owner` necesita ver nombre, correo y teléfono de un invitado para listarlo en "Equipo".
+
+---
+
 ## Permisos de ejecución
 
 Las migraciones revocan `EXECUTE` a `PUBLIC` y `anon`, y lo conceden solo a `authenticated`. Los helpers dependen de `auth.uid()`, que es `NULL` para `anon`, así que no devolverían nada útil; así no quedan expuestos como RPC anónimos de PostgREST.
@@ -183,14 +209,15 @@ Las migraciones revocan `EXECUTE` a `PUBLIC` y `anon`, y lo conceden solo a `aut
 
 ## Resumen
 
-| Función                                    | Retorna   | Uso                          |
-| ------------------------------------------ | --------- | ---------------------------- |
-| `auth_workshop_ids()`                      | `uuid[]`  | Filtro multi-tenant          |
-| `auth_role_in(workshop_id)`                | `text`    | Rol del usuario en un taller |
-| `auth_is_owner_in(workshop_id)`            | `boolean` | ¿Es owner?                   |
-| `auth_is_advisor_or_owner_in(workshop_id)` | `boolean` | ¿Es owner o advisor?         |
-| `auth_is_mechanic_in(workshop_id)`         | `boolean` | ¿Es mechanic?                |
-| `auth_shares_workshop_with(user_id)`       | `boolean` | ¿Comparten taller activo?    |
+| Función                                    | Retorna   | Uso                           |
+| ------------------------------------------ | --------- | ----------------------------- |
+| `auth_workshop_ids()`                      | `uuid[]`  | Filtro multi-tenant           |
+| `auth_role_in(workshop_id)`                | `text`    | Rol del usuario en un taller  |
+| `auth_is_owner_in(workshop_id)`            | `boolean` | ¿Es owner?                    |
+| `auth_is_advisor_or_owner_in(workshop_id)` | `boolean` | ¿Es owner o advisor?          |
+| `auth_is_mechanic_in(workshop_id)`         | `boolean` | ¿Es mechanic?                 |
+| `auth_shares_workshop_with(user_id)`       | `boolean` | ¿Comparten taller activo?     |
+| `auth_owner_invited(user_id)`              | `boolean` | ¿Es un invitado de mi taller? |
 
 ---
 
