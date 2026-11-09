@@ -24,9 +24,9 @@ No tiene `components/`, `services/` ni `models/`: todavía no hay lógica propia
 
 ## Rutas
 
-| Ruta         | Página          | Protección                                                                                                  |
-| ------------ | --------------- | ----------------------------------------------------------------------------------------------------------- |
-| `/dashboard` | `DashboardPage` | Hereda `authGuard` del shell (ver [`app.routes.ts`](../../app.routes.ts)). Es el destino por defecto de `/` |
+| Ruta         | Página          | Protección                                                                                                                        |
+| ------------ | --------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `/dashboard` | `DashboardPage` | Hereda `workshopGuard` del shell (sesión y taller) (ver [`app.routes.ts`](../../app.routes.ts)). Es el destino por defecto de `/` |
 
 ## Dependencias
 
