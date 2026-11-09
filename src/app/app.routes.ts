@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { onboardingGuard, workshopGuard } from '@core/auth';
+import { onboardingGuard, roleGuard, workshopGuard } from '@core/auth';
 
 export const routes: Routes = [
   {
@@ -18,6 +18,12 @@ export const routes: Routes = [
     loadComponent: () => import('./layout/shell').then((m) => m.Shell),
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: 'settings',
+        canActivate: [roleGuard('owner')],
+        loadChildren: () =>
+          import('./features/workshops/workshops.routes').then((m) => m.WORKSHOP_ROUTES),
+      },
       {
         path: 'dashboard',
         loadChildren: () =>
