@@ -47,6 +47,13 @@
         [error]="fieldError('phone')"
       />
 
+      <div>
+        <p class="text-sm font-medium text-fg mb-2">
+          Logo <span class="text-fg-muted">(opcional)</span>
+        </p>
+        <app-logo-picker (changed)="logo.set($event)" />
+      </div>
+
       <app-button type="submit" [loading]="isSubmitting()" [fullWidth]="true">
         Crear taller
       </app-button>
