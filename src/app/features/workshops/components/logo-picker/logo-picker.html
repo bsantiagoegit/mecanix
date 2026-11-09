@@ -1,0 +1,38 @@
+<div class="flex items-center gap-4">
+  <div
+    class="h-20 w-20 shrink-0 rounded-md border border-border bg-bg flex items-center justify-center overflow-hidden"
+  >
+    @if (shown(); as logo) {
+      <img [src]="logo" alt="Logo del taller" class="h-full w-full object-contain" />
+    } @else {
+      <span class="text-xs text-fg-muted text-center px-1">Sin logo</span>
+    }
+  </div>
+
+  <div class="flex flex-col gap-2">
+    <div class="flex flex-wrap gap-3">
+      <label class="text-sm text-primary-600 hover:underline cursor-pointer">
+        {{ shown() ? 'Cambiar logo' : 'Subir logo' }}
+        <input
+          type="file"
+          class="sr-only"
+          accept="image/jpeg,image/png,image/webp"
+          (change)="onFileSelected($event)"
+        />
+      </label>
+      @if (shown()) {
+        <button
+          type="button"
+          class="text-sm text-fg-muted hover:text-danger-600"
+          (click)="onRemove()"
+        >
+          Quitar logo
+        </button>
+      }
+    </div>
+    <p class="text-xs text-fg-muted">JPG, PNG o WebP. Se ajusta a 512 px.</p>
+    @if (error(); as message) {
+      <p role="alert" class="text-xs text-danger-700">{{ message }}</p>
+    }
+  </div>
+</div>

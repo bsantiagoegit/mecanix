@@ -20,6 +20,20 @@ export class WorkshopSettingsService {
   private readonly workshops = inject(WorkshopService);
   private readonly logos = inject(WorkshopLogoService);
 
+  /**
+   * Sube el logo de un taller recién creado y lo asocia. Si no se puede asociar, elimina el
+   * archivo subido. Quien llama decide qué hacer si falla: el taller ya existe.
+   */
+  async attachLogo(workshopId: string, file: File): Promise<void> {
+    const url = await this.logos.upload(workshopId, file);
+    try {
+      await firstValueFrom(this.workshops.update(workshopId, { logoUrl: url }));
+    } catch (error) {
+      await this.logos.remove(url);
+      throw error;
+    }
+  }
+
   async save(
     current: Workshop,
     changes: WorkshopChanges,

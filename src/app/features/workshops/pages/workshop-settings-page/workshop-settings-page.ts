@@ -1,4 +1,4 @@
-import { Component, OnDestroy, computed, effect, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal, viewChild } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -13,11 +13,8 @@ import { Card } from '@shared/components/card/card';
 import { Input } from '@shared/components/input/input';
 import { ToastService } from '@shared/services/toast.service';
 import { trimOnChange } from '@shared/utils/trim-on-change';
-import {
-  LogoError,
-  LogoErrorReason,
-  WorkshopLogoService,
-} from '../../services/workshop-logo.service';
+import { LOGO_ERROR_MESSAGES, LogoError } from '../../services/workshop-logo.service';
+import { LogoPicker, LogoSelection } from '../../components/logo-picker/logo-picker';
 import { WorkshopSettingsService } from '../../services/workshop-settings.service';
 
 const PHONE_PATTERN = /^[0-9+()\s-]{7,20}$/;
@@ -34,40 +31,24 @@ function timezoneValidator(control: AbstractControl): ValidationErrors | null {
   }
 }
 
-const LOGO_MESSAGES: Record<LogoErrorReason, string> = {
-  invalid_type: 'El logo debe ser una imagen JPG, PNG o WebP.',
-  too_large: 'El logo es demasiado pesado (máximo 5 MB).',
-  upload_failed: 'No se pudo subir el logo. Inténtalo de nuevo.',
-};
-
 /** UC-WS-02: el `owner` edita los datos del taller, su logo y las reglas operativas. */
 @Component({
   selector: 'app-workshop-settings-page',
-  imports: [ReactiveFormsModule, Button, Card, Input],
+  imports: [ReactiveFormsModule, Button, Card, Input, LogoPicker],
   templateUrl: './workshop-settings-page.html',
 })
-export class WorkshopSettingsPage implements OnDestroy {
+export class WorkshopSettingsPage {
   private readonly fb = inject(FormBuilder);
   private readonly settings = inject(WorkshopSettingsService);
-  private readonly logos = inject(WorkshopLogoService);
   private readonly toast = inject(ToastService);
   readonly workshops = inject(WorkshopFacade);
 
   readonly isSaving = signal(false);
   readonly error = signal<string | null>(null);
-  readonly logoError = signal<string | null>(null);
 
-  /** Logo nuevo elegido (sin subir todavía) y su vista previa. */
-  readonly newLogo = signal<File | null>(null);
-  readonly removeLogo = signal(false);
-  private previewUrl: string | null = null;
-  readonly logoPreview = signal<string | null>(null);
-
-  readonly currentLogo = computed(() => this.workshops.active()?.logoUrl ?? null);
-  /** Lo que se muestra: la vista previa del archivo nuevo, el logo actual o nada. */
-  readonly shownLogo = computed(() =>
-    this.removeLogo() ? null : (this.logoPreview() ?? this.currentLogo()),
-  );
+  /** Lo que el usuario decidió hacer con el logo (lo informa el selector). */
+  readonly logo = signal<LogoSelection>({ file: null, remove: false });
+  private readonly picker = viewChild(LogoPicker);
 
   readonly form = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
@@ -80,8 +61,6 @@ export class WorkshopSettingsPage implements OnDestroy {
     currency: ['', [Validators.required, Validators.pattern(CURRENCY_PATTERN)]],
     timezone: ['', [Validators.required, timezoneValidator]],
   });
-
-  readonly hasLogoChange = computed(() => this.newLogo() !== null || this.removeLogo());
 
   private loadedWorkshopId: string | null = null;
 
@@ -98,37 +77,6 @@ export class WorkshopSettingsPage implements OnDestroy {
         this.fill(workshop);
       }
     });
-  }
-
-  ngOnDestroy(): void {
-    this.revokePreview();
-  }
-
-  onLogoSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0] ?? null;
-    input.value = '';
-    if (!file) return;
-
-    const invalid = this.logos.validate(file);
-    if (invalid) {
-      this.logoError.set(LOGO_MESSAGES[invalid]);
-      return;
-    }
-    this.logoError.set(null);
-    this.revokePreview();
-    this.previewUrl = URL.createObjectURL(file);
-    this.logoPreview.set(this.previewUrl);
-    this.newLogo.set(file);
-    this.removeLogo.set(false);
-  }
-
-  onRemoveLogo(): void {
-    this.revokePreview();
-    this.logoPreview.set(null);
-    this.newLogo.set(null);
-    this.logoError.set(null);
-    this.removeLogo.set(this.currentLogo() !== null);
   }
 
   async onSubmit(): Promise<void> {
@@ -156,10 +104,11 @@ export class WorkshopSettingsPage implements OnDestroy {
           currency: v.currency!,
           timezone: v.timezone!,
         },
-        { file: this.newLogo(), remove: this.removeLogo() },
+        this.logo(),
       );
       this.workshops.applyUpdate(updated);
-      this.resetLogoSelection();
+      this.picker()?.reset();
+      this.logo.set({ file: null, remove: false });
       this.form.markAsPristine();
       this.toast.success('Cambios guardados');
     } catch (err) {
@@ -197,20 +146,8 @@ export class WorkshopSettingsPage implements OnDestroy {
     });
   }
 
-  private resetLogoSelection(): void {
-    this.revokePreview();
-    this.logoPreview.set(null);
-    this.newLogo.set(null);
-    this.removeLogo.set(false);
-  }
-
-  private revokePreview(): void {
-    if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);
-    this.previewUrl = null;
-  }
-
   private messageFor(err: unknown): string {
-    if (err instanceof LogoError) return LOGO_MESSAGES[err.reason];
+    if (err instanceof LogoError) return LOGO_ERROR_MESSAGES[err.reason];
     if (err instanceof AuthorizationError)
       return 'Solo el dueño del taller puede cambiar la configuración.';
     return 'No se pudieron guardar los cambios. Inténtalo de nuevo.';
