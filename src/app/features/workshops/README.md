@@ -24,8 +24,10 @@ Decisiones: [ADR-012](../../../../docs/architecture/adr/ADR-012-onboarding-self-
 ```
 features/workshops/
 ├── pages/
-│   ├── create-workshop-page/     ← onboarding: nombre, dirección y teléfono
+│   ├── create-workshop-page/     ← onboarding: nombre, dirección, teléfono y logo opcional
 │   └── workshop-settings-page/   ← configuración del taller (owner)
+├── components/
+│   └── logo-picker/              ← selector de logo presentacional (vista previa y validación)
 ├── services/
 │   ├── workshop-logo.service.ts      ← sube y elimina el logo en el bucket `logos`
 │   └── workshop-settings.service.ts  ← guarda datos + logo de forma ordenada
@@ -45,10 +47,11 @@ Ver [`app.routes.ts`](../../app.routes.ts). El enlace "Configuración" del encab
 
 ## Flujo de creación
 
-1. `CreateWorkshopPage` valida nombre, dirección y teléfono (`trimOnChange` quita los espacios sobrantes).
+1. `CreateWorkshopPage` valida nombre, dirección y teléfono (`trimOnChange` quita los espacios sobrantes) y permite elegir un **logo opcional** con `LogoPicker`.
 2. Llama a `WorkshopService.create`, que invoca la función SQL `create_workshop` (crea el taller y la membresía `owner` en una sola transacción).
-3. Con éxito, `AuthFacade.restoreSession()` vuelve a resolver la sesión (ahora con taller) y la página navega a `/dashboard`.
-4. Si falla, muestra el motivo (`WorkshopCreationError`): correo sin confirmar, datos inválidos, sesión expirada o "ya tienes taller" (en ese caso sincroniza la sesión).
+3. Si se eligió un logo, `WorkshopSettingsService.attachLogo` lo sube y lo asocia **después** de crear el taller: solo el `owner` puede escribir en `logos`, y el usuario lo es recién ahora. Si falla, el taller ya existe: se avisa con un toast ("Taller creado, pero no se pudo subir el logo…") y el alta continúa; el `owner` puede subirlo desde la configuración.
+4. `AuthFacade.restoreSession()` vuelve a resolver la sesión (ahora con taller) y la página navega a `/dashboard`.
+5. Si la creación falla, muestra el motivo (`WorkshopCreationError`): correo sin confirmar, datos inválidos, sesión expirada o "ya tienes taller" (en ese caso sincroniza la sesión). Nunca se sube el logo de un taller que no se creó.
 
 El estado de envío y el error son locales a la página (signals); no hay slice de NgRx porque no es estado global.
 
@@ -66,7 +69,15 @@ Al guardar, `WorkshopSettingsService.save` hace, en este orden ([ADR-014](../../
 3. Si el guardado tuvo éxito, elimina el archivo del logo anterior (mejor esfuerzo: si falla queda un huérfano, pero no rompe el guardado).
 4. Si el guardado **falla** después de subir, elimina el logo recién subido y se conserva el anterior.
 
-La página actualiza el store (`WorkshopFacade.applyUpdate`), así el nombre del encabezado cambia al instante, y confirma con un toast.
+La página actualiza el store (`WorkshopFacade.applyUpdate`), así el nombre y el logo del encabezado cambian al instante, y confirma con un toast.
+
+## Logo en el encabezado
+
+El shell (`app/layout`) muestra el logo del taller activo junto a su nombre. Si el taller no tiene logo, o la imagen no carga, muestra un recuadro con la inicial del nombre. Si el logo cambia después de un fallo, vuelve a intentarlo con la URL nueva.
+
+## `LogoPicker`
+
+Componente presentacional (`input()`/`output()`, sin facades ni red): muestra el logo actual o la vista previa del archivo elegido, lo valida (`validateLogoFile`: JPG/PNG/WebP, hasta 5 MB) y emite `changed` con `{ file, remove }`. Lo usan la creación y la configuración; quien lo usa decide cuándo subir y llama a `reset()` tras guardar.
 
 ## Dependencias
 
@@ -76,15 +87,15 @@ La página actualiza el store (`WorkshopFacade.applyUpdate`), así el nombre del
 
 ## Pendiente
 
-- Logo opcional al crear el taller (UC-WS-08) y logo en el encabezado: siguiente PR.
 - Equipo e invitaciones (UC-WS-03/04/05).
 - El logo anterior se elimina desde el cliente; la limpieza de huérfanos queda para Fase 2 (D-ST-10).
 
 ## Tests
 
-- `create-workshop-page.spec.ts`: validaciones, creación, estados de carga y error, sincronización de la sesión y navegación.
+- `create-workshop-page.spec.ts`: validaciones, creación, estados de carga y error, sincronización de la sesión, navegación y el logo opcional (subida tras crear, y que un fallo del logo no bloquea el alta).
+- `logo-picker.spec.ts`: vista previa, validación, quitar/cambiar y liberación de las vistas previas.
 - `workshop-settings-page.spec.ts`: carga del formulario, validaciones, guardado, logo (vista previa, quitar, inválido) y mensajes de error.
 - `workshop-logo.service.spec.ts` y `workshop-settings.service.spec.ts`: validación, ruta y URL del archivo, borrado de mejor esfuerzo y limpieza si falla el guardado.
 - `core/workshops`: `workshop.service.spec.ts` (`create` y `update`) y `workshop.reducer.spec.ts`.
-- `layout/shell.spec.ts`: el enlace de configuración solo para el `owner`; `core/auth/auth.guard.spec.ts` incluye `roleGuard`.
+- `layout/shell.spec.ts`: el enlace de configuración solo para el `owner` y el logo del encabezado (con inicial de respaldo y recuperación); `core/auth/auth.guard.spec.ts` incluye `roleGuard`.
 - Las reglas de la función (un taller por cuenta, `owner`, correo confirmado) las prueban los tests de integración de `supabase/tests/rls/workshop-onboarding.spec.ts`.
