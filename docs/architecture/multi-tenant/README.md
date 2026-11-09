@@ -21,6 +21,7 @@ Define cómo se maneja el aislamiento multi-tenant y la configuración por talle
 1. [`decisions.md`](./decisions.md) — Decisiones transversales (D-MT-01 a D-MT-05). **Empieza aquí.**
 2. [`workshop-settings.md`](./workshop-settings.md) — Configuración por taller.
 3. [`feature-flags.md`](./feature-flags.md) — Estrategia de funcionalidades por taller.
+4. [`workshop-onboarding.md`](./workshop-onboarding.md) — Cómo se crea un taller y cómo se invita a sus usuarios.
 
 ---
 
@@ -37,11 +38,12 @@ Define cómo se maneja el aislamiento multi-tenant y la configuración por talle
 
 ## Estado actual
 
-| Documento              | Versión | Estado     |
-| ---------------------- | ------- | ---------- |
-| `decisions.md`         | 1.0     | ✅ Estable |
-| `workshop-settings.md` | 1.0     | ✅ Estable |
-| `feature-flags.md`     | 1.0     | ✅ Estable |
+| Documento                | Versión | Estado     |
+| ------------------------ | ------- | ---------- |
+| `decisions.md`           | 1.0     | ✅ Estable |
+| `workshop-settings.md`   | 1.0     | ✅ Estable |
+| `feature-flags.md`       | 1.0     | ✅ Estable |
+| `workshop-onboarding.md` | 1.0     | ✅ Estable |
 
 ---
 
@@ -49,6 +51,8 @@ Define cómo se maneja el aislamiento multi-tenant y la configuración por talle
 
 - [ADR-003: Multi-tenant desde el día 1](../adr/ADR-003-multi-tenant.md)
 - [ADR-011: Feature flags](../adr/ADR-011-feature-flags.md)
+- [ADR-012: Onboarding self-service](../adr/ADR-012-onboarding-self-service.md)
+- [ADR-013: Invitaciones por Edge Function](../adr/ADR-013-invitaciones-edge-function.md)
 - [Modelo relacional](../data-model/README.md)
 - [Estrategia de Seguridad](../security/README.md)
 
