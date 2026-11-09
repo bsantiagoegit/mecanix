@@ -69,7 +69,7 @@ Un **segundo bucket, `logos`, público**, solo para el logo del taller.
 
 - Hay dos buckets con reglas distintas que mantener y documentar. Cualquiera que tenga la URL ve el logo (es el comportamiento buscado).
 - `logo_url` guarda la **URL completa**: si el proyecto de Supabase cambia de host, esas URLs hay que reescribirlas.
-- El job `Database` de la CI arranca Supabase sin `storage-api`, así que la migración del bucket se omite ahí (igual que la de `photos`) y sus pruebas solo corren en local.
+- El job `Database` de la CI arranca Supabase sin el contenedor `storage-api`, pero el esquema `storage` ya viene en la imagen de la base de datos: el bucket y sus policies se aplican y se prueban por SQL también en la CI. Las pruebas que llaman a la API HTTP de Storage (subida real, lectura pública, límites de tamaño y tipo) se omiten ahí y solo corren en local.
 - Los logos reemplazados se eliminan desde el cliente; si falla el borrado queda un archivo huérfano (la limpieza de huérfanos se evalúa en Fase 2, como las fotos: D-ST-10).
 
 ### Neutras
