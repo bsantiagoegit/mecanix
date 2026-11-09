@@ -134,14 +134,14 @@ Ver [PWA online-first](../adr/ADR-006-pwa-online-first.md) y [`pwa-offline/`](..
 
 ## Cambios en la base de datos
 
-| Cambio                                                                                                                 | Para qué                                  |
-| ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| Índice único parcial `workshop_members(user_id)` donde `status IN ('active','invited')`                                | Un taller por cuenta                      |
-| Índice único parcial `workshop_members(workshop_id)` donde `role = 'owner'` y `status <> 'inactive'`                   | Un solo `owner` por taller                |
-| Función `create_workshop(name, address, phone)`                                                                        | Flujo 1                                   |
-| Función `accept_invitation()`                                                                                          | Flujo 3                                   |
-| Eliminar la policy `workshop_members_insert_owner`                                                                     | Nadie inserta membresías desde el cliente |
-| Bucket público `logos` y sus policies de escritura para el `owner` ([ADR-014](../adr/ADR-014-bucket-publico-logos.md)) | Logo del taller (UC-WS-08 y UC-WS-02)     |
+| Cambio                                                                                                                                                      | Para qué                                  |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| Índice único parcial `workshop_members(user_id)` donde `status IN ('active','invited')`                                                                     | Un taller por cuenta                      |
+| Índice único parcial `workshop_members(workshop_id)` donde `role = 'owner'` y `status <> 'inactive'`                                                        | Un solo `owner` por taller                |
+| Función `create_workshop(name, address, phone)`                                                                                                             | Flujo 1                                   |
+| Función `accept_invitation()`                                                                                                                               | Flujo 3                                   |
+| Eliminar la policy `workshop_members_insert_owner`                                                                                                          | Nadie inserta membresías desde el cliente |
+| Bucket público `logos`, sus policies de escritura para el `owner` y el CHECK `workshops_logo_url_valid` ([ADR-014](../adr/ADR-014-bucket-publico-logos.md)) | Logo del taller (UC-WS-08 y UC-WS-02)     |
 
 ### Errores de las funciones
 
