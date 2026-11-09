@@ -250,6 +250,10 @@ otp_expiry = 3600
 subject = "Te invitaron a unirte a un taller en Macanix"
 content_path = "./supabase/templates/invite.html"
 
+[auth.email.template.recovery]
+subject = "Restablece tu contraseña de Macanix"
+content_path = "./supabase/templates/recovery.html"
+
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
 # enabled = true
