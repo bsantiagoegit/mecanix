@@ -9,8 +9,8 @@ ALTER TABLE workshops
   );
 
 -- ---------------------------------------------------------------------------
--- Storage. El esquema `storage` lo crea el contenedor storage-api; si no está
--- (p. ej. CI con el stack mínimo) se omite el bucket y sus policies.
+-- Storage. Se omite si el esquema `storage` no existe (la imagen de la base de datos lo
+-- trae, así que en la práctica se aplica siempre, también en la CI con el stack mínimo).
 -- ---------------------------------------------------------------------------
 DO $$
 BEGIN
