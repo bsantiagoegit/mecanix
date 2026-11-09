@@ -22,6 +22,16 @@ supabase start
 supabase db reset   # aplica migraciones + seed
 ```
 
+### Edge Functions
+
+Las pruebas de `supabase/tests/functions/` llaman por HTTP a la función con tokens reales de los usuarios del seed. Requieren `edge-runtime` (que no corre en la CI) y la función servida:
+
+```bash
+supabase functions serve   # deja corriendo en otra terminal
+```
+
+Si la función no responde, esas pruebas se **omiten** (no fallan), igual que las de la API de Storage. Las cuentas que crean se borran al terminar, por correo exacto.
+
 **Nota**: `supabase db reset` limpia la DB y aplica migraciones + seed. Se corre antes de cada suite de integration tests.
 
 ### Conexión

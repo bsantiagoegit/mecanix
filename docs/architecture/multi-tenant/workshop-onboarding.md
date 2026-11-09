@@ -26,7 +26,7 @@ Describir cómo una persona llega a pertenecer a un taller: creándolo ella mism
 
 ## Estados de la sesión
 
-Tras autenticarse, la app resuelve en qué situación está el usuario. "Sin taller" es una sesión válida con `role` y `activeWorkshopId` en `null`, no un error. **Implementado**: "con taller" y "sin taller". "Invitación pendiente" llega con la Edge Function `invite-user`.
+Tras autenticarse, la app resuelve en qué situación está el usuario. "Sin taller" es una sesión válida con `role` y `activeWorkshopId` en `null`, no un error. **Implementado**: "con taller" y "sin taller". "Invitación pendiente" llega con la pantalla de aceptar la invitación (la Edge Function `invite-user` ya existe).
 
 | Estado                   | Condición                           | Destino                       |
 | ------------------------ | ----------------------------------- | ----------------------------- |
@@ -91,6 +91,18 @@ El logo se sube **después** de crear el taller porque solo el `owner` puede esc
 **Efectos**: `inviteUserByEmail(email, { data: { full_name, phone }, redirectTo })` y `INSERT` de la membresía `{ workshop_id, user_id, role, status: 'invited', invited_at: now() }`. Si el `INSERT` falla, se elimina el usuario recién creado para no dejar cuentas huérfanas.
 
 **Errores**: `401` sin sesión, `403` si no es `owner`, `409` correo ya registrado, `422` datos inválidos.
+
+**Respuesta**: `201 { userId, email, role }`. Los errores llevan `{ "error": "<código>" }`: `not_authenticated`, `not_owner`, `invalid_input`, `email_already_registered`, `invitation_failed`, `method_not_allowed`, `misconfigured`.
+
+**Detalles de implementación** (`supabase/functions/invite-user/index.ts`):
+
+- El gateway no verifica el JWT (`verify_jwt = false`): la función lo valida con `auth.getUser` para responder `401` con su propio contrato.
+- No consulta si el correo existe: llama a `inviteUserByEmail` y traduce `email_exists` a `409`. Así no hay carrera entre la comprobación y la invitación.
+- El nombre y el teléfono viajan en `user_metadata`; el trigger `handle_new_auth_user` los copia a `users`.
+- El correo se normaliza (minúsculas, sin espacios). Un `workshopId` en el cuerpo se ignora.
+- La plantilla del correo está en `supabase/templates/invite.html` (configurada en `[auth.email.template.invite]`).
+
+**Local**: `supabase functions serve` (lee `APP_URL` de `[edge_runtime.secrets]`). En producción, `APP_URL` es un secreto del proyecto.
 
 **Configuración**: la clave `service_role` y la URL de la app (`APP_URL`) son variables de entorno de la función, nunca del cliente. `redirectTo` apunta a `${APP_URL}/auth/accept-invitation` y debe estar en `additional_redirect_urls` de `supabase/config.toml`.
 
