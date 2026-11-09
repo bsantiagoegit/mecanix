@@ -10,7 +10,7 @@ Definidos en [`docs/domain/use-cases/01-auth.md`](../../../../docs/domain/use-ca
 | ---------- | ------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | UC-AUTH-01 | Iniciar sesión con email y password   | MVP       | **Implementado** (`login-page`)                                                                                                            |
 | UC-AUTH-02 | Cerrar sesión                         | MVP       | **Implementado**, pero el botón vive en el shell (`app/layout/shell`), no en esta feature                                                  |
-| UC-AUTH-03 | Recuperar contraseña                  | MVP       | **Pendiente de UI**: `forgot-password-page` y `reset-password-page` son esqueletos                                                         |
+| UC-AUTH-03 | Recuperar contraseña                  | MVP       | **Implementado** (`forgot-password-page` y `reset-password-page`)                                                                          |
 | UC-AUTH-04 | Cambiar contraseña                    | Fase 2    | No iniciado                                                                                                                                |
 | UC-AUTH-05 | Iniciar sesión con Google             | Fase 2    | No iniciado: el botón de `login-page` muestra un aviso ("próximamente")                                                                    |
 | UC-AUTH-06 | Autenticación biométrica              | Fase 3    | No iniciado                                                                                                                                |
@@ -27,8 +27,8 @@ features/auth/
 │   ├── login-page/           ← implementada
 │   ├── register-page/        ← implementada
 │   ├── accept-invitation-page/ ← implementada: el invitado elige su contraseña y entra
-│   ├── forgot-password-page/ ← esqueleto
-│   └── reset-password-page/  ← esqueleto
+│   ├── forgot-password-page/ ← implementada: pide el correo y envía el enlace
+│   └── reset-password-page/  ← implementada: elige la contraseña nueva desde el enlace
 ├── auth.routes.ts
 └── README.md
 ```
@@ -44,8 +44,8 @@ Cargadas con `loadChildren` bajo `/auth` (ver [`auth.routes.ts`](./auth.routes.t
 | `/auth/login`             | `LoginPage`            | Implementada                     |
 | `/auth/register`          | `RegisterPage`         | Implementada                     |
 | `/auth/accept-invitation` | `AcceptInvitationPage` | Implementada (`invitationGuard`) |
-| `/auth/forgot-password`   | `ForgotPasswordPage`   | Esqueleto                        |
-| `/auth/reset-password`    | `ResetPasswordPage`    | Esqueleto                        |
+| `/auth/forgot-password`   | `ForgotPasswordPage`   | Implementada                     |
+| `/auth/reset-password`    | `ResetPasswordPage`    | Implementada                     |
 
 `/auth` redirige a `/auth/login`. Las rutas protegidas (`/dashboard` y las que vengan) están bajo el shell con `workshopGuard`: sin sesión redirige a `/auth/login?returnUrl=...` y sin taller a `/onboarding/create-workshop`. Un usuario con una invitación pendiente no va a crear taller: `workshopGuard` y `onboardingGuard` lo mandan a `/auth/accept-invitation`. Los guards (`authGuard`, `workshopGuard`, `onboardingGuard`, `invitationGuard`) viven en [`core/auth/auth.guard.ts`](../../core/auth/auth.guard.ts).
 
@@ -74,16 +74,26 @@ Cargadas con `loadChildren` bajo `/auth` (ver [`auth.routes.ts`](./auth.routes.t
 
 ## Pendiente
 
-- Implementar `forgot-password-page` y `reset-password-page` (UC-AUTH-03). El servicio, las acciones y los effects ya existen en `core/auth`; falta la UI y los tests.
 - Login con Google (UC-AUTH-05, Fase 2): el botón sigue mostrando "próximamente".
-- Invitaciones (UC-WS-03/04): el estado "invitación pendiente" y la pantalla de aceptar llegan con la Edge Function `invite-user`.
-- El enlace "¿Olvidaste tu contraseña?" de `login-page` apunta a una pantalla esqueleto ("works!").
+- Invitaciones: falta reenviar, cancelar borrando la cuenta de Auth y explicar los enlaces caducados (ver [`features/workshops`](../workshops/README.md)).
+- El correo de confirmación del registro sigue en inglés (plantilla por defecto de Supabase); invitación y recuperación ya están en español.
+
+## Recuperar la contraseña (UC-AUTH-03)
+
+1. `ForgotPasswordPage` pide el correo (`emailValidator`) y llama a `AuthService.forgotPassword`, que usa `resetPasswordForEmail` con redirección a `/auth/reset-password`. La respuesta es **la misma exista o no la cuenta** ("Si existe una cuenta con…") para no revelar qué correos están registrados; solo el límite de envíos (`over_email_send_rate_limit`) se informa aparte.
+2. El correo (plantilla en español, `supabase/templates/recovery.html`) trae un enlace que caduca en una hora (`otp_expiry`) y es de un solo uso.
+3. Al abrirlo, Supabase abre una sesión de recuperación (`detectSessionInUrl`) y vuelve a `/auth/reset-password`. `ResetPasswordPage` comprueba con `AuthService.hasSession()` que el enlace abrió una sesión: si no (caducó, ya se usó o se entró a mano a la URL), explica y ofrece pedir otro.
+4. Con sesión, pide la contraseña nueva y su confirmación. `AuthService.recoverPassword` la fija (`updateUser`) y, como mejora de seguridad, **cierra las demás sesiones** de la cuenta (`signOut({ scope: 'others' })`, mejor esfuerzo).
+5. Se avisa con un toast, se vuelve a resolver la sesión y se entra a la app; los guards llevan a quien no tenga taller a crearlo o a aceptar su invitación.
+6. Errores: contraseña igual a la actual (`same_password`), débil (`weak_password`) y sesión perdida (`no_session`) se explican; todos son `PasswordRecoveryError`.
+
+El estado de ambas pantallas es local (signals): no hay slice de NgRx.
 
 ## Aceptar una invitación (UC-WS-04)
 
 1. El invitado abre el enlace del correo. Supabase valida el token, confirma el correo y vuelve a `/auth/accept-invitation` con una sesión abierta (`detectSessionInUrl`).
 2. `AuthService` resuelve la sesión: sin membresía activa, consulta `get_pending_invitation()` y la guarda en `AuthSession.invitation` (taller y rol). Se persiste con el resto de la sesión para que recargar la página no lo mande a crear un taller.
-3. `AcceptInvitationPage` muestra el taller y el rol, y pide la contraseña. Al enviar: guarda la contraseña (`AuthService.resetPassword`, es `updateUser`), activa la membresía con `accept_invitation()` y vuelve a resolver la sesión; con taller, entra a `/dashboard`.
+3. `AcceptInvitationPage` muestra el taller y el rol, y pide la contraseña. Al enviar: guarda la contraseña (`AuthService.setPassword`, es `updateUser`), activa la membresía con `accept_invitation()` y vuelve a resolver la sesión; con taller, entra a `/dashboard`.
 4. La contraseña se guarda **una sola vez**: si aceptar falla y el usuario reintenta, no se vuelve a guardar, porque Supabase rechaza fijar la misma contraseña.
 5. Si la invitación ya no existe (la cancelaron), se sincroniza la sesión y, al no tener invitación ni taller, el usuario queda en `/onboarding/create-workshop`.
 
@@ -91,7 +101,7 @@ Cargadas con `loadChildren` bajo `/auth` (ver [`auth.routes.ts`](./auth.routes.t
 
 - `login-page.spec.ts`: navegación tras autenticar, `returnUrl` interno, mensaje de error y enlaces.
 - `register-page.spec.ts`: validaciones (incluido el dominio del email y los espacios), envío, error, aviso de correo enviado y enlaces.
+- `forgot-password-page.spec.ts` y `reset-password-page.spec.ts`: validaciones, respuesta neutra, límite de envíos, enlace inválido, errores de contraseña y entrada a la app tras cambiarla.
 - `accept-invitation-page.spec.ts`: taller y rol visibles, validaciones, orden contraseña → aceptar, reintento sin volver a guardar la contraseña, invitación cancelada, sesión expirada y entrada al dashboard.
 - `@shared/utils`: `email.validator.spec.ts` y `trim-on-change.spec.ts`.
-- Los demás specs de la feature son de arranque ("should create").
-- La lógica de sesión se prueba en `core/auth`: `auth.reducer.spec.ts` y las redirecciones de `auth.effects.spec.ts`. `auth.service.spec.ts` cubre `AuthService` (login, `restoreSession`, `roleIn`, registro, recuperación y cambio de contraseña, Google) con un cliente de Supabase falso. Los tests de integración de RLS están en `supabase/tests/`.
+- La lógica de sesión se prueba en `core/auth`: `auth.reducer.spec.ts` y las redirecciones de `auth.effects.spec.ts`. `auth.service.spec.ts` cubre `AuthService` (login, `restoreSession`, `roleIn`, registro, recuperación, `setPassword`, invitaciones, Google) con un cliente de Supabase falso. Los tests de integración de RLS están en `supabase/tests/`.
