@@ -7,6 +7,7 @@ const session: AuthSession = {
   user: { id: 'u1', email: 'a@b.com', fullName: 'Ana', phone: null },
   role: 'advisor',
   activeWorkshopId: 'w1',
+  invitation: null,
 };
 
 describe('authReducer', () => {
@@ -60,7 +61,12 @@ describe('authReducer', () => {
   it('accepts a session without workshop (a user who must still create theirs)', () => {
     const state = authReducer(
       { ...initialAuthState, isLoading: true },
-      AuthActions.loginSuccess({ user: session.user, role: null, activeWorkshopId: null }),
+      AuthActions.loginSuccess({
+        user: session.user,
+        role: null,
+        activeWorkshopId: null,
+        invitation: null,
+      }),
     );
     expect(state).toMatchObject({
       user: session.user,
@@ -108,5 +114,30 @@ describe('authReducer', () => {
       );
       expect(state).toMatchObject({ error: null, registeredEmail: null });
     });
+  });
+
+  it('keeps a pending invitation for a user without workshop', () => {
+    const invitation = { workshopName: 'Taller Pérez', role: 'advisor' as const };
+    const state = authReducer(
+      initialAuthState,
+      AuthActions.loginSuccess({
+        user: session.user,
+        role: null,
+        activeWorkshopId: null,
+        invitation,
+      }),
+    );
+    expect(state.invitation).toEqual(invitation);
+  });
+
+  it('clears the invitation once a workshop is active', () => {
+    const state = authReducer(
+      {
+        ...initialAuthState,
+        invitation: { workshopName: 'Taller Pérez', role: 'advisor' },
+      },
+      AuthActions.setActiveWorkshop({ workshopId: 'w1', role: 'advisor' }),
+    );
+    expect(state.invitation).toBeNull();
   });
 });

@@ -3,9 +3,10 @@ import {
   AuthenticationError,
   AuthorizationError,
   EmailNotConfirmedError,
+  InvitationAcceptError,
   mapSupabaseError,
 } from '@core/errors';
-import { AuthSession, Role } from './auth.model';
+import { AuthSession, PendingInvitation, Role } from './auth.model';
 import { SupabaseService } from '@core/supabase';
 import { Observable, from, map } from 'rxjs';
 
@@ -57,6 +58,23 @@ export class AuthService {
 
   resetPassword(newPassword: string): Observable<void> {
     return from(this.resetPasswordImpl(newPassword)).pipe(map(() => undefined));
+  }
+
+  /**
+   * Activa la invitación pendiente del usuario (UC-WS-04). `InvitationAcceptError` indica el
+   * motivo del rechazo. La contraseña se fija antes con `resetPassword`.
+   */
+  acceptInvitation(): Observable<void> {
+    return from(this.acceptInvitationImpl());
+  }
+
+  private async acceptInvitationImpl(): Promise<void> {
+    const { error } = await this.supabase.rpc('accept_invitation');
+    if (!error) return;
+    const reason = (['not_authenticated', 'no_pending_invitation'] as const).find((r) =>
+      error.message.includes(r),
+    );
+    throw reason ? new InvitationAcceptError(reason) : mapSupabaseError(error);
   }
 
   private async signInWithGoogleImpl(): Promise<void> {
@@ -166,6 +184,8 @@ export class AuthService {
     const membership =
       memberships.find((m) => m.workshop_id === preferredWorkshopId) ?? memberships[0] ?? null;
 
+    const invitation = membership ? null : await this.fetchInvitation();
+
     const row = userRes.data;
     return {
       user: {
@@ -176,6 +196,16 @@ export class AuthService {
       },
       role: membership?.role ?? null,
       activeWorkshopId: membership?.workshop_id ?? null,
+      invitation,
     };
+  }
+
+  /** Invitación pendiente del usuario autenticado, o `null`. */
+  private async fetchInvitation(): Promise<PendingInvitation | null> {
+    const { data, error } = await this.supabase.rpc('get_pending_invitation');
+    if (error) throw mapSupabaseError(error);
+    const rows = data as { workshop_name: string; role: Role }[] | null;
+    const row = rows?.[0];
+    return row ? { workshopName: row.workshop_name, role: row.role } : null;
   }
 }

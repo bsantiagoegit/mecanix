@@ -35,6 +35,16 @@ describe('localStorageMetaReducer', () => {
     expect(state.auth.isLoading).toBe(false);
   });
 
+  it('rehydrates a pending invitation so a reload keeps the user on the accept page', () => {
+    const user = { id: 'u1', email: 'a@b.com', fullName: 'Ana', phone: null };
+    const invitation = { workshopName: 'Taller Pérez', role: 'mechanic' };
+    localStorage.setItem(KEY, JSON.stringify({ auth: { user, invitation } }));
+
+    const state = localStorageMetaReducer(baseReducer)(undefined, { type: INIT });
+
+    expect(state.auth.invitation).toEqual(invitation);
+  });
+
   it('starts from the initial state when nothing is persisted', () => {
     expect(localStorageMetaReducer(baseReducer)(undefined, { type: INIT })).toEqual(initial);
   });

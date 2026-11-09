@@ -8,7 +8,13 @@ import {
 } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
 import { Observable, firstValueFrom } from 'rxjs';
-import { authGuard, onboardingGuard, roleGuard, workshopGuard } from './auth.guard';
+import {
+  authGuard,
+  invitationGuard,
+  onboardingGuard,
+  roleGuard,
+  workshopGuard,
+} from './auth.guard';
 import { initialAuthState } from './store/auth.state';
 
 function run(guard: CanActivateFn, auth: Partial<typeof initialAuthState>, url = '/clientes') {
@@ -27,6 +33,10 @@ const withWorkshop = {
   role: 'owner' as const,
 };
 const withoutWorkshop = { isAuthenticated: true };
+const invited = {
+  isAuthenticated: true,
+  invitation: { workshopName: 'Taller Pérez', role: 'mechanic' as const },
+};
 
 const urlOf = (value: boolean | UrlTree) => TestBed.inject(Router).serializeUrl(value as UrlTree);
 
@@ -60,6 +70,10 @@ describe('session guards', () => {
       );
     });
 
+    it('sends an invited user to accept the invitation instead of creating a workshop', async () => {
+      expect(urlOf(await run(workshopGuard, invited))).toBe('/auth/accept-invitation');
+    });
+
     it('waits for the session to finish loading before deciding', async () => {
       const pending = run(workshopGuard, { ...withWorkshop, isLoading: true });
       const settled = await Promise.race([pending, Promise.resolve('waiting')]);
@@ -79,6 +93,34 @@ describe('session guards', () => {
     it('sends a visitor to the login', async () => {
       expect(urlOf(await run(onboardingGuard, {}, '/onboarding/create-workshop'))).toBe(
         '/auth/login?returnUrl=%2Fonboarding%2Fcreate-workshop',
+      );
+    });
+  });
+
+  describe('onboardingGuard with an invitation', () => {
+    it('sends an invited user to accept the invitation', async () => {
+      expect(urlOf(await run(onboardingGuard, invited))).toBe('/auth/accept-invitation');
+    });
+  });
+
+  describe('invitationGuard', () => {
+    it('lets an invited user through', async () => {
+      expect(await run(invitationGuard, invited)).toBe(true);
+    });
+
+    it('sends a user without invitation or workshop to create one', async () => {
+      expect(urlOf(await run(invitationGuard, withoutWorkshop))).toBe(
+        '/onboarding/create-workshop',
+      );
+    });
+
+    it('sends a user who already has a workshop back to the app', async () => {
+      expect(urlOf(await run(invitationGuard, withWorkshop))).toBe('/');
+    });
+
+    it('sends a visitor to the login keeping the url', async () => {
+      expect(urlOf(await run(invitationGuard, {}, '/auth/accept-invitation'))).toBe(
+        '/auth/login?returnUrl=%2Fauth%2Faccept-invitation',
       );
     });
   });

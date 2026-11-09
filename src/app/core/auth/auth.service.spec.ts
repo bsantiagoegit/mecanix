@@ -5,6 +5,7 @@ import {
   AuthorizationError,
   DataError,
   EmailNotConfirmedError,
+  InvitationAcceptError,
   ValidationError,
 } from '@core/errors';
 import { SupabaseService } from '@core/supabase';
@@ -41,11 +42,14 @@ const MEMBERS = [
 
 describe('AuthService', () => {
   let results: { users: QueryResult; workshop_members: QueryResult };
+  let rpcResults: Record<string, QueryResult>;
   let auth: Record<string, ReturnType<typeof vi.fn>>;
+  let rpc: ReturnType<typeof vi.fn>;
   let service: AuthService;
 
   beforeEach(() => {
     results = { users: ok(USER_ROW), workshop_members: ok(MEMBERS) };
+    rpcResults = { get_pending_invitation: ok([]), accept_invitation: ok('w9') };
     auth = {
       signInWithPassword: vi.fn(() =>
         Promise.resolve({ data: { user: { id: 'u1' } }, error: null }),
@@ -62,7 +66,9 @@ describe('AuthService', () => {
     const client = {
       auth,
       from: vi.fn((table: keyof typeof results) => query(results[table])),
+      rpc: vi.fn((name: string) => Promise.resolve(rpcResults[name])),
     };
+    rpc = client.rpc;
     TestBed.configureTestingModule({
       providers: [{ provide: SupabaseService, useValue: { client } }],
     });
@@ -81,6 +87,7 @@ describe('AuthService', () => {
         user: { id: 'u1', email: 'a@x.com', fullName: 'Ana Pérez', phone: '099' },
         role: 'owner',
         activeWorkshopId: 'w1',
+        invitation: null,
       });
     });
 
@@ -116,8 +123,39 @@ describe('AuthService', () => {
         user: { id: 'u1', email: 'a@x.com', fullName: 'Ana Pérez', phone: '099' },
         role: null,
         activeWorkshopId: null,
+        invitation: null,
       });
       expect(auth['signOut']).not.toHaveBeenCalled();
+    });
+
+    it('usuario invitado → sesión sin taller con la invitación pendiente', async () => {
+      results.workshop_members = ok([]);
+      rpcResults['get_pending_invitation'] = ok([
+        { workshop_name: 'Taller Pérez', role: 'mechanic' },
+      ]);
+
+      const session = await firstValueFrom(service.login('a@x.com', 'secret'));
+
+      expect(session).toMatchObject({
+        role: null,
+        activeWorkshopId: null,
+        invitation: { workshopName: 'Taller Pérez', role: 'mechanic' },
+      });
+    });
+
+    it('con taller no consulta invitaciones', async () => {
+      await firstValueFrom(service.login('a@x.com', 'secret'));
+      expect(rpc).not.toHaveBeenCalledWith('get_pending_invitation');
+    });
+
+    it('un error al consultar la invitación es un error de datos y cierra la sesión', async () => {
+      results.workshop_members = ok([]);
+      rpcResults['get_pending_invitation'] = fail('boom');
+
+      await expect(firstValueFrom(service.login('a@x.com', 'secret'))).rejects.toBeInstanceOf(
+        DataError,
+      );
+      expect(auth['signOut']).toHaveBeenCalledTimes(1);
     });
 
     it('error al leer el perfil → error mapeado y cierra la sesión de Supabase', async () => {
@@ -294,6 +332,31 @@ describe('AuthService', () => {
       auth['signInWithOAuth'].mockResolvedValue({ error: { message: 'x' } });
 
       await expect(firstValueFrom(service.signInWithGoogle())).rejects.toBeInstanceOf(DataError);
+    });
+  });
+
+  describe('acceptInvitation', () => {
+    it('llama a accept_invitation', async () => {
+      await firstValueFrom(service.acceptInvitation());
+      expect(rpc).toHaveBeenCalledWith('accept_invitation');
+    });
+
+    it.each(['not_authenticated', 'no_pending_invitation'] as const)(
+      'traduce "%s" a InvitationAcceptError',
+      async (reason) => {
+        rpcResults['accept_invitation'] = fail(reason);
+        await expect(firstValueFrom(service.acceptInvitation())).rejects.toMatchObject({
+          name: 'InvitationAcceptError',
+          reason,
+        });
+      },
+    );
+
+    it('un error desconocido se mapea como error de datos', async () => {
+      rpcResults['accept_invitation'] = fail('boom');
+      const error = await firstValueFrom(service.acceptInvitation()).catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(DataError);
+      expect(error).not.toBeInstanceOf(InvitationAcceptError);
     });
   });
 });

@@ -4,7 +4,7 @@ import { AppState } from './app.state';
 const STORAGE_KEY = 'app-state';
 
 /** Campos de cada slice que se guardan y se rehidratan (D-STATE-14). */
-const AUTH_KEYS: (keyof AppState['auth'])[] = ['user', 'activeWorkshopId', 'role'];
+const AUTH_KEYS: (keyof AppState['auth'])[] = ['user', 'activeWorkshopId', 'role', 'invitation'];
 const WORKSHOPS_KEYS: (keyof AppState['workshops'])[] = ['active'];
 const CATALOGS_KEYS: (keyof AppState['catalogs'])[] = ['roles'];
 
