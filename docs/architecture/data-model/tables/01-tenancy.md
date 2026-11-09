@@ -53,6 +53,8 @@ CREATE TABLE workshops (
 CREATE INDEX idx_workshops_deleted_at ON workshops(deleted_at) WHERE deleted_at IS NULL;
 ```
 
+**`logo_url`**: URL pública completa del logo en el bucket `logos` ([ADR-014](../../adr/ADR-014-bucket-publico-logos.md)); `NULL` si el taller no tiene logo. Solo el `owner` la actualiza (policy `workshops_update_owner`).
+
 ---
 
 ### 3. `users`

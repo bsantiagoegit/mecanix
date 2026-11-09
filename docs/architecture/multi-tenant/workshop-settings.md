@@ -48,6 +48,8 @@ CREATE TABLE workshops (
 
 **Cada taller tiene sus propios valores**. No hay código custom.
 
+**Quién los cambia**: solo el `owner`, desde la pantalla de configuración (UC-WS-02). El logo (`logo_url`) apunta a un archivo del bucket público `logos` ([ADR-014](../adr/ADR-014-bucket-publico-logos.md)).
+
 ---
 
 ## Cómo agregar una configuración nueva

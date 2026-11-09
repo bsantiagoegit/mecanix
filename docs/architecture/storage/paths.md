@@ -9,7 +9,7 @@
 
 ## Propósito
 
-Definir la estructura de paths en el bucket `photos` y las convenciones de naming.
+Definir la estructura de paths en los buckets `photos` y `logos`, y las convenciones de naming.
 
 ---
 
@@ -44,6 +44,22 @@ a1b2c3d4-e5f6-7890-abcd-ef1234567890/
 - Todas las fotos de una orden bajo el mismo prefijo.
 - `list('{workshop_id}/orders/{work_order_id}')` devuelve todas las fotos.
 - RLS valida con `(storage.foldername(name))[1]`.
+
+---
+
+## Estructura de paths: bucket `logos`
+
+```
+{workshop_id}/
+  {logo_uuid}.{ext}
+```
+
+**Reglas**:
+
+- Un archivo por subida, con un UUID v4 nuevo. Nunca se sobrescribe: así la URL cambia con el logo y no queda caché obsoleta.
+- Al guardar el nuevo, `workshops.logo_url` se actualiza y el archivo anterior se elimina.
+- El primer segmento sigue siendo el `workshop_id` (lo usa la policy de escritura).
+- La extensión se deriva del MIME igual que en `photos`.
 
 ---
 

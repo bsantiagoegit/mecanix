@@ -9,7 +9,7 @@
 
 ## Propósito
 
-Definir el bucket de Supabase Storage, sus parámetros y su propósito.
+Definir los buckets de Supabase Storage, sus parámetros y su propósito.
 
 ---
 
@@ -41,7 +41,35 @@ VALUES (
 
 ---
 
-## Por qué un solo bucket
+## Bucket `logos`
+
+**Propósito**: almacenar el logo del taller ([ADR-014](../adr/ADR-014-bucket-publico-logos.md)).
+
+| Parámetro                 | Valor                                   |
+| ------------------------- | --------------------------------------- |
+| Nombre                    | `logos`                                 |
+| Público                   | `true`                                  |
+| Tamaño máximo por archivo | `1048576` (1 MB)                        |
+| MIME types permitidos     | `image/jpeg`, `image/png`, `image/webp` |
+
+**Creación**:
+
+```sql
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'logos',
+  'logos',
+  true,
+  1048576,
+  ARRAY['image/jpeg', 'image/png', 'image/webp']
+);
+```
+
+**Por qué público**: el logo no es sensible y se muestra en toda la app; la URL pública no caduca. La lectura no pasa por RLS; la escritura sí (solo el `owner`, ver [policies](./policies.md)). No se admite SVG porque puede contener scripts.
+
+---
+
+## Por qué un solo bucket para las fotos y los PDFs
 
 **Alternativa considerada**: dos buckets (`photos` y `documents`).
 

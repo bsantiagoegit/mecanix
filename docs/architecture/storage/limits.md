@@ -20,6 +20,7 @@ Definir los límites del free tier de Supabase, calcular la capacidad real del s
 | Storage total                 | 1 GB   |
 | Bandwidth mensual             | 2 GB   |
 | Upload por archivo (`photos`) | 5 MB   |
+| Upload por archivo (`logos`)  | 1 MB   |
 
 ---
 

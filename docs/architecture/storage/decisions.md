@@ -128,23 +128,37 @@ Los informes inicial y final se generan en el cliente (html2canvas + jsPDF) y se
 
 ---
 
+## D-ST-14: Bucket público `logos` para el logo del taller
+
+El logo del taller va en un segundo bucket, **`logos`, público** ([ADR-014](../adr/ADR-014-bucket-publico-logos.md)). `photos` sigue privado (D-ST-02).
+
+- Path: `{workshop_id}/{uuid}.{ext}`. Cada subida usa un UUID nuevo; el archivo anterior se elimina después.
+- Escritura (subir y eliminar) solo del `owner` del taller. Lectura pública por URL.
+- 1 MB por archivo; `image/jpeg`, `image/png`, `image/webp` (sin SVG). El cliente redimensiona a un máximo de 512 px por lado.
+- `workshops.logo_url` guarda la URL pública completa.
+
+**Razón**: el logo no es sensible y se muestra en toda la app; una URL firmada que caduca cada hora no aporta nada. Es del `owner`, no de cualquier miembro como las fotos.
+
+---
+
 ## Resumen
 
-| ID      | Decisión                       |
-| ------- | ------------------------------ |
-| D-ST-01 | Un bucket (`photos`)           |
-| D-ST-02 | Bucket privado + URLs firmadas |
-| D-ST-03 | Path multi-tenant              |
-| D-ST-04 | Un path por orden              |
-| D-ST-05 | Compresión obligatoria         |
-| D-ST-06 | HEIC → JPEG                    |
-| D-ST-07 | Filename con UUID              |
-| D-ST-08 | Metadata en tabla              |
-| D-ST-09 | Sin eliminación en MVP         |
-| D-ST-10 | Limpieza en Fase 2             |
-| D-ST-11 | Límite de tamaño               |
-| D-ST-12 | MIME types whitelist           |
-| D-ST-13 | PDFs no se almacenan en MVP    |
+| ID      | Decisión                        |
+| ------- | ------------------------------- |
+| D-ST-01 | Un bucket (`photos`) para fotos |
+| D-ST-02 | Bucket privado + URLs firmadas  |
+| D-ST-03 | Path multi-tenant               |
+| D-ST-04 | Un path por orden               |
+| D-ST-05 | Compresión obligatoria          |
+| D-ST-06 | HEIC → JPEG                     |
+| D-ST-07 | Filename con UUID               |
+| D-ST-08 | Metadata en tabla               |
+| D-ST-09 | Sin eliminación en MVP          |
+| D-ST-10 | Limpieza en Fase 2              |
+| D-ST-11 | Límite de tamaño                |
+| D-ST-12 | MIME types whitelist            |
+| D-ST-13 | PDFs no se almacenan en MVP     |
+| D-ST-14 | Bucket público `logos`          |
 
 ---
 
