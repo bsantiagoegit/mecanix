@@ -86,13 +86,18 @@ Las policies `FOR SELECT` solo usan `USING`. `WITH CHECK` solo aplica a `INSERT`
 
 ---
 
-## D-RLS-09: `service_role` para admin SaaS
+## D-RLS-09: `service_role` solo en el servidor; los flujos de usuario pasan por funciones controladas
 
-Operaciones administrativas (crear taller, purgar talleres eliminados) usan `service_role` desde backend, no desde el cliente.
+`service_role` bypasea RLS y **nunca** llega al cliente. Se usa únicamente en el servidor: operaciones de administración del SaaS (purgar talleres eliminados, crear talleres manualmente en Fase 2) y la Edge Function `invite-user` ([ADR-013](../adr/ADR-013-invitaciones-edge-function.md)).
 
-**Razón**: `service_role` en Supabase bypasea RLS. No queremos que un usuario autenticado normal pueda crear talleres. El panel de SaaS admin es una app separada.
+Los usuarios autenticados no insertan en `workshops` ni en `workshop_members` directamente. Lo que sí pueden hacer, lo hacen mediante funciones `SECURITY DEFINER` con reglas propias:
 
-**Nota**: esto es para Fase 2. En MVP, los talleres los creas tú manualmente desde el dashboard de Supabase.
+- `create_workshop(...)`: crea el taller y la membresía `owner` del propio usuario ([ADR-012](../adr/ADR-012-onboarding-self-service.md)).
+- `accept_invitation()`: activa la membresía `invited` del propio usuario.
+
+**Razón**: un `INSERT` directo no permite imponer "un taller por cuenta" ni evitar que alguien se haga `owner` de un taller ajeno. Una función concentra las reglas en un solo punto. El panel de SaaS admin, cuando exista, es una app separada.
+
+**Historia**: hasta noviembre de 2026 esta decisión decía que los talleres los creaba el administrador a mano. [ADR-012](../adr/ADR-012-onboarding-self-service.md) la sustituyó por el onboarding self-service.
 
 ---
 
@@ -106,18 +111,18 @@ Todas las policies usan `auth.uid()` (función de Supabase que devuelve el UUID 
 
 ## Resumen
 
-| ID       | Decisión                                   |
-| -------- | ------------------------------------------ |
-| D-RLS-01 | RLS en todas las tablas                    |
-| D-RLS-02 | Funciones helper `SECURITY DEFINER`        |
-| D-RLS-03 | Policies separadas por operación           |
-| D-RLS-04 | RLS es la defensa principal                |
-| D-RLS-05 | `workshop_members` con policies especiales |
-| D-RLS-06 | Tablas derivadas con `EXISTS` + JOIN       |
-| D-RLS-07 | `photos` con `workshop_id` directo         |
-| D-RLS-08 | Sin `WITH CHECK` en SELECT                 |
-| D-RLS-09 | `service_role` para admin SaaS             |
-| D-RLS-10 | `auth.uid()` como fuente de verdad         |
+| ID       | Decisión                                                            |
+| -------- | ------------------------------------------------------------------- |
+| D-RLS-01 | RLS en todas las tablas                                             |
+| D-RLS-02 | Funciones helper `SECURITY DEFINER`                                 |
+| D-RLS-03 | Policies separadas por operación                                    |
+| D-RLS-04 | RLS es la defensa principal                                         |
+| D-RLS-05 | `workshop_members` con policies especiales                          |
+| D-RLS-06 | Tablas derivadas con `EXISTS` + JOIN                                |
+| D-RLS-07 | `photos` con `workshop_id` directo                                  |
+| D-RLS-08 | Sin `WITH CHECK` en SELECT                                          |
+| D-RLS-09 | `service_role` solo en el servidor; flujos de usuario vía funciones |
+| D-RLS-10 | `auth.uid()` como fuente de verdad                                  |
 
 ---
 

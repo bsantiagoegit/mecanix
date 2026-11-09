@@ -148,24 +148,24 @@ src/
 
 **Features**:
 
-| Feature       | Casos de uso      | Prioridad |
-| ------------- | ----------------- | --------- |
-| `auth`        | UC-AUTH-01 a 06   | MVP       |
-| `workshops`   | UC-WS-01 a 08     | MVP       |
-| `customers`   | UC-CUST-01 a 07   | MVP       |
-| `vehicles`    | UC-VEH-01 a 07    | MVP       |
-| `work-orders` | UC-WO-01 a 14     | MVP       |
-| `inspections` | UC-INSP-01 a 06   | MVP       |
-| `diagnoses`   | UC-DIAG-01 a 04   | MVP       |
-| `repairs`     | UC-REP-01 a 11    | MVP       |
-| `items`       | UC-PART-01 a 06   | MVP       |
-| `quotes`      | UC-QUOTE-01 a 07  | MVP       |
-| `warranties`  | UC-WAR-01 a 04    | MVP       |
-| `photos`      | UC-PHOTO-01 a 06  | MVP       |
-| `pdfs`        | UC-PDF-01 a 06    | MVP       |
-| `reports`     | UC-RPT-01 a 07    | MVP       |
-| `dashboard`   | UC-RPT-01 (vista) | MVP       |
-| `saas-admin`  | UC-SAAS-01 a 07   | MVP       |
+| Feature       | Casos de uso                                                    | Prioridad |
+| ------------- | --------------------------------------------------------------- | --------- |
+| `auth`        | UC-AUTH-01 a 07                                                 | MVP       |
+| `workshops`   | UC-WS-02 a 05 y 08 (MVP); UC-WS-01, 06 y 07 (Fase 2)            | MVP       |
+| `customers`   | UC-CUST-01 a 07                                                 | MVP       |
+| `vehicles`    | UC-VEH-01 a 07                                                  | MVP       |
+| `work-orders` | UC-WO-01 a 14                                                   | MVP       |
+| `inspections` | UC-INSP-01 a 06                                                 | MVP       |
+| `diagnoses`   | UC-DIAG-01 a 04                                                 | MVP       |
+| `repairs`     | UC-REP-01 a 11                                                  | MVP       |
+| `items`       | UC-PART-01 a 06                                                 | MVP       |
+| `quotes`      | UC-QUOTE-01 a 07                                                | MVP       |
+| `warranties`  | UC-WAR-01 a 04                                                  | MVP       |
+| `photos`      | UC-PHOTO-01 a 06                                                | MVP       |
+| `pdfs`        | UC-PDF-01 a 06                                                  | MVP       |
+| `reports`     | UC-RPT-01 a 07                                                  | MVP       |
+| `dashboard`   | UC-RPT-01 (vista)                                               | MVP       |
+| `saas-admin`  | UC-SAAS-01 (MVP); UC-SAAS-02 a 06 (Fase 2); UC-SAAS-07 (Fase 3) | Fase 2    |
 
 ---
 
