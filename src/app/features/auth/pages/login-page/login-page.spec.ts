@@ -87,7 +87,9 @@ describe('LoginPage', () => {
   it('tells the user their email was confirmed when coming from the email link', async () => {
     const { fixture, element } = setup({ confirmed: true });
     await fixture.whenStable();
-    expect(element.querySelector('[role="status"]')?.textContent).toContain('Correo confirmado');
+    expect(element.querySelector('[role="status"]')?.textContent).toContain(
+      'Correo confirmado. Ya puedes iniciar sesión.',
+    );
   });
 
   it('does not show the confirmation notice otherwise', async () => {

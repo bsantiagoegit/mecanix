@@ -6,3 +6,4 @@ export * from './global-error-handler';
 export * from './map-supabase-error';
 export * from './not-found.error';
 export * from './validation.error';
+export * from './workshop-creation.error';
