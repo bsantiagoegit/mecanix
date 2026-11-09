@@ -4,7 +4,7 @@
 - **Fecha:** 2026-10
 - **Decisores:** Tech Lead, Desarrollador
 - **Supersede:** —
-- **Superseded por:** —
+- **Superseded por:** [ADR-014](./ADR-014-bucket-publico-logos.md) (solo la parte "un solo bucket": se añade el bucket público `logos`; la decisión de no almacenar PDFs sigue vigente)
 
 ---
 
