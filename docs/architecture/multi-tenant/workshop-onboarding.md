@@ -148,14 +148,19 @@ Ver [PWA online-first](../adr/ADR-006-pwa-online-first.md) y [`pwa-offline/`](..
 
 ## Cambios en la base de datos
 
-| Cambio                                                                                                                                                      | Para qué                                  |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| Índice único parcial `workshop_members(user_id)` donde `status IN ('active','invited')`                                                                     | Un taller por cuenta                      |
-| Índice único parcial `workshop_members(workshop_id)` donde `role = 'owner'` y `status <> 'inactive'`                                                        | Un solo `owner` por taller                |
-| Función `create_workshop(name, address, phone)`                                                                                                             | Flujo 1                                   |
-| Función `accept_invitation()`                                                                                                                               | Flujo 3                                   |
-| Eliminar la policy `workshop_members_insert_owner`                                                                                                          | Nadie inserta membresías desde el cliente |
-| Bucket público `logos`, sus policies de escritura para el `owner` y el CHECK `workshops_logo_url_valid` ([ADR-014](../adr/ADR-014-bucket-publico-logos.md)) | Logo del taller (UC-WS-08 y UC-WS-02)     |
+| Cambio                                                                                                                                                      | Para qué                                       |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Índice único parcial `workshop_members(user_id)` donde `status IN ('active','invited')`                                                                     | Un taller por cuenta                           |
+| Índice único parcial `workshop_members(workshop_id)` donde `role = 'owner'` y `status <> 'inactive'`                                                        | Un solo `owner` por taller                     |
+| Función `create_workshop(name, address, phone)`                                                                                                             | Flujo 1                                        |
+| Función `accept_invitation()`                                                                                                                               | Flujo 3                                        |
+| Función `get_pending_invitation()`                                                                                                                          | Mostrar taller y rol en la pantalla de aceptar |
+| Eliminar la policy `workshop_members_insert_owner`                                                                                                          | Nadie inserta membresías desde el cliente      |
+| Bucket público `logos`, sus policies de escritura para el `owner` y el CHECK `workshops_logo_url_valid` ([ADR-014](../adr/ADR-014-bucket-publico-logos.md)) | Logo del taller (UC-WS-08 y UC-WS-02)          |
+
+### `get_pending_invitation()`
+
+Devuelve `(workshop_name, role)` de la membresía `invited` del propio usuario, o cero filas si no hay. Existe porque un invitado aún no es miembro activo y `workshops_select_member` no le deja leer el taller; la función expone solo el nombre y el rol, y solo de su propia invitación. Es `SECURITY DEFINER` con `search_path` fijo y no se concede a `anon`.
 
 ### Errores de las funciones
 

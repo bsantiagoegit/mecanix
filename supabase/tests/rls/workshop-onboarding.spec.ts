@@ -168,6 +168,63 @@ describe('Onboarding de taller: create_workshop, accept_invitation y membresías
     });
   });
 
+  describe('get_pending_invitation', () => {
+    const invite = async (email: string, status: string, role = 'mechanic') => {
+      const id = await createAuthUser(admin, email);
+      await admin.query(
+        `INSERT INTO workshop_members (workshop_id, user_id, role, status) VALUES ($1, $2, $3, $4)`,
+        [WORKSHOP_A, id, role, status],
+      );
+      return id;
+    };
+    const pending = () =>
+      admin.query<{ workshop_name: string; role: string }>(
+        `SELECT * FROM get_pending_invitation()`,
+      );
+
+    it('devuelve el nombre del taller y el rol de la invitación propia', async () => {
+      await withRollback(admin, async () => {
+        const id = await invite('invitado@example.com', 'invited', 'advisor');
+        await actAsUser(admin, id);
+        const { rows } = await pending();
+        expect(rows).toHaveLength(1);
+        expect(rows[0].role).toBe('advisor');
+        expect(rows[0].workshop_name).toBeTruthy();
+      });
+    });
+
+    it('no devuelve nada si no hay invitación pendiente', async () => {
+      await withRollback(admin, async () => {
+        const id = await invite('activo@example.com', 'active');
+        await actAsUser(admin, id);
+        expect((await pending()).rows).toEqual([]);
+      });
+    });
+
+    it('no devuelve nada a un usuario sin membresía', async () => {
+      await withRollback(admin, async () => {
+        await newUser('suelto@example.com');
+        expect((await pending()).rows).toEqual([]);
+      });
+    });
+
+    it('no revela la invitación de otra persona', async () => {
+      await withRollback(admin, async () => {
+        await invite('invitado@example.com', 'invited');
+        await actAsUser(admin, USER_OWNER_A);
+        expect((await pending()).rows).toEqual([]);
+      });
+    });
+
+    it('un invitado cancelado deja de ver la invitación', async () => {
+      await withRollback(admin, async () => {
+        const id = await invite('cancelado@example.com', 'inactive');
+        await actAsUser(admin, id);
+        expect((await pending()).rows).toEqual([]);
+      });
+    });
+  });
+
   describe('accept_invitation', () => {
     const invite = async (email: string, role = 'mechanic') => {
       const id = await createAuthUser(admin, email);
