@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { invitationGuard } from '@core/auth';
 
 export const AUTH_ROUTES: Routes = [
   {
@@ -18,6 +19,14 @@ export const AUTH_ROUTES: Routes = [
     path: 'reset-password',
     loadComponent: () =>
       import('./pages/reset-password-page/reset-password-page').then((m) => m.ResetPasswordPage),
+  },
+  {
+    path: 'accept-invitation',
+    canActivate: [invitationGuard],
+    loadComponent: () =>
+      import('./pages/accept-invitation-page/accept-invitation-page').then(
+        (m) => m.AcceptInvitationPage,
+      ),
   },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 ];
