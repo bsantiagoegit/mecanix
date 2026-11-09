@@ -18,6 +18,8 @@ export class WorkshopEffects {
   loadOnSession$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.loginSuccess),
+      // Sin taller (recién registrado) no hay nada que cargar.
+      filter(({ activeWorkshopId }) => activeWorkshopId !== null),
       map(() => WorkshopsActions.loadAvailable()),
     ),
   );

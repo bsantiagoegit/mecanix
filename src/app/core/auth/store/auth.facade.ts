@@ -4,6 +4,7 @@ import { Store } from '@ngrx/store';
 import { AuthActions } from './auth.actions';
 import {
   selectAuthError,
+  selectHasWorkshop,
   selectIsAuthenticated,
   selectIsLoading,
   selectRegisteredEmail,
@@ -26,6 +27,7 @@ export class AuthFacade {
   readonly error = this.store.selectSignal(selectAuthError);
   readonly activeWorkshopId = this.store.selectSignal(selectSessionWorkshopId);
   readonly role = this.store.selectSignal(selectRole);
+  readonly hasWorkshop = this.store.selectSignal(selectHasWorkshop);
   readonly registeredEmail = this.store.selectSignal(selectRegisteredEmail);
 
   login(email: string, password: string): void {
@@ -37,6 +39,7 @@ export class AuthFacade {
     this.store.dispatch(AuthActions.clearError());
   }
 
+  /** Vuelve a resolver la sesión (p. ej. tras crear el taller). */
   restoreSession(): void {
     this.store.dispatch(AuthActions.restoreSession());
   }

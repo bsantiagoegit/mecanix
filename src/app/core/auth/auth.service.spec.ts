@@ -107,13 +107,17 @@ describe('AuthService', () => {
       );
     });
 
-    it('usuario sin taller activo → AuthorizationError y cierra la sesión de Supabase', async () => {
+    it('usuario sin taller → sesión válida sin rol ni taller (debe crear el suyo)', async () => {
       results.workshop_members = ok([]);
 
-      await expect(firstValueFrom(service.login('a@x.com', 'secret'))).rejects.toBeInstanceOf(
-        AuthorizationError,
-      );
-      expect(auth['signOut']).toHaveBeenCalledTimes(1);
+      const session = await firstValueFrom(service.login('a@x.com', 'secret'));
+
+      expect(session).toEqual({
+        user: { id: 'u1', email: 'a@x.com', fullName: 'Ana Pérez', phone: '099' },
+        role: null,
+        activeWorkshopId: null,
+      });
+      expect(auth['signOut']).not.toHaveBeenCalled();
     });
 
     it('error al leer el perfil → error mapeado y cierra la sesión de Supabase', async () => {
@@ -145,13 +149,13 @@ describe('AuthService', () => {
       expect(session).toMatchObject({ activeWorkshopId: 'w1', role: 'owner' });
     });
 
-    it('sesión vigente pero sin talleres → AuthorizationError y cierra la sesión de Supabase', async () => {
+    it('sesión vigente pero sin talleres → sesión sin taller, sin cerrar la de Supabase', async () => {
       results.workshop_members = ok([]);
 
-      await expect(firstValueFrom(service.restoreSession(null))).rejects.toBeInstanceOf(
-        AuthorizationError,
-      );
-      expect(auth['signOut']).toHaveBeenCalledTimes(1);
+      const session = await firstValueFrom(service.restoreSession(null));
+
+      expect(session).toMatchObject({ role: null, activeWorkshopId: null });
+      expect(auth['signOut']).not.toHaveBeenCalled();
     });
 
     it('un error de datos al restaurar no cierra la sesión de Supabase', async () => {

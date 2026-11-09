@@ -19,7 +19,6 @@ function loginErrorMessage(error: unknown): string {
   if (error instanceof EmailNotConfirmedError) {
     return 'Confirma tu correo para iniciar sesión: revisa tu bandeja de entrada.';
   }
-  if (error instanceof AuthorizationError) return 'Tu usuario no pertenece a ningún taller activo.';
   return 'No se pudo iniciar sesión. Inténtalo de nuevo.';
 }
 
