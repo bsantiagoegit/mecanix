@@ -46,6 +46,27 @@ describe('Shell', () => {
     expect(render('owner').fixture.componentInstance).toBeTruthy();
   });
 
+  it('lets every role go to the dashboard from the brand and from the nav', async () => {
+    for (const role of ['owner', 'advisor', 'mechanic'] as const) {
+      TestBed.resetTestingModule();
+      const { fixture, element } = render(role, workshop());
+      await fixture.whenStable();
+
+      const hrefs = links(element);
+      expect(hrefs.filter((h) => h === '/dashboard')).toHaveLength(2);
+      expect(element.querySelector('header a[aria-label="Ir al dashboard"]')).not.toBeNull();
+      expect(element.querySelector('nav a[href="/dashboard"]')?.textContent).toContain('Dashboard');
+    }
+  });
+
+  it('shows the workshop identity inside the brand link', async () => {
+    const { fixture, element } = render('owner', workshop());
+    await fixture.whenStable();
+    expect(element.querySelector('header a[aria-label="Ir al dashboard"]')?.textContent).toContain(
+      'Taller Pérez',
+    );
+  });
+
   it('shows the settings link to the owner', async () => {
     const { fixture, element } = render('owner');
     await fixture.whenStable();
