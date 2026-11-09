@@ -1,5 +1,10 @@
 import { Injectable, inject } from '@angular/core';
-import { WorkshopCreationError, WorkshopCreationReason, mapSupabaseError } from '@core/errors';
+import {
+  AuthorizationError,
+  WorkshopCreationError,
+  WorkshopCreationReason,
+  mapSupabaseError,
+} from '@core/errors';
 import { Workshop } from './workshop.model';
 import { SupabaseService } from '@core/supabase';
 import { Observable, from, map } from 'rxjs';
@@ -17,6 +22,9 @@ interface WorkshopRow {
   currency: string;
   timezone: string;
 }
+
+/** Campos del taller que se pueden cambiar (todo menos el id). */
+export type WorkshopChanges = Partial<Omit<Workshop, 'id'>>;
 
 @Injectable({ providedIn: 'root' })
 export class WorkshopService {
@@ -50,6 +58,45 @@ export class WorkshopService {
         return data as string;
       }),
     );
+  }
+
+  /**
+   * Actualiza los datos y las reglas del taller (UC-WS-02). Solo el `owner` puede: para otro
+   * rol la base de datos no actualiza ninguna fila y se lanza `AuthorizationError`.
+   */
+  update(id: string, changes: WorkshopChanges): Observable<Workshop> {
+    return from(
+      this.supabase
+        .from('workshops')
+        .update(this.toRow(changes))
+        .eq('id', id)
+        .select('*')
+        .single<WorkshopRow>(),
+    ).pipe(
+      map(({ data, error }) => {
+        // PGRST116: ninguna fila afectada (la RLS no deja actualizar a quien no es owner).
+        if (error?.code === 'PGRST116') throw new AuthorizationError();
+        if (error) throw mapSupabaseError(error);
+        return this.toDomain(data);
+      }),
+    );
+  }
+
+  private toRow(changes: WorkshopChanges): Partial<WorkshopRow> {
+    const row: Partial<WorkshopRow> = {};
+    if (changes.name !== undefined) row.name = changes.name;
+    if (changes.address !== undefined) row.address = changes.address;
+    if (changes.phone !== undefined) row.phone = changes.phone;
+    if (changes.logoUrl !== undefined) row.logo_url = changes.logoUrl;
+    if (changes.capacity !== undefined) row.capacity = changes.capacity;
+    if (changes.minIntakePhotos !== undefined) row.min_intake_photos = changes.minIntakePhotos;
+    if (changes.quoteExpirationDays !== undefined) {
+      row.quote_expiration_days = changes.quoteExpirationDays;
+    }
+    if (changes.warrantyDays !== undefined) row.warranty_days = changes.warrantyDays;
+    if (changes.currency !== undefined) row.currency = changes.currency;
+    if (changes.timezone !== undefined) row.timezone = changes.timezone;
+    return row;
   }
 
   private toCreationError(error: { code?: string; message: string }): Error {

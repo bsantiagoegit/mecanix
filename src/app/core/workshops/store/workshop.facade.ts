@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 
+import { Workshop } from '../workshop.model';
 import { WorkshopsActions } from './workshop.actions';
 import {
   selectActiveWorkshop,
@@ -23,6 +24,11 @@ export class WorkshopFacade {
 
   loadAvailable(): void {
     this.store.dispatch(WorkshopsActions.loadAvailable());
+  }
+
+  /** Refleja en el store un taller ya guardado (p. ej. tras editar su configuración). */
+  applyUpdate(workshop: Workshop): void {
+    this.store.dispatch(WorkshopsActions.updateSuccess({ workshop }));
   }
 
   switchTo(workshopId: string): void {
