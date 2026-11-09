@@ -62,6 +62,7 @@ Crear ADR cuando la decisión:
 | [ADR-011](./ADR-011-feature-flags.md)              | Feature flags                                                | ✅ Aceptado | 2026-10 |
 | [ADR-012](./ADR-012-onboarding-self-service.md)    | Onboarding self-service con un taller por cuenta             | ✅ Aceptado | 2026-11 |
 | [ADR-013](./ADR-013-invitaciones-edge-function.md) | Invitaciones por Edge Function e invitación de Supabase Auth | ✅ Aceptado | 2026-11 |
+| [ADR-014](./ADR-014-bucket-publico-logos.md)       | Logo del taller en un bucket público `logos`                 | ✅ Aceptado | 2026-11 |
 
 ---
 
