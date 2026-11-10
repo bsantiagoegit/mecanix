@@ -112,7 +112,7 @@ Definir los requisitos mínimos de accesibilidad del sistema.
 - `Enter` / `Space`: activar.
 - `Escape`: cerrar modales/dropdowns.
 
-**Trampa de foco**: en modales y bottom sheets, el foco debe quedarse dentro. Usar `@angular/cdk/a11y` (`cdkTrapFocus`).
+**Trampa de foco**: en modales y bottom sheets, el foco debe quedarse dentro. `app-modal` usa `<dialog>` nativo, que ya lo garantiza (sin `@angular/cdk`); un componente que no sea un diálogo nativo debería usar `cdkTrapFocus` si se llega a añadir esa dependencia (requiere ADR).
 
 ---
 

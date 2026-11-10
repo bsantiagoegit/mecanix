@@ -193,6 +193,15 @@ El botón activo se marca visualmente.
 
 **Propósito**: diálogo modal.
 
+**Implementación**: sobre el elemento nativo `<dialog>` (`showModal()`): el navegador aporta la trampa de foco, el cierre con `Esc`, el fondo inerte y la devolución del foco a quien lo abrió, **sin `@angular/cdk`** (que no es dependencia del proyecto). Al abrirse, el foco va al primer campo del contenido y no al botón de cerrar.
+
+**Comportamiento**:
+
+- Un clic en el fondo **no** lo cierra (para no perder lo escrito en un formulario). Se cierra con la X, `Esc` o desde el padre (`isOpen`).
+- Con `closable = false` no hay X y `Esc` se ignora.
+- El contenido proyectado se crea con el padre; para que un formulario empiece limpio cada vez que se abre, envolverlo en `@if (isOpen())` dentro del modal.
+- El slot `[actions]` va en un pie fijo; el cuerpo hace scroll si no cabe (en móvil ocupa casi todo el alto).
+
 **Inputs**:
 
 - `title`: `string`.
