@@ -1,25 +1,32 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
 import { AuthFacade } from '@core/auth';
 import { WorkshopFacade } from '@core/workshops';
 import { Button } from '@shared/components/button/button';
 import { Card } from '@shared/components/card/card';
+import { Modal } from '@shared/components/modal/modal';
+import { ToastService } from '@shared/services/toast.service';
 import { CustomerCard } from '../../components/customer-card/customer-card';
+import { CustomerForm } from '../../components/customer-form/customer-form';
 import { CustomerSearch } from '../../components/customer-search/customer-search';
-import { CustomerSummary } from '../../models/customer.model';
-import { prefillFromSearch } from '../../models/customer-prefill';
+import { CustomerInput, CustomerSummary } from '../../models/customer.model';
+import { CustomerFormState } from '../../services/customer-form.state';
 import { CustomersService } from '../../services/customers.service';
 
-/** UC-CUST-02: lista de clientes del taller con búsqueda y paginación. */
+/**
+ * UC-CUST-02: lista de clientes del taller con búsqueda y paginación. También registra clientes
+ * nuevos (UC-CUST-01) en un modal, sin salir de la lista.
+ */
 @Component({
   selector: 'app-customer-list-page',
-  imports: [Button, Card, CustomerCard, CustomerSearch],
+  imports: [Button, Card, CustomerCard, CustomerForm, CustomerSearch, Modal],
+  providers: [CustomerFormState],
   templateUrl: './customer-list-page.html',
 })
 export class CustomerListPage {
   private readonly customers = inject(CustomersService);
   private readonly workshops = inject(WorkshopFacade);
-  private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
+  readonly form = inject(CustomerFormState);
   readonly auth = inject(AuthFacade);
 
   /** Texto buscado (ya sin espacios sobrantes). Vacío lista todos. */
@@ -30,6 +37,9 @@ export class CustomerListPage {
   readonly isLoadingMore = signal(false);
   readonly loadError = signal<string | null>(null);
   readonly moreError = signal<string | null>(null);
+
+  /** El modal "Nuevo cliente" está abierto. */
+  readonly createOpen = signal(false);
 
   /** Registrar clientes es de `owner` y `advisor`; el mecánico no ve los botones. */
   readonly canCreate = computed(() => this.auth.hasRole('owner', 'advisor'));
@@ -81,11 +91,36 @@ export class CustomerListPage {
     }
   }
 
-  /** Va al formulario de alta; si venía de una búsqueda sin resultados, lleva lo buscado ya escrito. */
-  newCustomer(fromSearch = false): void {
-    void this.router.navigate(['/customers', 'new'], {
-      queryParams: fromSearch ? prefillFromSearch(this.query()) : {},
-    });
+  /** Abre el modal con un formulario limpio. */
+  openCreate(): void {
+    this.form.reset();
+    this.createOpen.set(true);
+  }
+
+  closeCreate(): void {
+    this.createOpen.set(false);
+  }
+
+  /** Registra el cliente; si sale bien cierra el modal y actualiza la lista. */
+  async onCreate(input: CustomerInput): Promise<void> {
+    const workshopId = this.workshops.activeId();
+    if (!workshopId) return;
+
+    const result = await this.form.save(
+      () => this.customers.create(workshopId, input),
+      'No se pudo registrar el cliente. Revisa tu conexión e inténtalo de nuevo.',
+    );
+    if (!result.ok) return;
+
+    this.closeCreate();
+    this.toast.success('Cliente registrado');
+    this.retry();
+  }
+
+  /** Al salir del teléfono: aviso (no bloquea) si otros clientes del taller ya lo usan. */
+  async onPhoneChecked(phone: string): Promise<void> {
+    const workshopId = this.workshops.activeId();
+    if (workshopId) await this.form.checkPhone(workshopId, phone);
   }
 
   retry(): void {

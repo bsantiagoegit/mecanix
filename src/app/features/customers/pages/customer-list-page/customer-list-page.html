@@ -5,7 +5,7 @@
       <p class="text-sm text-fg-muted mt-1">Las personas que llevan su vehículo a tu taller.</p>
     </div>
     @if (canCreate()) {
-      <app-button (clicked)="newCustomer()">Nuevo cliente</app-button>
+      <app-button (clicked)="openCreate()">Nuevo cliente</app-button>
     }
   </div>
 
@@ -30,16 +30,11 @@
             <app-customer-card [customer]="customer" />
           </li>
         } @empty {
-          <li class="p-6 text-sm text-fg-muted flex flex-col items-start gap-3">
+          <li class="p-6 text-sm text-fg-muted">
             @if (query()) {
-              <span>No se encontraron clientes para «{{ query() }}».</span>
+              No se encontraron clientes para «{{ query() }}».
             } @else {
-              <span>Aún no hay clientes en tu taller.</span>
-            }
-            @if (canCreate()) {
-              <app-button variant="secondary" size="sm" (clicked)="newCustomer(true)">
-                Registrar nuevo cliente
-              </app-button>
+              Aún no hay clientes en tu taller.
             }
           </li>
         }
@@ -62,4 +57,25 @@
       }
     }
   </app-card>
+
+  @if (canCreate()) {
+    <app-modal title="Nuevo cliente" size="lg" [(isOpen)]="createOpen">
+      @if (createOpen()) {
+        <p class="mb-4 text-sm text-fg-muted">
+          Nombres, apellidos y teléfono son obligatorios; el resto puedes completarlo después.
+        </p>
+        <app-customer-form
+          submitLabel="Registrar cliente"
+          [cancellable]="true"
+          [isSubmitting]="form.isSubmitting()"
+          [error]="form.error()"
+          [phoneWarning]="form.phoneWarning()"
+          [identificationConflict]="form.conflict()"
+          (submitted)="onCreate($event)"
+          (phoneChecked)="onPhoneChecked($event)"
+          (cancelled)="closeCreate()"
+        />
+      }
+    </app-modal>
+  }
 </div>
