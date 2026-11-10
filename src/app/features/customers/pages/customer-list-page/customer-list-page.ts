@@ -46,7 +46,7 @@ export class CustomerListPage {
   /** El mecánico solo ve y busca por nombre: la base de datos no le da el resto. */
   readonly byNameOnly = computed(() => this.auth.role() === 'mechanic');
   readonly placeholder = computed(() =>
-    this.byNameOnly() ? 'Nombre o apellido' : 'Nombre, teléfono o identificación',
+    this.byNameOnly() ? 'Nombre o apellido' : 'Nombre, celular o cédula',
   );
 
   /** Se descartan las respuestas de una búsqueda que ya quedó atrás (llegan desordenadas). */

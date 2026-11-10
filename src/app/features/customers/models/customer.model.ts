@@ -25,14 +25,16 @@ export interface Customer extends CustomerSummary {
   address: string | null;
 }
 
-/** Lo que el formulario envía al registrar o editar. Los opcionales vacíos van como `null`. */
+/** Lo que el formulario envía al registrar o editar: todos los campos son obligatorios. */
 export interface CustomerInput {
   firstName: string;
   lastName: string;
+  /** Celular ecuatoriano de 10 dígitos (`09XXXXXXXX`). */
   phone: string;
-  email: string | null;
-  identification: string | null;
-  address: string | null;
+  email: string;
+  /** Cédula ecuatoriana de 10 dígitos, validada con el Módulo 10. */
+  identification: string;
+  address: string;
 }
 
 /** Un cliente existente que choca con lo que se está escribiendo (teléfono o identificación). */
@@ -42,34 +44,28 @@ export interface CustomerMatch {
   phone: string;
 }
 
-/** Texto de un campo del formulario: sin espacios en los extremos; vacío es `null` si es opcional. */
-export function normalizeInput(raw: {
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email: string;
-  identification: string;
-  address: string;
-}): CustomerInput {
-  const optional = (value: string) => (value.trim() === '' ? null : value.trim());
+/** Los textos del formulario sin espacios en los extremos, como los guarda la base de datos. */
+export function normalizeInput(raw: CustomerInput): CustomerInput {
   return {
     firstName: raw.firstName.trim(),
     lastName: raw.lastName.trim(),
     phone: raw.phone.trim(),
-    email: optional(raw.email),
-    identification: optional(raw.identification)?.toUpperCase() ?? null,
-    address: optional(raw.address),
+    email: raw.email.trim(),
+    identification: raw.identification.trim(),
+    address: raw.address.trim(),
   };
 }
 
 /** ¿Es lo mismo? Compara ya normalizado, igual que lo guarda la base de datos. */
 export function isSameInput(a: CustomerInput, b: CustomerInput): boolean {
+  const x = normalizeInput(a);
+  const y = normalizeInput(b);
   return (
-    a.firstName === b.firstName &&
-    a.lastName === b.lastName &&
-    a.phone === b.phone &&
-    a.email === b.email &&
-    (a.identification ?? null) === (b.identification ?? null) &&
-    a.address === b.address
+    x.firstName === y.firstName &&
+    x.lastName === y.lastName &&
+    x.phone === y.phone &&
+    x.email === y.email &&
+    x.identification === y.identification &&
+    x.address === y.address
   );
 }

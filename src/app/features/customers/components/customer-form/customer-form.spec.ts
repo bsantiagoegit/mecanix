@@ -2,13 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { CustomerInput } from '../../models/customer.model';
 import { CustomerForm } from './customer-form';
 
-const filled = {
+const filled: CustomerInput = {
   firstName: 'Ana',
   lastName: 'Pérez',
   phone: '0987654321',
-  email: '',
-  identification: '',
-  address: '',
+  email: 'ana@example.com',
+  identification: '1710034065',
+  address: 'Calle 1',
 };
 
 function setup(inputs: Record<string, unknown> = {}) {
@@ -29,80 +29,158 @@ function setup(inputs: Record<string, unknown> = {}) {
   };
 }
 
+/** Escribe `value` en el campo y lo marca como tocado, para leer su mensaje de error. */
+function typed(component: CustomerForm, field: string, value: string) {
+  component.form.patchValue({ [field]: value });
+  component.form.markAllAsTouched();
+  return component.fieldError(field);
+}
+
 describe('CustomerForm', () => {
-  describe('validation', () => {
-    it('does not submit an empty form and marks the required fields', () => {
+  describe('every field is required', () => {
+    it('does not submit an empty form and marks all the fields', () => {
       const { component, submitted } = setup();
       component.onSubmit();
       expect(submitted).toEqual([]);
-      expect(component.fieldError('firstName')).toBe('Este campo es obligatorio');
-      expect(component.fieldError('lastName')).toBe('Este campo es obligatorio');
-      expect(component.fieldError('phone')).toBe('Este campo es obligatorio');
+      for (const field of [
+        'firstName',
+        'lastName',
+        'phone',
+        'email',
+        'identification',
+        'address',
+      ]) {
+        expect(component.fieldError(field)).toBe('Este campo es obligatorio');
+      }
     });
 
-    it('does not require the optional fields', () => {
-      const { component, submitted } = setup();
-      component.form.setValue(filled);
-      component.onSubmit();
-      expect(submitted).toHaveLength(1);
-    });
-
-    it.each(['abc', '123456', '1'.repeat(21), '09876abc21'])('rejects the phone "%s"', (phone) => {
-      const { component } = setup();
-      component.form.patchValue({ phone });
-      component.form.markAllAsTouched();
-      expect(component.fieldError('phone')).toContain('Teléfono inválido');
-    });
-
-    it.each(['0987654321', '+593 98 765 4321', '(02) 255-1234'])(
-      'accepts the phone "%s"',
-      (phone) => {
-        const { component } = setup();
-        component.form.patchValue({ phone });
-        component.form.markAllAsTouched();
-        expect(component.fieldError('phone')).toBe('');
+    it.each(['firstName', 'lastName', 'phone', 'email', 'identification', 'address'] as const)(
+      'does not submit without %s',
+      (field) => {
+        const { component, submitted } = setup();
+        component.form.setValue({ ...filled, [field]: '' });
+        component.onSubmit();
+        expect(submitted).toEqual([]);
+        expect(component.fieldError(field)).toBe('Este campo es obligatorio');
       },
     );
 
-    it('rejects an email without a domain extension', () => {
-      const { component } = setup();
-      component.form.patchValue({ email: 'ana@example' });
-      component.form.markAllAsTouched();
-      expect(component.fieldError('email')).toBe('Email inválido');
+    it('marks every field as required in the form', () => {
+      const { element } = setup();
+      expect(element.querySelectorAll('label .text-danger-500')).toHaveLength(6);
     });
 
-    it.each([
-      ['firstName', 121],
-      ['lastName', 121],
-      ['identification', 21],
-      ['address', 201],
-    ])('rejects a %s that is too long', (field, length) => {
-      const { component } = setup();
-      component.form.patchValue({ [field]: 'a'.repeat(length) });
-      component.form.markAllAsTouched();
-      expect(component.fieldError(field)).toBe('Es demasiado largo');
-    });
-
-    it('strips surrounding spaces while typing', () => {
-      const { component } = setup();
-      component.form.controls.firstName.setValue('  Ana ');
-      expect(component.form.controls.firstName.value).toBe('Ana');
+    it('submits when everything is filled in correctly', () => {
+      const { component, submitted } = setup();
+      component.form.setValue(filled);
+      component.onSubmit();
+      expect(submitted).toEqual([filled]);
     });
   });
 
-  describe('submitting', () => {
-    it('emits the normalized data', () => {
+  describe('celular (Ecuador, 10 dígitos)', () => {
+    it.each(['0987654321', '0991000001', '0900000000'])('accepts "%s"', (phone) => {
+      const { component } = setup();
+      expect(typed(component, 'phone', phone)).toBe('');
+    });
+
+    it.each([
+      ['098765432', 'El celular debe tener 10 dígitos'],
+      ['09876543210', 'El celular debe tener 10 dígitos'],
+      ['0287654321', 'El celular debe empezar con 09'],
+      ['1987654321', 'El celular debe empezar con 09'],
+      ['098 765 4321', 'Escribe solo números, sin espacios ni guiones'],
+      ['098-765-4321', 'Escribe solo números, sin espacios ni guiones'],
+      ['+593987654321', 'Escribe solo números, sin espacios ni guiones'],
+      ['09876abc21', 'Escribe solo números, sin espacios ni guiones'],
+    ])('rejects "%s"', (phone, message) => {
+      const { component } = setup();
+      expect(typed(component, 'phone', phone)).toBe(message);
+    });
+
+    it('limits what can be typed to 10 characters and shows the numeric keyboard', () => {
+      const { element } = setup();
+      const phone = element.querySelector('input[type="tel"]') as HTMLInputElement;
+      expect(phone.getAttribute('maxlength')).toBe('10');
+      expect(phone.getAttribute('inputmode')).toBe('numeric');
+    });
+  });
+
+  describe('cédula (Ecuador, Módulo 10)', () => {
+    it.each(['1710034065', '1700000001', '0926687856', '3000000004'])('accepts "%s"', (id) => {
+      const { component } = setup();
+      expect(typed(component, 'identification', id)).toBe('');
+    });
+
+    it.each([
+      ['171003406', 'La cédula debe tener 10 dígitos'],
+      ['17100340655', 'La cédula debe tener 10 dígitos'],
+      ['17100340a5', 'Escribe solo números'],
+      ['1710-34065', 'Escribe solo números'],
+      ['9910034065', 'Cédula inválida: los dos primeros dígitos no son una provincia'],
+      ['1760034065', 'Cédula inválida: el tercer dígito debe ser de 0 a 5'],
+      ['1710034066', 'Cédula inválida: el dígito verificador no coincide'],
+    ])('rejects "%s"', (id, message) => {
+      const { component } = setup();
+      expect(typed(component, 'identification', id)).toBe(message);
+    });
+
+    it('does not submit an invalid cédula even if everything else is right', () => {
       const { component, submitted } = setup();
-      component.form.setValue({ ...filled, identification: 'ab123x', email: 'ana@example.com' });
+      component.form.setValue({ ...filled, identification: '1710034066' });
       component.onSubmit();
-      expect(submitted[0]).toEqual({
-        firstName: 'Ana',
-        lastName: 'Pérez',
-        phone: '0987654321',
-        email: 'ana@example.com',
-        identification: 'AB123X',
-        address: null,
-      });
+      expect(submitted).toEqual([]);
+    });
+
+    it('limits what can be typed to 10 characters and shows the numeric keyboard', () => {
+      const { element } = setup();
+      const field = Array.from(element.querySelectorAll('input')).find(
+        (input) => input.getAttribute('maxlength') === '10' && input.type !== 'tel',
+      ) as HTMLInputElement;
+      expect(field.getAttribute('inputmode')).toBe('numeric');
+    });
+  });
+
+  describe('email (el mismo validador global que el inicio de sesión)', () => {
+    it('accepts a valid email', () => {
+      const { component } = setup();
+      expect(typed(component, 'email', 'ana@example.com')).toBe('');
+    });
+
+    it.each(['ana@example', 'ana', '@example.com', 'a na@example.com'])('rejects "%s"', (email) => {
+      const { component } = setup();
+      expect(typed(component, 'email', email)).toBe('Email inválido');
+    });
+  });
+
+  describe('lengths', () => {
+    it.each([
+      ['firstName', 121],
+      ['lastName', 121],
+      ['address', 201],
+    ])('rejects a %s that is too long', (field, length) => {
+      const { component } = setup();
+      expect(typed(component, field, 'a'.repeat(length))).toBe('Es demasiado largo');
+    });
+
+    it('rejects an email longer than 254 characters', () => {
+      const { component } = setup();
+      expect(typed(component, 'email', `${'a'.repeat(250)}@example.com`)).not.toBe('');
+    });
+  });
+
+  it('strips surrounding spaces while typing', () => {
+    const { component } = setup();
+    component.form.controls.firstName.setValue('  Ana ');
+    expect(component.form.controls.firstName.value).toBe('Ana');
+  });
+
+  describe('submitting', () => {
+    it('emits the data without surrounding spaces', () => {
+      const { component, submitted } = setup();
+      component.form.setValue({ ...filled, address: '  Calle 1  ' });
+      component.onSubmit();
+      expect(submitted[0].address).toBe('Calle 1');
     });
 
     it('shows the label and the loading state it receives', () => {
@@ -147,24 +225,9 @@ describe('CustomerForm', () => {
       });
     });
 
-    it('starts with the customer data when editing, with the optionals empty as ""', () => {
-      const initial: CustomerInput = {
-        firstName: 'Ana',
-        lastName: 'Pérez',
-        phone: '0987654321',
-        email: null,
-        identification: 'AB123',
-        address: 'Calle 1',
-      };
-      const { component } = setup({ initial });
-      expect(component.form.getRawValue()).toEqual({
-        firstName: 'Ana',
-        lastName: 'Pérez',
-        phone: '0987654321',
-        email: '',
-        identification: 'AB123',
-        address: 'Calle 1',
-      });
+    it('starts with the customer data when editing', () => {
+      const { component } = setup({ initial: filled });
+      expect(component.form.getRawValue()).toEqual(filled);
     });
   });
 
@@ -173,28 +236,26 @@ describe('CustomerForm', () => {
 
     it('asks to check the phone when leaving a valid phone field', () => {
       const { component, phones } = setup();
-      component.form.patchValue({ phone: ' 0987654321 ' });
+      component.form.patchValue({ phone: '0987654321' });
       component.onPhoneFocusOut();
       expect(phones).toEqual(['0987654321']);
     });
 
-    it('does not ask for an empty or invalid phone', () => {
+    it.each(['', 'abc', '098765432', '0287654321'])('does not ask for the phone "%s"', (phone) => {
       const { component, phones } = setup();
-      component.onPhoneFocusOut();
-      component.form.patchValue({ phone: 'abc' });
+      component.form.patchValue({ phone });
       component.onPhoneFocusOut();
       expect(phones).toEqual([]);
     });
 
     it('lists the customers that already use the phone, without blocking', () => {
       const { fixture, component, element } = setup();
-      component.form.patchValue({ phone: '0987654321' });
+      component.form.setValue(filled);
       fixture.componentRef.setInput('phoneWarning', { phone: '0987654321', matches: [match] });
       fixture.detectChanges();
 
       expect(element.querySelector('[role="status"]')?.textContent).toContain('Luis Gómez');
       expect(element.textContent).toContain('puedes continuar');
-      component.form.patchValue({ firstName: 'Ana', lastName: 'Pérez' });
       const submitted: unknown[] = [];
       component.submitted.subscribe((v) => submitted.push(v));
       component.onSubmit();
@@ -222,21 +283,19 @@ describe('CustomerForm', () => {
     });
   });
 
-  describe('identification conflict', () => {
+  describe('cédula conflict', () => {
     const existing = { id: 'c9', fullName: 'Luis Gómez', phone: '0990000001' };
 
-    it('names the customer that already has the identification', () => {
+    it('names the customer that already has the cédula', () => {
       const { fixture, component, element } = setup();
-      component.form.patchValue({ identification: 'ab123' });
+      component.form.patchValue({ identification: '1710034065' });
       fixture.componentRef.setInput('identificationConflict', {
-        identification: 'AB123',
+        identification: '1710034065',
         existing,
       });
       fixture.detectChanges();
 
-      expect(component.fieldError('identification')).toBe(
-        'Ya existe un cliente con esta identificación',
-      );
+      expect(component.fieldError('identification')).toBe('Ya existe un cliente con esta cédula');
       const alerts = Array.from(element.querySelectorAll('[role="alert"]')).map(
         (e) => e.textContent,
       );
@@ -246,25 +305,25 @@ describe('CustomerForm', () => {
 
     it('still warns when the existing customer is unknown', () => {
       const { fixture, component, element } = setup();
-      component.form.patchValue({ identification: 'AB123' });
+      component.form.patchValue({ identification: '1710034065' });
       fixture.componentRef.setInput('identificationConflict', {
-        identification: 'AB123',
+        identification: '1710034065',
         existing: null,
       });
       fixture.detectChanges();
       expect(element.textContent).toContain('ya pertenece a otro cliente del taller');
     });
 
-    it('disappears once the identification is edited', () => {
+    it('disappears once the cédula is edited', () => {
       const { fixture, component, element } = setup();
-      component.form.patchValue({ identification: 'AB123' });
+      component.form.patchValue({ identification: '1710034065' });
       fixture.componentRef.setInput('identificationConflict', {
-        identification: 'AB123',
+        identification: '1710034065',
         existing,
       });
       fixture.detectChanges();
 
-      component.form.patchValue({ identification: 'AB124' });
+      component.form.patchValue({ identification: '1713175071' });
       fixture.detectChanges();
 
       expect(component.fieldError('identification')).toBe('');

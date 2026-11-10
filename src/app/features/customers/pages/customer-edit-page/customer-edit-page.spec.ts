@@ -14,18 +14,18 @@ const customer: Customer = {
   firstName: 'Ana',
   lastName: 'Pérez',
   phone: '0987654321',
-  email: null,
-  identification: 'AB123',
-  address: null,
+  email: 'ana@example.com',
+  identification: '1710034065',
+  address: 'Calle 1',
 };
 
 const changed: CustomerInput = {
   firstName: 'Luisa',
   lastName: 'Gómez',
   phone: '0981112233',
-  email: null,
-  identification: null,
-  address: null,
+  email: 'luisa@example.com',
+  identification: '1713175071',
+  address: 'Calle 2',
 };
 
 function setup(
@@ -154,12 +154,12 @@ describe('CustomerEditPage', () => {
     it('blocks a taken identification', async () => {
       const { flush, component, navigate } = setup({
         service: {
-          update: vi.fn().mockRejectedValue(new DuplicateIdentificationError('ZZ9', null)),
+          update: vi.fn().mockRejectedValue(new DuplicateIdentificationError('1713175071', null)),
         },
       });
       await flush();
-      await component.onSubmit({ ...changed, identification: 'ZZ9' });
-      expect(component.form.conflict()).toEqual({ identification: 'ZZ9', existing: null });
+      await component.onSubmit(changed);
+      expect(component.form.conflict()).toEqual({ identification: '1713175071', existing: null });
       expect(navigate).not.toHaveBeenCalled();
     });
 

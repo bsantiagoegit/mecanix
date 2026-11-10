@@ -25,9 +25,9 @@ const input = {
   firstName: 'Luisa',
   lastName: 'Gómez',
   phone: '0981112233',
-  email: null,
-  identification: null,
-  address: null,
+  email: 'luisa@example.com',
+  identification: '1713175071',
+  address: 'Calle 2',
 };
 
 const page = (n: number, hasMore = false): CustomerPage => ({
@@ -294,7 +294,7 @@ describe('CustomerListPage', () => {
         const { component, flush, element } = setup({ role });
         await flush();
         expect(component.byNameOnly()).toBe(false);
-        expect(component.placeholder()).toBe('Nombre, teléfono o identificación');
+        expect(component.placeholder()).toBe('Nombre, celular o cédula');
         expect(element.textContent).not.toContain('solo por nombre');
       },
     );
@@ -387,17 +387,17 @@ describe('CustomerListPage', () => {
     it('keeps the modal open and names the customer when the identification is taken', async () => {
       const existing = { id: 'c9', fullName: 'Luis Gómez', phone: '0990000001' };
       const { component, flush, element } = setup({
-        create: vi.fn().mockRejectedValue(new DuplicateIdentificationError('AB123', existing)),
+        create: vi.fn().mockRejectedValue(new DuplicateIdentificationError('1713175071', existing)),
       });
       await flush();
       component.openCreate();
       await flush();
 
-      await component.onCreate({ ...input, identification: 'AB123' });
+      await component.onCreate(input);
       await flush();
 
       expect(component.createOpen()).toBe(true);
-      expect(component.form.conflict()).toEqual({ identification: 'AB123', existing });
+      expect(component.form.conflict()).toEqual({ identification: '1713175071', existing });
       expect(dialog(element).open).toBe(true);
     });
 

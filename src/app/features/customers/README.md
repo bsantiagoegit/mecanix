@@ -63,16 +63,28 @@ El estado es local a la página (signals): no hay slice de NgRx porque no es est
 - **Registrar** es un **modal** de la lista (`app-modal`, ver [componentes](../../../../docs/design/components.md)): el botón "Nuevo cliente" de arriba lo abre con un formulario limpio. Al guardar con éxito se cierra, se avisa con un toast y se actualiza la lista. Se cierra con "Cancelar", la X o `Esc` (se descarta lo escrito); un clic fuera **no** lo cierra. El modal solo existe para `owner` y `advisor`.
 - **Editar** es la página `CustomerEditPage` (`/customers/:id/edit`): carga el cliente (`getById`) y, al guardar, vuelve a la lista. El `:id` llega como `input()` (`withComponentInputBinding`).
 
-`CustomerForm` es presentacional y lo usan los dos: valida con las mismas reglas que la base de datos (nombres y apellidos de 1 a 120, teléfono de 7 a 20 con `+ ( ) -`, email con dominio, identificación hasta 20, dirección hasta 200), recorta los espacios y emite `CustomerInput`. Lo que no es de presentación (guardar, comprobar el teléfono) lo comparten la lista y la página de edición mediante `CustomerFormState`, un estado local provisto en cada componente (no global).
+`CustomerForm` es presentacional y lo usan los dos. **Todos los campos son obligatorios** y se validan con utilidades globales de `@shared/utils`, las mismas que usan otros formularios de la app:
 
-- **Identificación repetida (bloquea)**: la base de datos es la que decide (índice único por taller, sin distinguir mayúsculas porque un trigger la guarda en mayúsculas). Al chocar, `CustomersService` busca al cliente que ya la tiene y lanza `DuplicateIdentificationError`; el formulario lo nombra ("pertenece a Carlos Cliente, teléfono …") y deja de mostrarlo en cuanto el usuario cambia la identificación.
-- **Teléfono repetido (avisa, no bloquea)**: al **salir del campo** con un teléfono válido se consulta si otros clientes del taller lo usan (`findByPhone`, sin contar al cliente que se edita) y se lista su nombre. El aviso solo vale mientras el campo conserve ese teléfono, se descarta la respuesta de una comprobación que ya quedó atrás (también al reabrir el modal), y un fallo de la consulta no molesta (el aviso es opcional).
+| Campo              | Validador                                                | Regla                                                                                     |
+| ------------------ | -------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Nombres, apellidos | `Validators.required` + `maxLength(120)`                 | Obligatorios, hasta 120 caracteres                                                        |
+| Celular            | `ecuadorMobileValidator` (`ecuador-phone.validator.ts`)  | Solo dígitos, 10 en total, empieza con `09`                                               |
+| Email              | `emailValidator` (`email.validator.ts`)                  | El **mismo** que el inicio de sesión, el registro, recuperar contraseña e invitar usuario |
+| Cédula             | `ecuadorCedulaValidator` (`ecuador-cedula.validator.ts`) | 10 dígitos y Módulo 10: provincia 01–24 o 30, tercer dígito 0–5, dígito verificador       |
+| Dirección          | `Validators.required` + `maxLength(200)`                 | Obligatoria, hasta 200 caracteres                                                         |
+
+Cada validador de Ecuador expone una función pura (`checkEcuadorMobile`, `checkEcuadorCedula`) que devuelve el **motivo** del fallo (formato, largo, prefijo, provincia, tercer dígito o dígito verificador), y el formulario lo traduce a un mensaje específico. El campo de celular y el de cédula limitan lo que se puede escribir a 10 caracteres y piden teclado numérico en el móvil (`maxChars` e `inputmode` del `Input` compartido). El formulario recorta los espacios y emite `CustomerInput`. Lo que no es de presentación (guardar, comprobar el teléfono) lo comparten la lista y la página de edición mediante `CustomerFormState`, un estado local provisto en cada componente (no global).
+
+- **Cédula repetida (bloquea)**: la base de datos es la que decide (índice único por taller). Al chocar, `CustomersService` busca al cliente que ya la tiene y lanza `DuplicateIdentificationError`; el formulario lo nombra ("pertenece a Carlos Cliente, teléfono …") y deja de mostrarlo en cuanto el usuario cambia la identificación.
+- **Celular repetido (avisa, no bloquea)**: al **salir del campo** con un celular válido se consulta si otros clientes del taller lo usan (`findByPhone`, sin contar al cliente que se edita) y se lista su nombre. El aviso solo vale mientras el campo conserve ese teléfono, se descarta la respuesta de una comprobación que ya quedó atrás (también al reabrir el modal), y un fallo de la consulta no molesta (el aviso es opcional).
 - **Si falla el guardado** (red, servidor): el modal o la página se quedan abiertos y el formulario **conserva lo escrito** para reintentar. En edición, si no hay cambios (comparando ya normalizado) no se llama al servidor y se avisa; si el cliente se eliminó mientras se editaba, la página pasa a "Cliente no encontrado".
 - **Datos de otro taller**: un cliente de otro taller o eliminado no se distingue de uno inexistente ("Cliente no encontrado").
 
 ## Pendiente de la siguiente rama
 
 - Las filas todavía no enlazan a un detalle (UC-CUST-03) y no hay un enlace "Editar" en la interfaz: la edición se alcanza por URL hasta que exista el detalle (`/customers/:id`). Con el detalle, el mensaje de identificación repetida también enlazará al cliente existente.
+- **La base de datos aún acepta lo anterior**: solo la app exige todos los campos, el celular de 10 dígitos y la cédula con Módulo 10; la base de datos admite campos vacíos, teléfonos de 7 a 20 caracteres e identificaciones de hasta 20. Llevar estas reglas a la base de datos (`NOT NULL`, restricciones de celular y cédula) es un cambio aparte, porque obliga a actualizar el seed y las pruebas.
+- Solo se registran clientes con cédula ecuatoriana; un extranjero con pasaporte no se puede registrar por ahora.
 - La búsqueda no ignora las tildes (`Perez` no encuentra `Pérez`); es una decisión del MVP, ver el caso de uso.
 
 ## Dependencias
@@ -88,7 +100,8 @@ El estado es local a la página (signals): no hay slice de NgRx porque no es est
 - `customer-search.spec.ts`: espera al escribir, texto sin espacios, sin repetir y texto vacío.
 - `customer-card.spec.ts`: nombre y contacto según lo que llega.
 - `customer-list-page.spec.ts`: carga, búsqueda, respuestas desordenadas, paginación, errores con reintento, comportamiento por rol y el modal de alta (abrir, registrar, errores, cancelar, formulario limpio).
-- `customer-form.spec.ts`: validaciones, datos emitidos normalizados, valores iniciales, aviso de teléfono y choque de identificación.
+- `customer-form.spec.ts`: todos los campos obligatorios, celular, cédula y email con su mensaje, largos, datos emitidos, valores iniciales, aviso de celular y choque de cédula.
+- `shared/utils/ecuador-phone.validator.spec.ts` y `ecuador-cedula.validator.spec.ts`: cada regla y cada motivo de fallo, con cédulas válidas e inválidas calculadas con el algoritmo.
 - `customer-edit-page.spec.ts`: edición (éxito, sin cambios, errores, cliente no encontrado) y el aviso de teléfono.
 - `customer-form.state.spec.ts`: guardado y sus resultados, aviso de teléfono con sus carreras y `reset`.
 - `customer.model.spec.ts` y `customers.routes.spec.ts`: normalización de los datos y guards de las rutas.
