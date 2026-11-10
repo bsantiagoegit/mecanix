@@ -7,12 +7,11 @@ describe('CUSTOMER_ROUTES', () => {
     expect(byPath('')?.canActivate).toBeUndefined();
   });
 
-  it.each(['new', ':id/edit'])('guards "%s" with a role guard', (path) => {
-    expect(byPath(path)?.canActivate).toHaveLength(1);
+  it('guards the edit page with a role guard', () => {
+    expect(byPath(':id/edit')?.canActivate).toHaveLength(1);
   });
 
-  it('puts "new" before ":id/edit" so it is never read as an id', () => {
-    const paths = CUSTOMER_ROUTES.map((r) => r.path);
-    expect(paths.indexOf('new')).toBeLessThan(paths.indexOf(':id/edit'));
+  it('has no page to register: that is a modal of the list', () => {
+    expect(byPath('new')).toBeUndefined();
   });
 });

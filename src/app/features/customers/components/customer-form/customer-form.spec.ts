@@ -111,6 +111,21 @@ describe('CustomerForm', () => {
       expect(element.querySelector('button[type="submit"]')?.hasAttribute('disabled')).toBe(true);
     });
 
+    it('shows a cancel button only when asked, and emits cancelled', () => {
+      const { fixture, element, component } = setup();
+      expect(element.textContent).not.toContain('Cancelar');
+
+      fixture.componentRef.setInput('cancellable', true);
+      fixture.detectChanges();
+      let cancelled = 0;
+      component.cancelled.subscribe(() => cancelled++);
+      const button = Array.from(element.querySelectorAll('button')).find((b) =>
+        b.textContent?.includes('Cancelar'),
+      );
+      button?.click();
+      expect(cancelled).toBe(1);
+    });
+
     it('shows the error it receives', () => {
       const { element } = setup({ error: 'No se pudo registrar el cliente.' });
       expect(element.querySelector('[role="alert"]')?.textContent).toContain(
@@ -129,15 +144,6 @@ describe('CustomerForm', () => {
         email: '',
         identification: '',
         address: '',
-      });
-    });
-
-    it('starts with the suggested values when registering', () => {
-      const { component } = setup({ prefill: { firstName: 'Ana', phone: '0987654321' } });
-      expect(component.form.getRawValue()).toMatchObject({
-        firstName: 'Ana',
-        lastName: '',
-        phone: '0987654321',
       });
     });
 

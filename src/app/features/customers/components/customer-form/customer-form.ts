@@ -6,7 +6,6 @@ import { Input } from '@shared/components/input/input';
 import { emailValidator } from '@shared/utils/email.validator';
 import { trimOnChange } from '@shared/utils/trim-on-change';
 import { CustomerInput, CustomerMatch, normalizeInput } from '../../models/customer.model';
-import { CustomerPrefill } from '../../models/customer-prefill';
 
 /** Mismo formato de teléfono que la base de datos (`customers_phone_valid`). */
 const PHONE_PATTERN = /^[0-9+()\s-]{7,20}$/;
@@ -45,17 +44,18 @@ const EMPTY: CustomerInput = {
 export class CustomerForm {
   private readonly fb = inject(FormBuilder);
 
-  /** Datos a editar; sin ellos el formulario empieza vacío (o con `prefill`). */
+  /** Datos a editar; sin ellos el formulario empieza vacío (registrar). */
   readonly initial = input<CustomerInput | null>(null);
-  /** Valores sugeridos al registrar (p. ej. lo que se buscó sin encontrar). */
-  readonly prefill = input<CustomerPrefill>({});
   readonly submitLabel = input('Guardar');
   readonly isSubmitting = input(false);
   readonly error = input<string | null>(null);
   readonly phoneWarning = input<PhoneWarning | null>(null);
   readonly identificationConflict = input<IdentificationConflict | null>(null);
+  /** Muestra un botón "Cancelar" junto al de guardar (p. ej. dentro de un modal). */
+  readonly cancellable = input(false);
 
   readonly submitted = output<CustomerInput>();
+  readonly cancelled = output<void>();
   /** El usuario salió del campo de teléfono con un teléfono válido. */
   readonly phoneChecked = output<string>();
 
@@ -98,9 +98,8 @@ export class CustomerForm {
 
     effect(() => {
       const initial = this.initial();
-      const prefill = this.prefill();
       untracked(() => {
-        const base = initial ?? { ...EMPTY, ...prefill };
+        const base = initial ?? EMPTY;
         this.form.reset({
           firstName: base.firstName,
           lastName: base.lastName,
