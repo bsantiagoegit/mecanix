@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthFacade } from '@core/auth';
 import { WorkshopFacade } from '@core/workshops';
 import { Button } from '@shared/components/button/button';
@@ -6,6 +7,7 @@ import { Card } from '@shared/components/card/card';
 import { CustomerCard } from '../../components/customer-card/customer-card';
 import { CustomerSearch } from '../../components/customer-search/customer-search';
 import { CustomerSummary } from '../../models/customer.model';
+import { prefillFromSearch } from '../../models/customer-prefill';
 import { CustomersService } from '../../services/customers.service';
 
 /** UC-CUST-02: lista de clientes del taller con búsqueda y paginación. */
@@ -17,6 +19,7 @@ import { CustomersService } from '../../services/customers.service';
 export class CustomerListPage {
   private readonly customers = inject(CustomersService);
   private readonly workshops = inject(WorkshopFacade);
+  private readonly router = inject(Router);
   readonly auth = inject(AuthFacade);
 
   /** Texto buscado (ya sin espacios sobrantes). Vacío lista todos. */
@@ -28,6 +31,8 @@ export class CustomerListPage {
   readonly loadError = signal<string | null>(null);
   readonly moreError = signal<string | null>(null);
 
+  /** Registrar clientes es de `owner` y `advisor`; el mecánico no ve los botones. */
+  readonly canCreate = computed(() => this.auth.hasRole('owner', 'advisor'));
   /** El mecánico solo ve y busca por nombre: la base de datos no le da el resto. */
   readonly byNameOnly = computed(() => this.auth.role() === 'mechanic');
   readonly placeholder = computed(() =>
@@ -74,6 +79,13 @@ export class CustomerListPage {
     } finally {
       if (request === this.requestId) this.isLoadingMore.set(false);
     }
+  }
+
+  /** Va al formulario de alta; si venía de una búsqueda sin resultados, lleva lo buscado ya escrito. */
+  newCustomer(fromSearch = false): void {
+    void this.router.navigate(['/customers', 'new'], {
+      queryParams: fromSearch ? prefillFromSearch(this.query()) : {},
+    });
   }
 
   retry(): void {
