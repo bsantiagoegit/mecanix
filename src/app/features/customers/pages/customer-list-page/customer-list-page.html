@@ -1,0 +1,55 @@
+<div class="max-w-3xl mx-auto flex flex-col gap-6">
+  <div>
+    <h1 class="text-2xl font-bold text-fg">Clientes</h1>
+    <p class="text-sm text-fg-muted mt-1">Las personas que llevan su vehículo a tu taller.</p>
+  </div>
+
+  <app-customer-search
+    [placeholder]="placeholder()"
+    [hint]="byNameOnly() ? 'Como mecánico, la búsqueda es solo por nombre.' : ''"
+    (search)="onSearch($event)"
+  />
+
+  <app-card padding="none">
+    @if (isLoading()) {
+      <p class="p-6 text-sm text-fg-muted" role="status">Cargando clientes…</p>
+    } @else if (loadError(); as message) {
+      <div class="p-6 flex flex-col items-start gap-3" role="alert">
+        <p class="text-sm text-danger-700">{{ message }}</p>
+        <app-button variant="secondary" size="sm" (clicked)="retry()">Reintentar</app-button>
+      </div>
+    } @else {
+      <ul class="divide-y divide-border" aria-label="Clientes" aria-live="polite">
+        @for (customer of items(); track customer.id) {
+          <li class="p-4">
+            <app-customer-card [customer]="customer" />
+          </li>
+        } @empty {
+          <li class="p-6 text-sm text-fg-muted">
+            @if (query()) {
+              No se encontraron clientes para «{{ query() }}».
+            } @else {
+              Aún no hay clientes en tu taller.
+            }
+          </li>
+        }
+      </ul>
+
+      @if (hasMore() || moreError()) {
+        <div class="p-4 border-t border-border flex flex-col items-center gap-2">
+          @if (moreError(); as message) {
+            <p class="text-sm text-danger-700" role="alert">{{ message }}</p>
+          }
+          <app-button
+            variant="secondary"
+            size="sm"
+            [loading]="isLoadingMore()"
+            (clicked)="loadMore()"
+          >
+            Cargar más
+          </app-button>
+        </div>
+      }
+    }
+  </app-card>
+</div>

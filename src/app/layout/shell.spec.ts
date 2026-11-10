@@ -59,6 +59,15 @@ describe('Shell', () => {
     }
   });
 
+  it('shows the customers link to every role', async () => {
+    for (const role of ['owner', 'advisor', 'mechanic'] as const) {
+      TestBed.resetTestingModule();
+      const { fixture, element } = render(role, workshop());
+      await fixture.whenStable();
+      expect(element.querySelector('nav a[href="/customers"]')?.textContent).toContain('Clientes');
+    }
+  });
+
   it('shows the workshop identity inside the brand link', async () => {
     const { fixture, element } = render('owner', workshop());
     await fixture.whenStable();
