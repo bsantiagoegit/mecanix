@@ -136,6 +136,16 @@ RLS no oculta columnas, y "la app consulta la vista" es una convención, no una 
 
 ---
 
+## D-RLS-13: El soft delete de clientes y vehículos es solo del owner
+
+Eliminar es un `UPDATE deleted_at` (no hay `DELETE`, ver D-RLS-03) y RLS no distingue qué columna cambia un `UPDATE`. La policy de `UPDATE` de `customers` y `vehicles` deja actualizar a `owner` y `advisor`, así que un asesor también podía eliminar (o restaurar) registros aunque la matriz de roles lo reserve al dueño. No había botón para hacerlo, pero la API lo permitía.
+
+Un trigger `BEFORE UPDATE OF deleted_at` (`protect_soft_delete`) solo deja cambiar `deleted_at` al `owner` del taller (`only_owner_can_delete`). Aplica al rol `authenticated`; `service_role` y las funciones `SECURITY DEFINER` no pasan por él.
+
+**Razón**: igual que con las membresías (`protect_workshop_member_update`), una regla "este rol no puede tocar esta columna" se impone con un trigger, no con la policy. Si otra tabla con `deleted_at` necesita la misma regla (p. ej. un catálogo), se añade el trigger con la misma función.
+
+---
+
 ## Resumen
 
 | ID       | Decisión                                                            |
@@ -152,6 +162,7 @@ RLS no oculta columnas, y "la app consulta la vista" es una convención, no una 
 | D-RLS-10 | `auth.uid()` como fuente de verdad                                  |
 | D-RLS-11 | Las referencias entre filas no cruzan de un taller a otro           |
 | D-RLS-12 | Datos de contacto del cliente solo para `owner` y `advisor`         |
+| D-RLS-13 | El soft delete de clientes y vehículos es solo del `owner`          |
 
 ---
 

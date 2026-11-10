@@ -149,6 +149,27 @@ CREATE TRIGGER trg_work_orders_warranty BEFORE UPDATE ON work_orders
 - `log_work_order_status_change()` usa `auth.uid()` como `actor_id` (NOT NULL). Un `UPDATE` de `status` sin usuario autenticado (p. ej. con `service_role` o desde una migración) falla; quien actúe así debe fijar el usuario antes (`set_config('request.jwt.claim.sub', ...)`).
 - Los triggers `BEFORE UPDATE` de `work_orders` son `updated_at`, numeración y garantía; el de historial es `AFTER UPDATE`.
 
+## Triggers de clientes y soft delete
+
+- `normalize_customer()` (`trg_customers_normalize`, `BEFORE INSERT OR UPDATE` en `customers`): recorta espacios, deja `NULL` los opcionales vacíos y guarda `identification` en mayúsculas. Ver [clientes](./tables/02-customers-vehicles.md).
+- `protect_soft_delete()` (`trg_customers_protect_soft_delete` y `trg_vehicles_protect_soft_delete`, `BEFORE UPDATE OF deleted_at`): solo el `owner` del taller puede cambiar `deleted_at` (eliminar o restaurar). Aplica solo al rol `authenticated`; lanza `only_owner_can_delete` (`ERRCODE 42501`, que la app trata como falta de permiso).
+
+```sql
+CREATE OR REPLACE FUNCTION protect_soft_delete()
+RETURNS trigger AS $$
+BEGIN
+  IF current_user = 'authenticated'
+     AND NEW.deleted_at IS DISTINCT FROM OLD.deleted_at
+     AND NOT auth_is_owner_in(OLD.workshop_id) THEN
+    RAISE EXCEPTION 'only_owner_can_delete' USING ERRCODE = '42501';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+Ver [D-RLS-13](../security/decisions.md).
+
 ## Triggers: mismo taller en las tablas de unión
 
 `repair_findings` y `quote_items` no tienen `workshop_id`, así que no pueden usar una FK compuesta. Un trigger `BEFORE INSERT OR UPDATE` comprueba que sus dos referencias sean del mismo taller y, si no, lanza `cross_workshop_reference` (`ERRCODE 23514`, que la app trata como error de validación). Son `SECURITY DEFINER` con `search_path` fijo para que la comprobación no dependa de lo que la RLS deje ver a quien escribe.

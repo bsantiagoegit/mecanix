@@ -30,7 +30,7 @@ CREATE POLICY customers_update_advisor_owner ON customers
   USING (workshop_id = ANY(auth_workshop_ids()) AND auth_is_advisor_or_owner_in(workshop_id))
   WITH CHECK (workshop_id = ANY(auth_workshop_ids()));
 
--- Sin DELETE. Soft delete = UPDATE deleted_at.
+-- Sin DELETE. Soft delete = UPDATE deleted_at, y solo lo hace el owner (trigger, D-RLS-13).
 ```
 
 **Soft delete y SELECT**: la policy de SELECT **no** filtra `deleted_at`. Postgres valida la fila nueva de un `UPDATE` contra las policies de SELECT; con `AND deleted_at IS NULL` el `UPDATE ... SET deleted_at` fallaba con `new row violates row-level security policy`. Los registros borrados se excluyen en las consultas (`.is('deleted_at', null)`). Misma regla para `vehicles`.
@@ -64,7 +64,7 @@ CREATE POLICY vehicles_update_advisor_owner ON vehicles
   USING (workshop_id = ANY(auth_workshop_ids()) AND auth_is_advisor_or_owner_in(workshop_id))
   WITH CHECK (workshop_id = ANY(auth_workshop_ids()));
 
--- Sin DELETE. Soft delete = UPDATE deleted_at.
+-- Sin DELETE. Soft delete = UPDATE deleted_at, y solo lo hace el owner (trigger, D-RLS-13).
 ```
 
 ---
