@@ -1,0 +1,9 @@
+<div class="min-w-0">
+  <p class="text-sm font-medium text-fg truncate">{{ fullName() }}</p>
+  @if (customer().phone; as phone) {
+    <p class="text-sm text-fg-muted">{{ phone }}</p>
+  }
+  @if (customer().identification; as identification) {
+    <p class="text-xs text-fg-muted">{{ identification }}</p>
+  }
+</div>
