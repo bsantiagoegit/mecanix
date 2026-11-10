@@ -77,18 +77,19 @@ Los mismos datos y reglas valen al registrar (UC-CUST-01) y al editar (UC-CUST-0
 - **Prioridad**: MVP
 - **Precondiciones**: Usuario autenticado con rol `advisor` u `owner` en el taller activo.
 - **Flujo principal**:
-  1. Advisor navega a "Clientes" → "Nuevo cliente" (o lo crea **inline** desde el flujo de nuevo vehículo o de nueva orden, sin salir de él).
+  1. Advisor navega a "Clientes" y toca "Nuevo cliente": el formulario se abre en una **ventana modal** sobre la lista, sin cambiar de pantalla (o lo crea **inline** desde el flujo de nuevo vehículo o de nueva orden, sin salir de él).
   2. Ingresa los datos obligatorios: nombres, apellidos y teléfono.
   3. Opcionalmente ingresa email, identificación y dirección.
   4. Guarda el cliente.
   5. Sistema valida los datos y la unicidad de la identificación en el taller.
   6. Sistema crea la fila en `customers`.
-  7. Sistema lleva al detalle del cliente (UC-CUST-03) o, si fue inline, devuelve el cliente creado al flujo que lo pidió.
+  7. Sistema cierra el modal, confirma el registro y actualiza la lista (o, si fue inline, devuelve el cliente creado al flujo que lo pidió).
 - **Flujos alternativos**:
   - **Identificación duplicada en el taller**: el sistema **bloquea** el guardado, muestra "Ya existe un cliente con esa identificación" y enlaza al cliente existente (nombre y teléfono) para que el Advisor lo use en lugar de crear otro.
   - **Teléfono ya usado por otro cliente**: el sistema **no bloquea**: avisa "Ya hay clientes con este teléfono" y los lista (nombre). El Advisor decide si es una persona distinta (p. ej. un familiar) y continúa, o abre el existente.
   - **Datos inválidos**: el sistema marca cada campo con su error y no guarda.
-  - **Sin conexión o error del servidor**: el sistema avisa que no se pudo guardar y **conserva lo escrito** en el formulario para reintentar (la app es online-first, no hay cola offline en el MVP, [ADR-006](../../architecture/adr/ADR-006-pwa-online-first.md)).
+  - **Cerrar el modal**: con "Cancelar", la X o la tecla `Esc` se descarta lo escrito; un clic fuera del modal **no** lo cierra, para no perder datos por error. Al volver a abrirlo, el formulario empieza vacío.
+  - **Sin conexión o error del servidor**: el sistema avisa que no se pudo guardar, deja el modal abierto y **conserva lo escrito** en el formulario para reintentar (la app es online-first, no hay cola offline en el MVP, [ADR-006](../../architecture/adr/ADR-006-pwa-online-first.md)).
 - **Reglas de negocio**:
   - Un cliente nuevo siempre queda en el taller activo del usuario.
   - Se permiten clientes homónimos (mismos nombre y apellido): el nombre no identifica a una persona.
@@ -111,7 +112,7 @@ Los mismos datos y reglas valen al registrar (UC-CUST-01) y al editar (UC-CUST-0
   5. Usuario toca un resultado para ver su detalle (UC-CUST-03).
 - **Flujos alternativos**:
   - **Buscador vacío**: se muestra la lista completa paginada.
-  - **Sin resultados**: estado vacío con la opción "Registrar nuevo cliente" (solo para Advisor y Owner), que lleva a UC-CUST-01 con el texto buscado ya escrito como nombre o teléfono según su forma.
+  - **Sin resultados**: estado vacío con un mensaje ("No se encontraron clientes…"). Para registrar a alguien nuevo se usa el botón "Nuevo cliente" de la parte superior (solo Advisor y Owner).
   - **Mechanic**: el buscador solo cubre el **nombre** y los resultados muestran solo el nombre (no tiene acceso a teléfono ni identificación).
   - **Error del servidor o sin conexión**: mensaje de error con la opción de reintentar; no se muestra una lista vacía como si no hubiera clientes.
 - **Reglas de negocio**:
