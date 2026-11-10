@@ -28,9 +28,38 @@ CREATE UNIQUE INDEX idx_customers_identification ON customers(workshop_id, ident
   WHERE identification IS NOT NULL AND deleted_at IS NULL;
 ```
 
-**UNIQUE parcial**: `(workshop_id, identification)` solo cuando `identification IS NOT NULL` y `deleted_at IS NULL`.
+**UNIQUE parcial**: `(workshop_id, identification)` solo cuando `identification IS NOT NULL` y `deleted_at IS NULL`. Como el trigger de normalización guarda la identificación en mayúsculas, la unicidad **no distingue mayúsculas** (`ab123` y `AB123` chocan).
 
 **Sin UNIQUE en phone**: dos clientes pueden compartir teléfono.
+
+**Normalización** (trigger `trg_customers_normalize`, `BEFORE INSERT OR UPDATE`): recorta espacios en todos los campos, deja `NULL` los opcionales vacíos (`email`, `identification`, `address`) y pone `identification` en mayúsculas. Corre también para `service_role`.
+
+**Restricciones** (se evalúan sobre el valor ya normalizado; mismas reglas que el formulario, ver [UC de clientes](../../../domain/use-cases/03-clientes.md)):
+
+| Constraint                       | Regla                                                                |
+| -------------------------------- | -------------------------------------------------------------------- |
+| `customers_first_name_valid`     | de 1 a 120 caracteres                                                |
+| `customers_last_name_valid`      | de 1 a 120 caracteres                                                |
+| `customers_phone_valid`          | de 7 a 20 caracteres: dígitos, espacios y `+ ( ) -`                  |
+| `customers_email_valid`          | `NULL`, o formato `algo@dominio.ext` (extensión de 2+ letras), ≤ 254 |
+| `customers_identification_valid` | `NULL`, o hasta 20 caracteres                                        |
+| `customers_address_valid`        | `NULL`, o hasta 200 caracteres                                       |
+
+**Soft delete solo del owner**: el trigger `trg_customers_protect_soft_delete` rechaza (`only_owner_can_delete`) que un `advisor` cambie `deleted_at`, al eliminar o al restaurar. Lo mismo en `vehicles` (`trg_vehicles_protect_soft_delete`). Ver [D-RLS-13](../../security/decisions.md).
+
+**Búsqueda** (`search_customers`, UC-CUST-02): función `SECURITY DEFINER` y `STABLE`.
+
+```sql
+search_customers(p_workshop_id uuid, p_query text DEFAULT NULL, p_limit int DEFAULT 20, p_offset int DEFAULT 0)
+RETURNS TABLE (id uuid, first_name text, last_name text, phone text, email text, identification text)
+```
+
+- Cada palabra del texto debe coincidir (`ILIKE '%palabra%'`) en el nombre, el apellido, el teléfono o la identificación; sin distinguir mayúsculas pero **sin ignorar tildes**. Máximo 5 palabras y 100 caracteres. `%` y `_` se tratan como texto.
+- Solo clientes no eliminados de `p_workshop_id`. Si el usuario no es miembro activo de ese taller devuelve cero filas; sin sesión lanza `not_authenticated`; `anon` no puede ejecutarla.
+- Orden estable por apellido, nombre e `id`. `p_limit` se acota entre 1 y 100 y `p_offset` a 0 como mínimo.
+- **Mechanic**: solo busca por nombre y apellido, y recibe `phone`, `email` e `identification` en `NULL` ([D-RLS-12](../../security/decisions.md)). La función aplica esta regla ella misma porque corre con los permisos del propietario.
+- Se usa una función en lugar de filtros `ilike` armados en el cliente para que el texto del usuario viaje como parámetro (sin inyección de filtros de PostgREST) y el límite esté acotado.
+- Los índices actuales (`btree`) no aceleran `ILIKE '%…%'`: a la escala de un taller no importa; si hiciera falta se añade `pg_trgm`.
 
 ---
 

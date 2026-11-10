@@ -65,8 +65,8 @@ Los mismos datos y reglas valen al registrar (UC-CUST-01) y al editar (UC-CUST-0
 | `identification` | No          | Cédula, DNI o pasaporte, hasta 20 caracteres. **Único por taller** entre los clientes no eliminados.    |
 | `address`        | No          | Hasta 200 caracteres.                                                                                   |
 
-- Los espacios al inicio y al final se quitan al escribir o pegar. Los campos opcionales vacíos se guardan como `NULL`, nunca como texto vacío.
-- La identificación se guarda **en mayúsculas** y su unicidad **no distingue mayúsculas** (un pasaporte `ab123` y `AB123` son la misma persona). No se valida el dígito verificador de la cédula: es texto libre, solo se garantiza que no se repita.
+- Los espacios al inicio y al final se quitan al escribir o pegar, y la base de datos lo vuelve a garantizar al guardar. Los campos opcionales vacíos se guardan como `NULL`, nunca como texto vacío.
+- La identificación se guarda **en mayúsculas** (la base de datos la normaliza) y su unicidad **no distingue mayúsculas** (un pasaporte `ab123` y `AB123` son la misma persona). No se valida el dígito verificador de la cédula: es texto libre, solo se garantiza que no se repita.
 - El cliente pertenece al taller (`workshop_id`), que no se puede cambiar.
 
 ---
@@ -120,7 +120,8 @@ Los mismos datos y reglas valen al registrar (UC-CUST-01) y al editar (UC-CUST-0
   - Se busca en `first_name`, `last_name`, `phone` e `identification` (Advisor y Owner) o solo en nombre y apellido (Mechanic).
   - Solo se muestran clientes del taller activo y no eliminados (`deleted_at IS NULL`).
   - Cada resultado muestra nombre completo y, si el rol lo permite, teléfono.
-- **Datos involucrados**: `customers` (Advisor y Owner), `customers_public` (Mechanic).
+- **Datos involucrados**: función `search_customers` sobre `customers` (el Mechanic recibe solo el nombre).
+  - La búsqueda la hace la función `search_customers`, no filtros armados en la app: el texto viaja como parámetro y la propia función aplica la regla del Mechanic.
 - **Resultado esperado**: Lista de clientes coincidentes, paginada.
 
 ---
