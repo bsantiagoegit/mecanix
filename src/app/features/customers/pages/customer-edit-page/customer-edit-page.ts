@@ -17,9 +17,10 @@ function toInput(customer: Customer): CustomerInput {
     firstName: customer.firstName,
     lastName: customer.lastName,
     phone: customer.phone ?? '',
-    email: customer.email,
-    identification: customer.identification,
-    address: customer.address,
+    // Clientes antiguos pueden no tener estos datos: el formulario los pide.
+    email: customer.email ?? '',
+    identification: customer.identification ?? '',
+    address: customer.address ?? '',
   };
 }
 

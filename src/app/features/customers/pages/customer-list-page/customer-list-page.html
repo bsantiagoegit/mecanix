@@ -61,9 +61,7 @@
   @if (canCreate()) {
     <app-modal title="Nuevo cliente" size="lg" [(isOpen)]="createOpen">
       @if (createOpen()) {
-        <p class="mb-4 text-sm text-fg-muted">
-          Nombres, apellidos y teléfono son obligatorios; el resto puedes completarlo después.
-        </p>
+        <p class="mb-4 text-sm text-fg-muted">Todos los campos son obligatorios.</p>
         <app-customer-form
           submitLabel="Registrar cliente"
           [cancellable]="true"

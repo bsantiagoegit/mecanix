@@ -151,17 +151,13 @@ export class CustomersService {
     input: CustomerInput,
     excludeId?: string,
   ): Promise<Error> {
-    if (
-      error.code === '23505' &&
-      error.message.includes(IDENTIFICATION_INDEX) &&
-      input.identification
-    ) {
+    if (error.code === '23505' && error.message.includes(IDENTIFICATION_INDEX)) {
       const existing = await this.findByIdentification(
         workshopId,
         input.identification,
         excludeId,
       ).catch(() => null);
-      return new DuplicateIdentificationError(input.identification.toUpperCase(), existing);
+      return new DuplicateIdentificationError(input.identification, existing);
     }
     return mapSupabaseError(error);
   }

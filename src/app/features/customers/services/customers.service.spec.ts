@@ -50,9 +50,9 @@ const input: CustomerInput = {
   firstName: 'Ana',
   lastName: 'Pérez',
   phone: '0987654321',
-  email: null,
-  identification: 'AB123',
-  address: null,
+  email: 'ana@example.com',
+  identification: '1710034065',
+  address: 'Calle 1',
 };
 
 describe('CustomersService', () => {
@@ -199,9 +199,9 @@ describe('CustomersService', () => {
         first_name: 'Ana',
         last_name: 'Pérez',
         phone: '0987654321',
-        email: null,
-        identification: 'AB123',
-        address: null,
+        email: 'ana@example.com',
+        identification: '1710034065',
+        address: 'Calle 1',
       });
       expect(customer.id).toBe('c1');
     });
@@ -223,13 +223,13 @@ describe('CustomersService', () => {
       const error = await service.create('w1', input).catch((e: unknown) => e);
 
       expect(error).toBeInstanceOf(DuplicateIdentificationError);
-      expect((error as DuplicateIdentificationError).identification).toBe('AB123');
+      expect((error as DuplicateIdentificationError).identification).toBe('1710034065');
       expect((error as DuplicateIdentificationError).existing).toEqual({
         id: 'c9',
         fullName: 'Luis Gómez',
         phone: '0990000001',
       });
-      expect(lookup.calls['eq']).toContainEqual(['identification', 'AB123']);
+      expect(lookup.calls['eq']).toContainEqual(['identification', '1710034065']);
     });
 
     it('still reports the duplicate if the existing customer cannot be looked up', async () => {
@@ -275,7 +275,10 @@ describe('CustomersService', () => {
 
       const customer = await service.update('w1', 'c1', input);
 
-      expect(calls['update'][0][0]).toMatchObject({ first_name: 'Ana', identification: 'AB123' });
+      expect(calls['update'][0][0]).toMatchObject({
+        first_name: 'Ana',
+        identification: '1710034065',
+      });
       expect(calls['update'][0][0]).not.toHaveProperty('workshop_id');
       expect(calls['eq']).toEqual([['id', 'c1']]);
       expect(calls['is']).toEqual([['deleted_at', null]]);
