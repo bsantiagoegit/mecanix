@@ -17,6 +17,7 @@
 | Crear su propio taller            | ✅ ¹  | ❌      | ❌                  |
 | Configurar taller                 | ✅    | ❌      | ❌                  |
 | Invitar usuarios                  | ✅ ²  | ❌      | ❌                  |
+| Registrar cliente                 | ✅    | ✅      | ❌                  |
 | Ver todos los clientes            | ✅    | ✅      | ⚠️ solo nombre      |
 | Editar cliente                    | ✅    | ✅      | ❌                  |
 | Eliminar cliente (soft)           | ✅    | ❌      | ❌                  |
