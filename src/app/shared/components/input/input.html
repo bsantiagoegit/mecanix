@@ -16,6 +16,8 @@
       [placeholder]="placeholder()"
       [disabled]="disabled()"
       [attr.autocomplete]="autocomplete()"
+      [attr.maxlength]="maxChars()"
+      [attr.inputmode]="inputmode()"
       [attr.aria-invalid]="!!error()"
       [attr.aria-describedby]="error() ? inputId + '-error' : null"
       [class]="inputClasses()"

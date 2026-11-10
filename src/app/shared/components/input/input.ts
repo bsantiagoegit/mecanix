@@ -26,6 +26,14 @@ export class Input implements ControlValueAccessor {
   readonly disabled = input(false);
   readonly autocomplete = input<string>('off');
   readonly revealable = input(false);
+  /**
+   * Cuántos caracteres se pueden escribir (atributo `maxlength` del campo); sin él, sin límite.
+   * No se llama `maxlength` a propósito: con ese nombre Angular añadiría por su cuenta un
+   * validador `maxlength` al `formControlName`, y pisaría los mensajes de cada formulario.
+   */
+  readonly maxChars = input<number | null>(null);
+  /** Teclado que muestra el móvil (p. ej. `numeric` para teléfonos y cédulas). */
+  readonly inputmode = input<'text' | 'numeric' | 'tel' | 'email' | 'search' | null>(null);
 
   readonly value = model<string>('');
 
