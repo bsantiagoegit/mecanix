@@ -19,4 +19,18 @@ describe('Button', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  describe('ariaLabel', () => {
+    const inner = () => fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+
+    it('has no aria-label by default, so the visible text is the name', () => {
+      expect(inner().hasAttribute('aria-label')).toBe(false);
+    });
+
+    it('sets the aria-label when given', async () => {
+      fixture.componentRef.setInput('ariaLabel', 'Editar a Ana Pérez');
+      await fixture.whenStable();
+      expect(inner().getAttribute('aria-label')).toBe('Editar a Ana Pérez');
+    });
+  });
 });

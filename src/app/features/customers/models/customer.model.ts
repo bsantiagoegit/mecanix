@@ -37,6 +37,18 @@ export interface CustomerInput {
   address: string;
 }
 
+/** Los datos de un cliente como los pide el formulario. Faltantes (clientes antiguos) quedan vacíos. */
+export function customerToInput(customer: Customer): CustomerInput {
+  return {
+    firstName: customer.firstName,
+    lastName: customer.lastName,
+    phone: customer.phone ?? '',
+    email: customer.email ?? '',
+    identification: customer.identification ?? '',
+    address: customer.address ?? '',
+  };
+}
+
 /** Un cliente existente que choca con lo que se está escribiendo (teléfono o identificación). */
 export interface CustomerMatch {
   id: string;

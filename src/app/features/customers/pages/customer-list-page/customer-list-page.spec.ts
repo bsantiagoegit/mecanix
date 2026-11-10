@@ -4,6 +4,7 @@ import { initialAuthState } from '@core/auth/store/auth.state';
 import { initialWorkshopState } from '@core/workshops/store/workshop.state';
 
 import { provideTestStore } from '../../../../../testing/utils/store';
+import { NotFoundError } from '@core/errors';
 import { Customer, CustomerPage, CustomerSummary } from '../../models/customer.model';
 import { DuplicateIdentificationError } from '../../models/duplicate-identification.error';
 import { CustomersService } from '../../services/customers.service';
@@ -20,6 +21,15 @@ const customer = (n: number, over: Partial<CustomerSummary> = {}): CustomerSumma
 });
 
 const saved: Customer = { ...customer(99), address: null };
+
+/** Cliente completo, como lo devuelve `getById` (con dirección). */
+const full: Customer = {
+  ...customer(1),
+  phone: '0990000001',
+  email: 'ana@example.com',
+  identification: '1710034065',
+  address: 'Calle 1',
+};
 
 const input = {
   firstName: 'Luisa',
@@ -50,12 +60,16 @@ function setup(
     role?: 'owner' | 'advisor' | 'mechanic';
     search?: ReturnType<typeof vi.fn>;
     create?: ReturnType<typeof vi.fn>;
+    update?: ReturnType<typeof vi.fn>;
+    getById?: ReturnType<typeof vi.fn>;
     findByPhone?: ReturnType<typeof vi.fn>;
     active?: boolean;
   } = {},
 ) {
   const search = options.search ?? vi.fn().mockResolvedValue(page(2));
   const create = options.create ?? vi.fn().mockResolvedValue(saved);
+  const update = options.update ?? vi.fn().mockResolvedValue(saved);
+  const getById = options.getById ?? vi.fn().mockResolvedValue(full);
   const findByPhone = options.findByPhone ?? vi.fn().mockResolvedValue([]);
   TestBed.configureTestingModule({
     imports: [CustomerListPage],
@@ -72,7 +86,7 @@ function setup(
           active: options.active === false ? null : ({ id: 'w1' } as never),
         },
       }),
-      { provide: CustomersService, useValue: { search, create, findByPhone } },
+      { provide: CustomersService, useValue: { search, create, update, getById, findByPhone } },
     ],
   });
   const fixture = TestBed.createComponent(CustomerListPage);
@@ -85,6 +99,8 @@ function setup(
     fixture,
     search,
     create,
+    update,
+    getById,
     findByPhone,
     toast: TestBed.inject(ToastService),
     flush,
@@ -319,159 +335,373 @@ describe('CustomerListPage', () => {
     });
   });
 
-  describe('registering customers in a modal', () => {
+  describe('the customer modal', () => {
     const dialog = (element: HTMLElement) => element.querySelector('dialog') as HTMLDialogElement;
 
-    it.each(['owner', 'advisor'] as const)(
-      '%s opens the modal with the "Nuevo cliente" button',
-      async (role) => {
-        const { component, flush, element } = setup({ role });
-        await flush();
-        expect(dialog(element).open).toBe(false);
-        expect(element.querySelector('app-customer-form')).toBeNull();
+    describe('registering', () => {
+      it.each(['owner', 'advisor'] as const)(
+        '%s opens the modal with the "Nuevo cliente" button',
+        async (role) => {
+          const { component, flush, element } = setup({ role });
+          await flush();
+          expect(dialog(element).open).toBe(false);
+          expect(element.querySelector('app-customer-form')).toBeNull();
 
+          component.openCreate();
+          await flush();
+
+          expect(component.dialogOpen()).toBe(true);
+          expect(component.editingId()).toBeNull();
+          expect(dialog(element).open).toBe(true);
+          expect(dialog(element).querySelector('h2')?.textContent).toContain('Nuevo cliente');
+          expect(element.textContent).toContain('Registrar cliente');
+          expect(element.querySelector('app-customer-form')).not.toBeNull();
+        },
+      );
+
+      it('has the button at the top and nothing to register inside the list', async () => {
+        const { flush, element } = setup({
+          search: vi.fn().mockResolvedValue({ items: [], hasMore: false }),
+        });
+        await flush();
+        const buttons = Array.from(element.querySelectorAll('button')).map((b) =>
+          b.textContent?.trim(),
+        );
+        expect(buttons).toContain('Nuevo cliente');
+        expect(element.textContent).not.toContain('Registrar nuevo cliente');
+      });
+
+      it('registers the customer, closes the modal, thanks the user and refreshes the list', async () => {
+        const { component, flush, create, update, search, toast, element } = setup();
+        await flush();
+        const success = vi.spyOn(toast, 'success');
         component.openCreate();
         await flush();
 
-        expect(component.createOpen()).toBe(true);
+        await component.onSubmit(input);
+        await flush();
+
+        expect(create).toHaveBeenCalledWith('w1', input);
+        expect(update).not.toHaveBeenCalled();
+        expect(success).toHaveBeenCalledWith('Cliente registrado');
+        expect(component.dialogOpen()).toBe(false);
+        expect(dialog(element).open).toBe(false);
+        expect(search).toHaveBeenCalledTimes(2);
+      });
+
+      it('does not save without an active workshop', async () => {
+        const { component, create } = setup({ active: false });
+        await component.onSubmit(input);
+        expect(create).not.toHaveBeenCalled();
+      });
+
+      it('keeps the modal open and names the customer when the cédula is taken', async () => {
+        const existing = { id: 'c9', fullName: 'Luis Gómez', phone: '0990000001' };
+        const { component, flush, element } = setup({
+          create: vi
+            .fn()
+            .mockRejectedValue(new DuplicateIdentificationError('1713175071', existing)),
+        });
+        await flush();
+        component.openCreate();
+        await flush();
+
+        await component.onSubmit(input);
+        await flush();
+
+        expect(component.dialogOpen()).toBe(true);
+        expect(component.form.conflict()).toEqual({ identification: '1713175071', existing });
         expect(dialog(element).open).toBe(true);
-        expect(dialog(element).querySelector('h2')?.textContent).toContain('Nuevo cliente');
-        expect(element.querySelector('app-customer-form')).not.toBeNull();
-      },
-    );
-
-    it('has the button at the top and nothing to register inside the list', async () => {
-      const { flush, element } = setup({
-        search: vi.fn().mockResolvedValue({ items: [], hasMore: false }),
       });
-      await flush();
-      const buttons = Array.from(element.querySelectorAll('button')).map((b) =>
-        b.textContent?.trim(),
+
+      it('keeps the modal open with an error when saving fails, and the list is not refreshed', async () => {
+        const { component, flush, search } = setup({
+          create: vi.fn().mockRejectedValue(new Error('network')),
+        });
+        await flush();
+        component.openCreate();
+        await flush();
+
+        await component.onSubmit(input);
+
+        expect(component.dialogOpen()).toBe(true);
+        expect(component.form.error()).toContain('No se pudo registrar el cliente');
+        expect(search).toHaveBeenCalledTimes(1);
+      });
+
+      it('warns about a repeated mobile when leaving the field, without blocking', async () => {
+        const match = { id: 'c2', fullName: 'Luis Gómez', phone: '0981112233' };
+        const { component, flush, findByPhone } = setup({
+          findByPhone: vi.fn().mockResolvedValue([match]),
+        });
+        await flush();
+        component.openCreate();
+
+        await component.onPhoneChecked('0981112233');
+
+        expect(findByPhone).toHaveBeenCalledWith('w1', '0981112233', undefined);
+        expect(component.form.phoneWarning()).toEqual({ phone: '0981112233', matches: [match] });
+      });
+    });
+
+    describe('editing', () => {
+      const first = customer(1);
+
+      it.each(['owner', 'advisor'] as const)(
+        '%s sees an "Editar" button on every row',
+        async (role) => {
+          const { flush, element } = setup({ role });
+          await flush();
+          const edit = Array.from(element.querySelectorAll('ul button')).filter((b) =>
+            b.textContent?.includes('Editar'),
+          );
+          expect(edit).toHaveLength(2);
+          expect(edit[0].getAttribute('aria-label')).toBe('Editar a Nombre1 Apellido1');
+        },
       );
-      expect(buttons).toContain('Nuevo cliente');
-      expect(element.textContent).not.toContain('Registrar nuevo cliente');
-      expect(element.querySelector('ul')?.textContent).not.toContain('Nuevo cliente');
-    });
 
-    it('the mechanic has neither the button nor the modal', async () => {
-      const { component, flush, element } = setup({ role: 'mechanic' });
-      await flush();
-      expect(component.canCreate()).toBe(false);
-      expect(element.querySelector('dialog')).toBeNull();
-      expect(element.textContent).not.toContain('Nuevo cliente');
-    });
-
-    it('registers the customer, closes the modal, thanks the user and refreshes the list', async () => {
-      const { component, flush, create, search, toast, element } = setup();
-      await flush();
-      const success = vi.spyOn(toast, 'success');
-      component.openCreate();
-      await flush();
-
-      await component.onCreate(input);
-      await flush();
-
-      expect(create).toHaveBeenCalledWith('w1', input);
-      expect(success).toHaveBeenCalledWith('Cliente registrado');
-      expect(component.createOpen()).toBe(false);
-      expect(dialog(element).open).toBe(false);
-      expect(search).toHaveBeenCalledTimes(2);
-    });
-
-    it('does not register without an active workshop', async () => {
-      const { component, create } = setup({ active: false });
-      await component.onCreate(input);
-      expect(create).not.toHaveBeenCalled();
-    });
-
-    it('keeps the modal open and names the customer when the identification is taken', async () => {
-      const existing = { id: 'c9', fullName: 'Luis Gómez', phone: '0990000001' };
-      const { component, flush, element } = setup({
-        create: vi.fn().mockRejectedValue(new DuplicateIdentificationError('1713175071', existing)),
+      it('the mechanic sees no "Editar" button and no modal', async () => {
+        const { component, flush, element } = setup({ role: 'mechanic' });
+        await flush();
+        expect(component.canManage()).toBe(false);
+        expect(element.querySelector('ul button')).toBeNull();
+        expect(element.querySelector('dialog')).toBeNull();
       });
-      await flush();
-      component.openCreate();
-      await flush();
 
-      await component.onCreate(input);
-      await flush();
+      it('opens the same modal titled "Editar cliente" with the full customer', async () => {
+        const { component, flush, getById, element } = setup();
+        await flush();
 
-      expect(component.createOpen()).toBe(true);
-      expect(component.form.conflict()).toEqual({ identification: '1713175071', existing });
-      expect(dialog(element).open).toBe(true);
-    });
+        await component.openEdit(first);
+        await flush();
 
-    it('keeps the modal open with an error when saving fails, and the list is not refreshed', async () => {
-      const { component, flush, search } = setup({
-        create: vi.fn().mockRejectedValue(new Error('network')),
+        expect(getById).toHaveBeenCalledWith('c1');
+        expect(component.dialogOpen()).toBe(true);
+        expect(component.editingId()).toBe('c1');
+        expect(dialog(element).open).toBe(true);
+        expect(dialog(element).querySelector('h2')?.textContent).toContain('Editar cliente');
+        expect(element.textContent).toContain('Guardar cambios');
+        expect(component.editInitial()).toEqual({
+          firstName: 'Nombre1',
+          lastName: 'Apellido1',
+          phone: '0990000001',
+          email: 'ana@example.com',
+          identification: '1710034065',
+          address: 'Calle 1',
+        });
       });
-      await flush();
-      component.openCreate();
-      await flush();
 
-      await component.onCreate(input);
-
-      expect(component.createOpen()).toBe(true);
-      expect(component.form.error()).toContain('No se pudo registrar el cliente');
-      expect(search).toHaveBeenCalledTimes(1);
-    });
-
-    it('closes with "Cancelar" without saving anything', async () => {
-      const { component, flush, create, element } = setup();
-      await flush();
-      component.openCreate();
-      await flush();
-
-      const cancel = Array.from(element.querySelectorAll('dialog button')).find((b) =>
-        b.textContent?.includes('Cancelar'),
-      ) as HTMLButtonElement;
-      cancel.click();
-      await flush();
-
-      expect(component.createOpen()).toBe(false);
-      expect(create).not.toHaveBeenCalled();
-    });
-
-    it('closing with the modal X or Esc also closes it', async () => {
-      const { component, flush, element } = setup();
-      await flush();
-      component.openCreate();
-      await flush();
-
-      dialog(element).close();
-      await flush();
-
-      expect(component.createOpen()).toBe(false);
-    });
-
-    it('opens a clean form every time', async () => {
-      const { component, flush } = setup({
-        create: vi.fn().mockRejectedValue(new Error('network')),
+      it('shows the customer data in the form fields', async () => {
+        const { component, flush, element } = setup();
+        await flush();
+        await component.openEdit(first);
+        await flush();
+        const values = Array.from(element.querySelectorAll('dialog input')).map(
+          (i) => (i as HTMLInputElement).value,
+        );
+        expect(values).toEqual(expect.arrayContaining(['Nombre1', '0990000001', 'Calle 1']));
       });
-      await flush();
-      component.openCreate();
-      await component.onCreate(input);
-      expect(component.form.error()).not.toBeNull();
 
-      component.closeCreate();
-      component.openCreate();
+      it('shows a loading message while the customer loads', async () => {
+        const pending = deferred<Customer | null>();
+        const { component, flush, element } = setup({ getById: vi.fn(() => pending.promise) });
+        await flush();
 
-      expect(component.form.error()).toBeNull();
-      expect(component.form.conflict()).toBeNull();
+        void component.openEdit(first);
+        await flush();
+
+        expect(component.editState()).toBe('loading');
+        expect(dialog(element).textContent).toContain('Cargando cliente');
+        expect(element.querySelector('app-customer-form')).toBeNull();
+      });
+
+      it('explains a customer that is no longer available', async () => {
+        const { component, flush, element } = setup({
+          getById: vi.fn().mockResolvedValue(null),
+        });
+        await flush();
+        await component.openEdit(first);
+        await flush();
+        expect(component.editState()).toBe('not-found');
+        expect(dialog(element).textContent).toContain('Cliente no encontrado');
+      });
+
+      it('shows an error with a retry when the customer cannot be loaded', async () => {
+        const getById = vi.fn().mockRejectedValueOnce(new Error('x')).mockResolvedValueOnce(full);
+        const { component, flush, element } = setup({ getById });
+        await flush();
+        await component.openEdit(first);
+        await flush();
+        expect(component.editState()).toBe('error');
+        expect(dialog(element).textContent).toContain('Reintentar');
+
+        component.retryEdit();
+        await flush();
+        expect(component.editState()).toBe('ready');
+        expect(element.querySelector('app-customer-form')).not.toBeNull();
+      });
+
+      it('drops the answer of a customer when the modal was closed meanwhile', async () => {
+        const pending = deferred<Customer | null>();
+        const { component, flush } = setup({ getById: vi.fn(() => pending.promise) });
+        await flush();
+
+        void component.openEdit(first);
+        component.closeDialog();
+        pending.resolve(full);
+        await flush();
+
+        expect(component.editInitial()).toBeNull();
+      });
+
+      it('updates the customer, closes the modal, thanks the user and refreshes the list', async () => {
+        const { component, flush, update, create, search, toast, element } = setup();
+        await flush();
+        const success = vi.spyOn(toast, 'success');
+        await component.openEdit(first);
+        await flush();
+
+        await component.onSubmit({ ...input });
+        await flush();
+
+        expect(update).toHaveBeenCalledWith('w1', 'c1', input);
+        expect(create).not.toHaveBeenCalled();
+        expect(success).toHaveBeenCalledWith('Cambios guardados');
+        expect(component.dialogOpen()).toBe(false);
+        expect(dialog(element).open).toBe(false);
+        expect(search).toHaveBeenCalledTimes(2);
+      });
+
+      it('does not call the server when nothing changed', async () => {
+        const { component, flush, update, toast } = setup();
+        await flush();
+        const info = vi.spyOn(toast, 'info');
+        await component.openEdit(first);
+        await flush();
+
+        await component.onSubmit({ ...component.editInitial()! });
+
+        expect(update).not.toHaveBeenCalled();
+        expect(info).toHaveBeenCalledWith('No hay cambios que guardar');
+        expect(component.dialogOpen()).toBe(true);
+      });
+
+      it('switches to "not found" when the customer disappeared while editing', async () => {
+        const { component, flush, search } = setup({
+          update: vi.fn().mockRejectedValue(new NotFoundError('customer', 'c1')),
+        });
+        await flush();
+        await component.openEdit(first);
+        await flush();
+
+        await component.onSubmit({ ...input });
+
+        expect(component.editState()).toBe('not-found');
+        expect(component.dialogOpen()).toBe(true);
+        expect(search).toHaveBeenCalledTimes(1);
+      });
+
+      it('blocks a taken cédula when editing too', async () => {
+        const { component, flush } = setup({
+          update: vi.fn().mockRejectedValue(new DuplicateIdentificationError('1713175071', null)),
+        });
+        await flush();
+        await component.openEdit(first);
+        await flush();
+
+        await component.onSubmit({ ...input });
+
+        expect(component.form.conflict()).toEqual({ identification: '1713175071', existing: null });
+        expect(component.dialogOpen()).toBe(true);
+      });
+
+      it('keeps the modal open with an error when saving fails', async () => {
+        const { component, flush } = setup({
+          update: vi.fn().mockRejectedValue(new Error('network')),
+        });
+        await flush();
+        await component.openEdit(first);
+        await flush();
+
+        await component.onSubmit({ ...input });
+
+        expect(component.form.error()).toContain('No se pudieron guardar los cambios');
+        expect(component.dialogOpen()).toBe(true);
+      });
+
+      it('does not count the customer being edited nor the mobile it already had', async () => {
+        const { component, flush, findByPhone } = setup();
+        await flush();
+        await component.openEdit(first);
+        await flush();
+
+        await component.onPhoneChecked('0981112233');
+        expect(findByPhone).toHaveBeenCalledWith('w1', '0981112233', 'c1');
+
+        findByPhone.mockClear();
+        await component.onPhoneChecked('0990000001');
+        expect(findByPhone).not.toHaveBeenCalled();
+      });
     });
 
-    it('warns about a repeated phone when leaving the field, without blocking', async () => {
-      const match = { id: 'c2', fullName: 'Luis Gómez', phone: '0981112233' };
-      const { component, flush, findByPhone } = setup({
-        findByPhone: vi.fn().mockResolvedValue([match]),
+    describe('closing and reopening', () => {
+      it('closes with "Cancelar" without saving anything', async () => {
+        const { component, flush, create, element } = setup();
+        await flush();
+        component.openCreate();
+        await flush();
+
+        const cancel = Array.from(element.querySelectorAll('dialog button')).find((b) =>
+          b.textContent?.includes('Cancelar'),
+        ) as HTMLButtonElement;
+        cancel.click();
+        await flush();
+
+        expect(component.dialogOpen()).toBe(false);
+        expect(create).not.toHaveBeenCalled();
       });
-      await flush();
-      component.openCreate();
 
-      await component.onPhoneChecked('0981112233');
+      it('closing with the modal X or Esc also closes it', async () => {
+        const { component, flush, element } = setup();
+        await flush();
+        component.openCreate();
+        await flush();
 
-      expect(findByPhone).toHaveBeenCalledWith('w1', '0981112233', undefined);
-      expect(component.form.phoneWarning()).toEqual({ phone: '0981112233', matches: [match] });
+        dialog(element).close();
+        await flush();
+
+        expect(component.dialogOpen()).toBe(false);
+      });
+
+      it('opens a clean form every time', async () => {
+        const { component, flush } = setup({
+          create: vi.fn().mockRejectedValue(new Error('network')),
+        });
+        await flush();
+        component.openCreate();
+        await component.onSubmit(input);
+        expect(component.form.error()).not.toBeNull();
+
+        component.closeDialog();
+        component.openCreate();
+
+        expect(component.form.error()).toBeNull();
+        expect(component.form.conflict()).toBeNull();
+      });
+
+      it('registering after editing starts empty, not with the edited customer', async () => {
+        const { component, flush } = setup();
+        await flush();
+        await component.openEdit(customer(1));
+        await flush();
+        component.closeDialog();
+
+        component.openCreate();
+
+        expect(component.editingId()).toBeNull();
+        expect(component.editInitial()).toBeNull();
+        expect(component.dialogTitle()).toBe('Nuevo cliente');
+      });
     });
   });
 });

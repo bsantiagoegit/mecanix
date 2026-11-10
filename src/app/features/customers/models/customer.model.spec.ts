@@ -1,4 +1,10 @@
-import { CustomerInput, isSameInput, normalizeInput } from './customer.model';
+import {
+  Customer,
+  CustomerInput,
+  customerToInput,
+  isSameInput,
+  normalizeInput,
+} from './customer.model';
 
 const base: CustomerInput = {
   firstName: 'Ana',
@@ -48,5 +54,37 @@ describe('isSameInput', () => {
     ['address', 'Calle 2'],
   ] as const)('is false when %s changes', (field, value) => {
     expect(isSameInput(base, { ...base, [field]: value })).toBe(false);
+  });
+});
+
+describe('customerToInput', () => {
+  const customer: Customer = {
+    id: 'c1',
+    firstName: 'Ana',
+    lastName: 'Pérez',
+    phone: '0987654321',
+    email: 'ana@example.com',
+    identification: '1710034065',
+    address: 'Calle 1',
+  };
+
+  it('copies the data the form asks for', () => {
+    expect(customerToInput(customer)).toEqual(base);
+  });
+
+  it('leaves empty the data an old customer does not have, so the form asks for it', () => {
+    expect(
+      customerToInput({
+        ...customer,
+        phone: null,
+        email: null,
+        identification: null,
+        address: null,
+      }),
+    ).toEqual({ ...base, phone: '', email: '', identification: '', address: '' });
+  });
+
+  it('does not carry the id', () => {
+    expect(customerToInput(customer)).not.toHaveProperty('id');
   });
 });

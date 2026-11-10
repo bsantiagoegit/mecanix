@@ -4,7 +4,7 @@
       <h1 class="text-2xl font-bold text-fg">Clientes</h1>
       <p class="text-sm text-fg-muted mt-1">Las personas que llevan su vehículo a tu taller.</p>
     </div>
-    @if (canCreate()) {
+    @if (canManage()) {
       <app-button (clicked)="openCreate()">Nuevo cliente</app-button>
     }
   </div>
@@ -26,8 +26,18 @@
     } @else {
       <ul class="divide-y divide-border" aria-label="Clientes" aria-live="polite">
         @for (customer of items(); track customer.id) {
-          <li class="p-4">
+          <li class="p-4 flex items-center justify-between gap-3">
             <app-customer-card [customer]="customer" />
+            @if (canManage()) {
+              <app-button
+                variant="ghost"
+                size="sm"
+                [ariaLabel]="'Editar a ' + customer.firstName + ' ' + customer.lastName"
+                (clicked)="openEdit(customer)"
+              >
+                Editar
+              </app-button>
+            }
           </li>
         } @empty {
           <li class="p-6 text-sm text-fg-muted">
@@ -58,21 +68,47 @@
     }
   </app-card>
 
-  @if (canCreate()) {
-    <app-modal title="Nuevo cliente" size="lg" [(isOpen)]="createOpen">
-      @if (createOpen()) {
-        <p class="mb-4 text-sm text-fg-muted">Todos los campos son obligatorios.</p>
-        <app-customer-form
-          submitLabel="Registrar cliente"
-          [cancellable]="true"
-          [isSubmitting]="form.isSubmitting()"
-          [error]="form.error()"
-          [phoneWarning]="form.phoneWarning()"
-          [identificationConflict]="form.conflict()"
-          (submitted)="onCreate($event)"
-          (phoneChecked)="onPhoneChecked($event)"
-          (cancelled)="closeCreate()"
-        />
+  @if (canManage()) {
+    <app-modal [title]="dialogTitle()" size="lg" [(isOpen)]="dialogOpen">
+      @if (dialogOpen()) {
+        @switch (editState()) {
+          @case ('loading') {
+            <p class="text-sm text-fg-muted" role="status">Cargando cliente…</p>
+          }
+          @case ('not-found') {
+            <div role="alert" class="flex flex-col items-start gap-3">
+              <p class="text-sm text-fg">Cliente no encontrado. Puede que ya no esté disponible.</p>
+              <app-button variant="secondary" size="sm" (clicked)="closeDialog()"
+                >Cerrar</app-button
+              >
+            </div>
+          }
+          @case ('error') {
+            <div role="alert" class="flex flex-col items-start gap-3">
+              <p class="text-sm text-danger-700">
+                No se pudo cargar el cliente. Revisa tu conexión e inténtalo de nuevo.
+              </p>
+              <app-button variant="secondary" size="sm" (clicked)="retryEdit()">
+                Reintentar
+              </app-button>
+            </div>
+          }
+          @default {
+            <p class="mb-4 text-sm text-fg-muted">Todos los campos son obligatorios.</p>
+            <app-customer-form
+              [initial]="editInitial()"
+              [submitLabel]="editingId() ? 'Guardar cambios' : 'Registrar cliente'"
+              [cancellable]="true"
+              [isSubmitting]="form.isSubmitting()"
+              [error]="form.error()"
+              [phoneWarning]="form.phoneWarning()"
+              [identificationConflict]="form.conflict()"
+              (submitted)="onSubmit($event)"
+              (phoneChecked)="onPhoneChecked($event)"
+              (cancelled)="closeDialog()"
+            />
+          }
+        }
       }
     </app-modal>
   }
