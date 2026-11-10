@@ -8,13 +8,18 @@ import { ToastService } from '@shared/services/toast.service';
 import { CustomerCard } from '../../components/customer-card/customer-card';
 import { CustomerForm } from '../../components/customer-form/customer-form';
 import { CustomerSearch } from '../../components/customer-search/customer-search';
-import { CustomerInput, CustomerSummary } from '../../models/customer.model';
+import {
+  CustomerInput,
+  CustomerSummary,
+  customerToInput,
+  isSameInput,
+} from '../../models/customer.model';
 import { CustomerFormState } from '../../services/customer-form.state';
 import { CustomersService } from '../../services/customers.service';
 
 /**
- * UC-CUST-02: lista de clientes del taller con búsqueda y paginación. También registra clientes
- * nuevos (UC-CUST-01) en un modal, sin salir de la lista.
+ * UC-CUST-02: lista de clientes del taller con búsqueda y paginación. También registra (UC-CUST-01)
+ * y edita (UC-CUST-04) clientes en el mismo modal, sin salir de la lista.
  */
 @Component({
   selector: 'app-customer-list-page',
@@ -38,11 +43,18 @@ export class CustomerListPage {
   readonly loadError = signal<string | null>(null);
   readonly moreError = signal<string | null>(null);
 
-  /** El modal "Nuevo cliente" está abierto. */
-  readonly createOpen = signal(false);
+  /** El modal de cliente está abierto (para registrar o para editar). */
+  readonly dialogOpen = signal(false);
+  /** Cliente que se está editando; `null` si el modal es para registrar uno nuevo. */
+  readonly editingId = signal<string | null>(null);
+  /** Datos del cliente a editar, cuando ya se cargaron. */
+  readonly editInitial = signal<CustomerInput | null>(null);
+  /** Carga del cliente a editar: `loading`, `ready`, `not-found` o `error`. */
+  readonly editState = signal<'loading' | 'ready' | 'not-found' | 'error'>('ready');
+  readonly dialogTitle = computed(() => (this.editingId() ? 'Editar cliente' : 'Nuevo cliente'));
 
-  /** Registrar clientes es de `owner` y `advisor`; el mecánico no ve los botones. */
-  readonly canCreate = computed(() => this.auth.hasRole('owner', 'advisor'));
+  /** Registrar y editar clientes es de `owner` y `advisor`; el mecánico no ve los botones. */
+  readonly canManage = computed(() => this.auth.hasRole('owner', 'advisor'));
   /** El mecánico solo ve y busca por nombre: la base de datos no le da el resto. */
   readonly byNameOnly = computed(() => this.auth.role() === 'mechanic');
   readonly placeholder = computed(() =>
@@ -91,36 +103,80 @@ export class CustomerListPage {
     }
   }
 
-  /** Abre el modal con un formulario limpio. */
+  /** Abre el modal para registrar, con un formulario limpio. */
   openCreate(): void {
     this.form.reset();
-    this.createOpen.set(true);
+    this.editingId.set(null);
+    this.editInitial.set(null);
+    this.editState.set('ready');
+    this.dialogOpen.set(true);
   }
 
-  closeCreate(): void {
-    this.createOpen.set(false);
+  /** Abre el modal para editar: carga el cliente completo (la lista no trae la dirección). */
+  async openEdit(customer: CustomerSummary): Promise<void> {
+    this.form.reset();
+    this.editingId.set(customer.id);
+    this.editInitial.set(null);
+    this.editState.set('loading');
+    this.dialogOpen.set(true);
+    await this.loadEditing(customer.id);
   }
 
-  /** Registra el cliente; si sale bien cierra el modal y actualiza la lista. */
-  async onCreate(input: CustomerInput): Promise<void> {
+  retryEdit(): void {
+    const id = this.editingId();
+    if (id) {
+      this.editState.set('loading');
+      void this.loadEditing(id);
+    }
+  }
+
+  closeDialog(): void {
+    this.dialogOpen.set(false);
+  }
+
+  /** Guarda lo escrito: registra o actualiza según el modal; si sale bien, lo cierra y actualiza la lista. */
+  async onSubmit(input: CustomerInput): Promise<void> {
     const workshopId = this.workshops.activeId();
     if (!workshopId) return;
 
-    const result = await this.form.save(
-      () => this.customers.create(workshopId, input),
-      'No se pudo registrar el cliente. Revisa tu conexión e inténtalo de nuevo.',
-    );
-    if (!result.ok) return;
+    const id = this.editingId();
+    const initial = this.editInitial();
+    if (id && initial && isSameInput(input, initial)) {
+      this.toast.info('No hay cambios que guardar');
+      return;
+    }
 
-    this.closeCreate();
-    this.toast.success('Cliente registrado');
+    const result = await this.form.save(
+      () =>
+        id
+          ? this.customers.update(workshopId, id, input)
+          : this.customers.create(workshopId, input),
+      id
+        ? 'No se pudieron guardar los cambios. Revisa tu conexión e inténtalo de nuevo.'
+        : 'No se pudo registrar el cliente. Revisa tu conexión e inténtalo de nuevo.',
+    );
+    if (!result.ok) {
+      // El cliente desapareció mientras se editaba: ya no hay nada que guardar.
+      if (result.reason === 'not-found') this.editState.set('not-found');
+      return;
+    }
+
+    this.closeDialog();
+    this.toast.success(id ? 'Cambios guardados' : 'Cliente registrado');
     this.retry();
   }
 
-  /** Al salir del teléfono: aviso (no bloquea) si otros clientes del taller ya lo usan. */
+  /** Al salir del celular: aviso (no bloquea) si otros clientes del taller ya lo usan. */
   async onPhoneChecked(phone: string): Promise<void> {
     const workshopId = this.workshops.activeId();
-    if (workshopId) await this.form.checkPhone(workshopId, phone);
+    if (!workshopId) return;
+    const id = this.editingId();
+    // Editando, no cuenta el propio cliente ni el celular que ya tenía.
+    await this.form.checkPhone(
+      workshopId,
+      phone,
+      id ? { excludeId: id, ownPhone: this.editInitial()?.phone } : {},
+    );
   }
 
   retry(): void {
@@ -149,6 +205,22 @@ export class CustomerListPage {
       );
     } finally {
       if (request === this.requestId) this.isLoading.set(false);
+    }
+  }
+
+  private async loadEditing(id: string): Promise<void> {
+    try {
+      const customer = await this.customers.getById(id);
+      // Se cerró el modal o se abrió otro cliente mientras cargaba: se descarta.
+      if (this.editingId() !== id || !this.dialogOpen()) return;
+      if (!customer) {
+        this.editState.set('not-found');
+        return;
+      }
+      this.editInitial.set(customerToInput(customer));
+      this.editState.set('ready');
+    } catch {
+      if (this.editingId() === id) this.editState.set('error');
     }
   }
 }

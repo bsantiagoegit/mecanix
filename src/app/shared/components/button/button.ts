@@ -15,6 +15,8 @@ export class Button {
   readonly disabled = input(false);
   readonly loading = input(false);
   readonly fullWidth = input(false);
+  /** Texto para lectores de pantalla cuando el botón repite una acción en cada fila ("Editar a Ana Pérez"). */
+  readonly ariaLabel = input<string | null>(null);
 
   readonly clicked = output<MouseEvent>();
 
