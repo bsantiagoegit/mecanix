@@ -1,4 +1,4 @@
-[← Índice de casos de uso](../use-cases.md)
+[← Índice de casos de uso](./README.md)
 
 # Feature 12: Fotos y Evidencia
 
