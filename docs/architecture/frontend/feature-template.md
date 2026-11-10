@@ -61,6 +61,8 @@ features/customers/
 └── README.md
 ```
 
+> **Nota**: el feature real `customers` no tiene las rutas `new` ni `:id/edit`: registrar y editar son un **modal** de la lista (`CustomerListPage`), solo para `owner` y `advisor`. Ver [`features/customers`](../../../src/app/features/customers/README.md). Las rutas de creación y edición siguen siendo la convención cuando el formulario es largo o necesita su propia pantalla.
+
 ---
 
 ## Responsabilidades de cada carpeta

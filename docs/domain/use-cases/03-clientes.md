@@ -172,18 +172,20 @@ Los mismos datos y reglas valen al registrar (UC-CUST-01) y al editar (UC-CUST-0
 - **Prioridad**: MVP
 - **Precondiciones**: Usuario autenticado con rol `advisor` u `owner`, cliente existente y no eliminado en el taller activo.
 - **Flujo principal**:
-  1. Advisor abre el detalle del cliente y toca "Editar".
-  2. Sistema muestra el formulario con los datos actuales.
+  1. Advisor toca "Editar" en la fila del cliente de la lista (o desde su detalle). Se abre el **mismo modal** que para registrar, con el título "Editar cliente".
+  2. Sistema carga el cliente completo (muestra "Cargando…" un momento) y llena el formulario con los datos actuales.
   3. Advisor modifica los campos que necesite (mismas reglas que UC-CUST-01).
   4. Advisor guarda los cambios.
   5. Sistema valida y actualiza `customers` y `updated_at`.
-  6. Sistema vuelve al detalle con los datos nuevos y un aviso de confirmación.
+  6. Sistema cierra el modal, confirma el cambio con un aviso y actualiza la lista con los datos nuevos.
 - **Flujos alternativos**:
   - **Cédula duplicada**: el sistema bloquea el guardado y enlaza al otro cliente, igual que al registrar.
   - **Cliente antiguo sin alguno de los datos** (por ejemplo, registrado antes de que fueran obligatorios): el formulario los pide para poder guardar.
   - **Teléfono ya usado por otro cliente**: aviso no bloqueante, igual que al registrar.
-  - **Sin cambios**: guardar no hace ninguna llamada ni cambia `updated_at`.
-  - **Cliente eliminado o inexistente mientras se editaba**: el sistema avisa que ya no está disponible y vuelve a la lista.
+  - **Sin cambios**: guardar no hace ninguna llamada ni cambia `updated_at`; el sistema avisa "No hay cambios que guardar" y deja el modal abierto.
+  - **Cliente eliminado o inexistente** (al abrir el modal o mientras se editaba): el modal muestra "Cliente no encontrado" y se puede cerrar; no hay nada que guardar.
+  - **No se pudo cargar el cliente**: el modal muestra el error con "Reintentar".
+  - **Cerrar el modal**: igual que al registrar ("Cancelar", la X o `Esc`), sin guardar; los cambios escritos se descartan.
   - **Dos usuarios editan a la vez**: gana el último en guardar (no hay bloqueo optimista en el MVP).
   - **Sin conexión o error del servidor**: igual que al registrar, se conserva lo escrito.
 - **Reglas de negocio**:

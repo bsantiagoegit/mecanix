@@ -85,6 +85,8 @@ Ejemplo: crear cliente.
 
 Ejemplo: editar cliente.
 
+> **Nota**: el feature real `customers` no tiene las rutas `new` ni `:id/edit`: registrar y editar son un **modal** de la lista (`CustomerListPage`), solo para `owner` y `advisor`. Ver [`features/customers`](../../../src/app/features/customers/README.md). El flujo es el mismo, pero la "navegación" es abrir y cerrar el modal; el guardado y los avisos viven en `CustomerFormState`.
+
 ```
 1. Usuario navega a /customers/:id/edit
    ↓
