@@ -306,12 +306,17 @@ describe('Aislamiento entre talleres: referencias y datos de contacto', () => {
       );
     });
 
-    it('un cliente borrado lógicamente se sigue pudiendo marcar (UPDATE) por el advisor', async () => {
-      await withRollback(advisor, async () => {
-        const res = await advisor.query(`UPDATE customers SET deleted_at = now() WHERE id = $1`, [
+    it('el soft delete de un cliente (UPDATE) lo hace el owner, no el advisor', async () => {
+      await withRollback(owner, async () => {
+        const res = await owner.query(`UPDATE customers SET deleted_at = now() WHERE id = $1`, [
           CUSTOMER_A2,
         ]);
         expect(res.rowCount).toBe(1);
+      });
+      await withRollback(advisor, async () => {
+        await expect(
+          advisor.query(`UPDATE customers SET deleted_at = now() WHERE id = $1`, [CUSTOMER_A2]),
+        ).rejects.toThrow(/only_owner_can_delete/);
       });
     });
 

@@ -88,13 +88,13 @@ describe('RLS: customers, vehicles, vehicle_ownerships', () => {
       expect(res.rowCount).toBe(0);
     });
 
-    it('soft delete: UPDATE deleted_at funciona y la consulta activa lo excluye', async () => {
-      await withRollback(advisorA, async () => {
-        const res = await advisorA.query(`UPDATE customers SET deleted_at = now() WHERE id = $1`, [
+    it('soft delete: lo hace el owner, UPDATE deleted_at, y la consulta activa lo excluye', async () => {
+      await withRollback(ownerA, async () => {
+        const res = await ownerA.query(`UPDATE customers SET deleted_at = now() WHERE id = $1`, [
           CUSTOMER_A2,
         ]);
         expect(res.rowCount).toBe(1);
-        const { rows } = await advisorA.query(
+        const { rows } = await ownerA.query(
           'SELECT id FROM customers WHERE deleted_at IS NULL ORDER BY id',
         );
         expect(rows.map((r) => r.id)).toEqual([CUSTOMER_A1]);
@@ -111,7 +111,7 @@ describe('RLS: customers, vehicles, vehicle_ownerships', () => {
         await expect(
           advisorA.query(
             `INSERT INTO customers (workshop_id, first_name, last_name, phone, identification)
-             VALUES ($1, 'Dup', 'Dup', '1', '1700000001')`,
+             VALUES ($1, 'Dup', 'Dup', '0991000009', '1700000001')`,
             [WORKSHOP_A],
           ),
         ).rejects.toThrow(/duplicate key|idx_customers_identification/i);
@@ -122,7 +122,7 @@ describe('RLS: customers, vehicles, vehicle_ownerships', () => {
       await withRollback(advisorB, async () => {
         const res = await advisorB.query(
           `INSERT INTO customers (workshop_id, first_name, last_name, phone, identification)
-           VALUES ($1, 'Otro', 'Taller', '1', '1700000001')`,
+           VALUES ($1, 'Otro', 'Taller', '0991000009', '1700000001')`,
           [WORKSHOP_B],
         );
         expect(res.rowCount).toBe(1);
@@ -169,15 +169,16 @@ describe('RLS: customers, vehicles, vehicle_ownerships', () => {
     });
 
     it('la placa es única por taller y reutilizable tras soft delete', async () => {
-      await withRollback(advisorA, async () => {
+      // El owner es quien elimina (soft delete); el asesor ya no puede.
+      await withRollback(ownerA, async () => {
         const dup = `INSERT INTO vehicles (workshop_id, license_plate, make, model, year)
                      VALUES ($1, 'PBA-1234', 'Ford', 'Fiesta', 2015)`;
-        await advisorA.query('SAVEPOINT s');
-        await expect(advisorA.query(dup, [WORKSHOP_A])).rejects.toThrow(/duplicate key/i);
-        await advisorA.query('ROLLBACK TO SAVEPOINT s');
+        await ownerA.query('SAVEPOINT s');
+        await expect(ownerA.query(dup, [WORKSHOP_A])).rejects.toThrow(/duplicate key/i);
+        await ownerA.query('ROLLBACK TO SAVEPOINT s');
 
-        await advisorA.query(`UPDATE vehicles SET deleted_at = now() WHERE id = $1`, [VEHICLE_A1]);
-        expect((await advisorA.query(dup, [WORKSHOP_A])).rowCount).toBe(1);
+        await ownerA.query(`UPDATE vehicles SET deleted_at = now() WHERE id = $1`, [VEHICLE_A1]);
+        expect((await ownerA.query(dup, [WORKSHOP_A])).rowCount).toBe(1);
       });
     });
 
