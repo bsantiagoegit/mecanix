@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { Router, provideRouter } from '@angular/router';
 import { initialAuthState } from '@core/auth/store/auth.state';
 import { initialWorkshopState } from '@core/workshops/store/workshop.state';
 
@@ -43,6 +44,7 @@ function setup(
   TestBed.configureTestingModule({
     imports: [CustomerListPage],
     providers: [
+      provideRouter([]),
       provideTestStore({
         auth: {
           ...initialAuthState,
@@ -58,6 +60,7 @@ function setup(
       { provide: CustomersService, useValue: { search } },
     ],
   });
+  const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
   const fixture = TestBed.createComponent(CustomerListPage);
   const flush = async () => {
     await fixture.whenStable();
@@ -67,6 +70,7 @@ function setup(
   return {
     fixture,
     search,
+    navigate,
     flush,
     component: fixture.componentInstance,
     element: fixture.nativeElement as HTMLElement,
@@ -296,6 +300,68 @@ describe('CustomerListPage', () => {
       await flush();
       expect(element.textContent).toContain('Nombre1 Apellido1');
       expect(element.textContent).not.toContain('0990000001');
+    });
+  });
+
+  describe('registering customers', () => {
+    it.each(['owner', 'advisor'] as const)('%s sees the "Nuevo cliente" button', async (role) => {
+      const { component, flush, element, navigate } = setup({ role });
+      await flush();
+      expect(component.canCreate()).toBe(true);
+      expect(element.textContent).toContain('Nuevo cliente');
+
+      component.newCustomer();
+      expect(navigate).toHaveBeenCalledWith(['/customers', 'new'], { queryParams: {} });
+    });
+
+    it('the mechanic cannot register customers', async () => {
+      const { component, flush, element } = setup({ role: 'mechanic' });
+      await flush();
+      expect(component.canCreate()).toBe(false);
+      expect(element.textContent).not.toContain('Nuevo cliente');
+    });
+
+    it('offers to register what was searched without results, already filled in', async () => {
+      const search = vi
+        .fn()
+        .mockResolvedValueOnce(page(2))
+        .mockResolvedValue({ items: [], hasMore: false });
+      const { component, flush, element, navigate } = setup({ search });
+      await flush();
+
+      component.onSearch('Ana Pérez');
+      await flush();
+      expect(element.textContent).toContain('Registrar nuevo cliente');
+
+      component.newCustomer(true);
+      expect(navigate).toHaveBeenCalledWith(['/customers', 'new'], {
+        queryParams: { firstName: 'Ana', lastName: 'Pérez' },
+      });
+    });
+
+    it('fills in the phone when the search looks like one', async () => {
+      const search = vi
+        .fn()
+        .mockResolvedValueOnce(page(2))
+        .mockResolvedValue({ items: [], hasMore: false });
+      const { component, flush, navigate } = setup({ search });
+      await flush();
+      component.onSearch('0987654321');
+      await flush();
+
+      component.newCustomer(true);
+      expect(navigate).toHaveBeenCalledWith(['/customers', 'new'], {
+        queryParams: { phone: '0987654321' },
+      });
+    });
+
+    it('does not offer to register to the mechanic when nothing is found', async () => {
+      const { flush, element } = setup({
+        role: 'mechanic',
+        search: vi.fn().mockResolvedValue({ items: [], hasMore: false }),
+      });
+      await flush();
+      expect(element.textContent).not.toContain('Registrar nuevo cliente');
     });
   });
 });

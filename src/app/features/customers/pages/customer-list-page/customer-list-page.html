@@ -1,7 +1,12 @@
 <div class="max-w-3xl mx-auto flex flex-col gap-6">
-  <div>
-    <h1 class="text-2xl font-bold text-fg">Clientes</h1>
-    <p class="text-sm text-fg-muted mt-1">Las personas que llevan su vehículo a tu taller.</p>
+  <div class="flex flex-wrap items-end justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-fg">Clientes</h1>
+      <p class="text-sm text-fg-muted mt-1">Las personas que llevan su vehículo a tu taller.</p>
+    </div>
+    @if (canCreate()) {
+      <app-button (clicked)="newCustomer()">Nuevo cliente</app-button>
+    }
   </div>
 
   <app-customer-search
@@ -25,11 +30,16 @@
             <app-customer-card [customer]="customer" />
           </li>
         } @empty {
-          <li class="p-6 text-sm text-fg-muted">
+          <li class="p-6 text-sm text-fg-muted flex flex-col items-start gap-3">
             @if (query()) {
-              No se encontraron clientes para «{{ query() }}».
+              <span>No se encontraron clientes para «{{ query() }}».</span>
             } @else {
-              Aún no hay clientes en tu taller.
+              <span>Aún no hay clientes en tu taller.</span>
+            }
+            @if (canCreate()) {
+              <app-button variant="secondary" size="sm" (clicked)="newCustomer(true)">
+                Registrar nuevo cliente
+              </app-button>
             }
           </li>
         }

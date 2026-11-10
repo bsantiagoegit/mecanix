@@ -1,0 +1,58 @@
+<div class="max-w-2xl mx-auto flex flex-col gap-6">
+  <div>
+    <a routerLink="/customers" class="text-sm text-primary-600 hover:underline">
+      ← Volver a clientes
+    </a>
+    <h1 class="text-2xl font-bold text-fg mt-2">
+      {{ isEdit() ? 'Editar cliente' : 'Nuevo cliente' }}
+    </h1>
+    <p class="text-sm text-fg-muted mt-1">
+      {{
+        isEdit()
+          ? 'Cambia los datos del cliente. Las órdenes que ya existen mostrarán los datos nuevos.'
+          : 'Nombres, apellidos y teléfono son obligatorios; el resto puedes completarlo después.'
+      }}
+    </p>
+  </div>
+
+  @switch (state()) {
+    @case ('loading') {
+      <p class="text-sm text-fg-muted" role="status">Cargando cliente…</p>
+    }
+    @case ('not-found') {
+      <app-card padding="lg">
+        <div role="alert" class="flex flex-col items-start gap-3">
+          <p class="text-sm text-fg">Cliente no encontrado. Puede que ya no esté disponible.</p>
+          <a routerLink="/customers" class="text-sm text-primary-600 hover:underline">
+            Volver a la lista
+          </a>
+        </div>
+      </app-card>
+    }
+    @case ('error') {
+      <app-card padding="lg">
+        <div role="alert" class="flex flex-col items-start gap-3">
+          <p class="text-sm text-danger-700">
+            No se pudo cargar el cliente. Revisa tu conexión e inténtalo de nuevo.
+          </p>
+          <app-button variant="secondary" size="sm" (clicked)="retry()">Reintentar</app-button>
+        </div>
+      </app-card>
+    }
+    @case ('ready') {
+      <app-card padding="lg">
+        <app-customer-form
+          [initial]="initial()"
+          [prefill]="prefill()"
+          [submitLabel]="isEdit() ? 'Guardar cambios' : 'Registrar cliente'"
+          [isSubmitting]="isSubmitting()"
+          [error]="error()"
+          [phoneWarning]="phoneWarning()"
+          [identificationConflict]="conflict()"
+          (submitted)="onSubmit($event)"
+          (phoneChecked)="onPhoneChecked($event)"
+        />
+      </app-card>
+    }
+  }
+</div>

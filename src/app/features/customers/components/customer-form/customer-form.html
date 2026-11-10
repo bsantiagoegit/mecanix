@@ -1,0 +1,95 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4" novalidate>
+  @if (error(); as message) {
+    <p
+      role="alert"
+      class="rounded-md border border-danger-100 bg-danger-50 px-3 py-2 text-sm text-danger-700"
+    >
+      {{ message }}
+    </p>
+  }
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <app-input
+      label="Nombres"
+      autocomplete="given-name"
+      [required]="true"
+      formControlName="firstName"
+      [error]="fieldError('firstName')"
+    />
+    <app-input
+      label="Apellidos"
+      autocomplete="family-name"
+      [required]="true"
+      formControlName="lastName"
+      [error]="fieldError('lastName')"
+    />
+  </div>
+
+  <div (focusout)="onPhoneFocusOut()">
+    <app-input
+      type="tel"
+      label="Teléfono"
+      autocomplete="tel"
+      [required]="true"
+      formControlName="phone"
+      [error]="fieldError('phone')"
+    />
+  </div>
+
+  @if (visiblePhoneWarning(); as warning) {
+    <div
+      role="status"
+      class="rounded-md border border-warning-100 bg-warning-50 px-3 py-2 text-sm text-warning-700"
+    >
+      <p class="font-medium">Ya hay clientes con este teléfono:</p>
+      <ul class="mt-1 list-disc pl-5">
+        @for (match of warning.matches; track match.id) {
+          <li>{{ match.fullName }}</li>
+        }
+      </ul>
+      <p class="mt-1">Si es otra persona (por ejemplo un familiar), puedes continuar.</p>
+    </div>
+  }
+
+  <app-input
+    type="email"
+    label="Email"
+    autocomplete="email"
+    formControlName="email"
+    [error]="fieldError('email')"
+  />
+
+  <app-input
+    label="Identificación"
+    hint="Cédula, DNI o pasaporte. Se guarda en mayúsculas."
+    formControlName="identification"
+    [error]="fieldError('identification')"
+  />
+
+  @if (visibleConflict(); as conflict) {
+    <div
+      role="alert"
+      class="rounded-md border border-danger-100 bg-danger-50 px-3 py-2 text-sm text-danger-700"
+    >
+      @if (conflict.existing; as existing) {
+        <p>
+          Esa identificación ya pertenece a <strong>{{ existing.fullName }}</strong
+          >, teléfono {{ existing.phone }}. Usa ese cliente en lugar de crear otro.
+        </p>
+      } @else {
+        <p>Esa identificación ya pertenece a otro cliente del taller.</p>
+      }
+    </div>
+  }
+
+  <app-input
+    label="Dirección"
+    autocomplete="street-address"
+    formControlName="address"
+    [error]="fieldError('address')"
+  />
+
+  <div class="flex justify-end">
+    <app-button type="submit" [loading]="isSubmitting()">{{ submitLabel() }}</app-button>
+  </div>
+</form>
