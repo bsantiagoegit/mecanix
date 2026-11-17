@@ -19,6 +19,9 @@ export class Button {
   readonly fullWidth = input(false);
   /** Texto para lectores de pantalla cuando el botón repite una acción en cada fila ("Editar a Ana Pérez"). */
   readonly ariaLabel = input<string | null>(null);
+  /** Para botones que abren o cierran algo (un historial, un menú): su estado y qué controlan. */
+  readonly ariaExpanded = input<boolean | null>(null);
+  readonly ariaControls = input<string | null>(null);
 
   readonly clicked = output<MouseEvent>();
 
