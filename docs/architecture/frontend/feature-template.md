@@ -37,8 +37,7 @@ features/{feature-name}/
 features/customers/
 ├── components/
 │   ├── customer-card.ts
-│   ├── customer-form.ts
-│   └── customer-search.ts
+│   └── customer-form.ts
 │
 ├── pages/
 │   ├── customer-list-page.ts

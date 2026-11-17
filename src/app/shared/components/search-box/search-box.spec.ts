@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { CustomerSearch, SEARCH_DEBOUNCE_MS } from './customer-search';
+import { SEARCH_DEBOUNCE_MS, SearchBox } from './search-box';
 
 function setup() {
-  TestBed.configureTestingModule({ imports: [CustomerSearch] });
-  const fixture = TestBed.createComponent(CustomerSearch);
+  TestBed.configureTestingModule({ imports: [SearchBox] });
+  const fixture = TestBed.createComponent(SearchBox);
   const emitted: string[] = [];
   fixture.componentInstance.search.subscribe((text) => emitted.push(text));
   fixture.detectChanges();
@@ -15,14 +15,22 @@ function setup() {
   return { fixture, emitted, input, type };
 }
 
-describe('CustomerSearch', () => {
+describe('SearchBox', () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
 
   it('renders a labelled search input', () => {
     const { fixture, input } = setup();
     expect(input.type).toBe('search');
-    expect(fixture.nativeElement.querySelector('label')?.textContent).toContain('Buscar cliente');
+    expect(fixture.nativeElement.querySelector('label')?.textContent).toContain('Buscar');
+  });
+
+  it('shows the label it receives', () => {
+    TestBed.configureTestingModule({ imports: [SearchBox] });
+    const fixture = TestBed.createComponent(SearchBox);
+    fixture.componentRef.setInput('label', 'Buscar vehículo');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('label')?.textContent).toContain('Buscar vehículo');
   });
 
   it('does not emit on every keystroke: it waits until the user stops typing', () => {
@@ -64,8 +72,8 @@ describe('CustomerSearch', () => {
   });
 
   it('shows the placeholder and the hint it receives', () => {
-    TestBed.configureTestingModule({ imports: [CustomerSearch] });
-    const fixture = TestBed.createComponent(CustomerSearch);
+    TestBed.configureTestingModule({ imports: [SearchBox] });
+    const fixture = TestBed.createComponent(SearchBox);
     fixture.componentRef.setInput('placeholder', 'Nombre o apellido');
     fixture.componentRef.setInput('hint', 'Solo por nombre');
     fixture.detectChanges();

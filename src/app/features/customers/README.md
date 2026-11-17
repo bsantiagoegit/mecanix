@@ -24,7 +24,6 @@ features/customers/
 │   ├── customer-card/        ← una fila de la lista: nombre y datos de contacto si el rol los ve
 │   ├── customer-dialog/      ← el modal de registrar y editar (presentacional)
 │   ├── customer-form/        ← formulario de cliente (registrar y editar), presentacional
-│   ├── customer-search/      ← campo de búsqueda con espera (300 ms) y sin repetir el mismo texto
 │   └── customer-vehicle-list/ ← vehículos de un cliente, con su periodo en el historial
 ├── pages/
 │   ├── customer-list-page/   ← lista, búsqueda, paginación; abre el modal de registrar y editar
@@ -54,7 +53,7 @@ El enlace "Clientes" del encabezado lo ven los tres roles; el botón "Nuevo clie
 `CustomersService.search(workshopId, texto, offset)` llama a la función `search_customers` ([detalle](../../../../docs/architecture/data-model/tables/02-customers-vehicles.md)). La función, no la app, decide qué se busca y qué se devuelve: cada palabra debe coincidir en nombre, apellido, teléfono o identificación, y para el **mecánico** solo en el nombre, con el contacto en `null`. El texto viaja como parámetro; no se arman filtros `ilike` en el cliente.
 
 - **Paginación**: 20 por página. El servicio pide una fila de más para saber si hay otra página (`hasMore`) sin hacer un conteo; "Cargar más" pide desde el `offset` de lo ya cargado y agrega.
-- **Espera al escribir**: `CustomerSearch` emite el texto (sin espacios sobrantes) 300 ms después de la última tecla y solo si cambió.
+- **Espera al escribir**: `SearchBox` (componente compartido) emite el texto (sin espacios sobrantes) 300 ms después de la última tecla y solo si cambió.
 - **Respuestas desordenadas**: cada búsqueda lleva un número de petición; si llega la respuesta de una búsqueda que ya quedó atrás (o de un "cargar más" anterior), se descarta.
 - **Fallos**: un error al cargar se muestra como error con "Reintentar", nunca como "no hay clientes". Si falla "cargar más" se conserva lo ya cargado y se ofrece reintentar.
 - **Estados**: cargando (esqueleto de filas), vacío del taller ("Aún no hay clientes"), vacío de la búsqueda ("No se encontraron clientes para «…»"), error y lista.
@@ -114,7 +113,6 @@ Cada validador de Ecuador expone una función pura (`checkEcuadorMobile`, `check
 ## Tests
 
 - `customers.service.spec.ts`: parámetros de la función, página extra para `hasMore`, mapeo de filas, contacto `null` y error mapeado.
-- `customer-search.spec.ts`: espera al escribir, texto sin espacios, sin repetir y texto vacío.
 - `customer-card.spec.ts`: nombre y contacto según lo que llega.
 - `customer-list-page.spec.ts`: carga, enlaces al detalle y la búsqueda en la URL, búsqueda, respuestas desordenadas, paginación, errores con reintento, comportamiento por rol y el modal de registrar y editar (abrir, cargar el cliente, guardar, sin cambios, errores, cliente no encontrado, cancelar, formulario limpio).
 - `customer-detail-page.spec.ts`: carga por rol (completo o solo nombre), "—" en datos faltantes, no encontrado y error con reintento, cambio de cliente y respuestas desordenadas, volver con la búsqueda, vehículos (actuales, vacío, error) y el historial.

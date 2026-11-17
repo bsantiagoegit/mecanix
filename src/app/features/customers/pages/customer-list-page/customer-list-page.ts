@@ -4,10 +4,10 @@ import { AuthFacade } from '@core/auth';
 import { WorkshopFacade } from '@core/workshops';
 import { Button } from '@shared/components/button/button';
 import { Card } from '@shared/components/card/card';
+import { SearchBox } from '@shared/components/search-box/search-box';
 import { Skeleton } from '@shared/components/skeleton/skeleton';
 import { CustomerCard } from '../../components/customer-card/customer-card';
 import { CustomerDialog } from '../../components/customer-dialog/customer-dialog';
-import { CustomerSearch } from '../../components/customer-search/customer-search';
 import { CustomerSummary } from '../../models/customer.model';
 import { CustomerDialogState } from '../../services/customer-dialog.state';
 import { CustomerFormState } from '../../services/customer-form.state';
@@ -19,7 +19,7 @@ import { CustomersService } from '../../services/customers.service';
  */
 @Component({
   selector: 'app-customer-list-page',
-  imports: [Button, Card, CustomerCard, CustomerDialog, CustomerSearch, RouterLink, Skeleton],
+  imports: [Button, Card, CustomerCard, CustomerDialog, RouterLink, SearchBox, Skeleton],
   providers: [CustomerFormState, CustomerDialogState],
   templateUrl: './customer-list-page.html',
 })

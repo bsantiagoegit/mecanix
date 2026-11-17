@@ -9,7 +9,8 @@
     }
   </div>
 
-  <app-customer-search
+  <app-search-box
+    label="Buscar cliente"
     [placeholder]="placeholder()"
     [hint]="byNameOnly() ? 'Como mecánico, la búsqueda es solo por nombre.' : ''"
     [initial]="query()"
