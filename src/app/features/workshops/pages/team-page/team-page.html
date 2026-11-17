@@ -7,60 +7,8 @@
       <h1 class="text-2xl font-bold text-fg mt-2">Equipo</h1>
       <p class="text-sm text-fg-muted mt-1">Las personas que trabajan en tu taller.</p>
     </div>
-    <app-button (clicked)="toggleForm()" [variant]="formOpen() ? 'secondary' : 'primary'">
-      {{ formOpen() ? 'Cerrar' : 'Invitar usuario' }}
-    </app-button>
+    <app-button (clicked)="openForm()">Invitar usuario</app-button>
   </div>
-
-  @if (formOpen()) {
-    <app-card padding="lg">
-      <h2 class="text-lg font-semibold text-fg mb-1">Invitar usuario</h2>
-      <p class="text-sm text-fg-muted mb-4">
-        Le enviaremos un correo para que acepte la invitación y elija su contraseña.
-      </p>
-
-      @if (inviteError(); as message) {
-        <p
-          role="alert"
-          class="mb-4 rounded-md border border-danger-100 bg-danger-50 px-3 py-2 text-sm text-danger-700"
-        >
-          {{ message }}
-        </p>
-      }
-
-      <form [formGroup]="form" (ngSubmit)="onInvite()" class="flex flex-col gap-4">
-        <div class="grid gap-4 sm:grid-cols-2">
-          <app-input
-            label="Nombre completo"
-            autocomplete="off"
-            [required]="true"
-            formControlName="fullName"
-            [error]="fieldError('fullName')"
-          />
-          <app-input
-            type="email"
-            label="Correo electrónico"
-            autocomplete="off"
-            [required]="true"
-            formControlName="email"
-            [error]="fieldError('email')"
-          />
-          <app-input
-            type="tel"
-            label="Teléfono"
-            autocomplete="off"
-            [required]="true"
-            formControlName="phone"
-            [error]="fieldError('phone')"
-          />
-          <app-select label="Rol" formControlName="role" [options]="roleOptions" />
-        </div>
-        <div class="flex justify-end">
-          <app-button type="submit" [loading]="isInviting()">Enviar invitación</app-button>
-        </div>
-      </form>
-    </app-card>
-  }
 
   <app-card padding="none">
     @if (isLoading()) {
@@ -149,4 +97,56 @@
       </ul>
     }
   </app-card>
+
+  <app-modal title="Invitar usuario" size="lg" [closable]="!isInviting()" [(isOpen)]="formOpen">
+    @if (formOpen()) {
+      <p class="text-sm text-fg-muted mb-4">
+        Le enviaremos un correo para que acepte la invitación y elija su contraseña.
+      </p>
+
+      @if (inviteError(); as message) {
+        <p
+          role="alert"
+          class="mb-4 rounded-md border border-danger-100 bg-danger-50 px-3 py-2 text-sm text-danger-700"
+        >
+          {{ message }}
+        </p>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onInvite()" class="flex flex-col gap-4">
+        <div class="grid gap-4 sm:grid-cols-2">
+          <app-input
+            label="Nombre completo"
+            autocomplete="off"
+            [required]="true"
+            formControlName="fullName"
+            [error]="fieldError('fullName')"
+          />
+          <app-input
+            type="email"
+            label="Correo electrónico"
+            autocomplete="off"
+            [required]="true"
+            formControlName="email"
+            [error]="fieldError('email')"
+          />
+          <app-input
+            type="tel"
+            label="Teléfono"
+            autocomplete="off"
+            [required]="true"
+            formControlName="phone"
+            [error]="fieldError('phone')"
+          />
+          <app-select label="Rol" formControlName="role" [options]="roleOptions" />
+        </div>
+        <div class="flex justify-end gap-3">
+          <app-button variant="ghost" [disabled]="isInviting()" (clicked)="closeForm()">
+            Cancelar
+          </app-button>
+          <app-button type="submit" [loading]="isInviting()">Enviar invitación</app-button>
+        </div>
+      </form>
+    }
+  </app-modal>
 </div>

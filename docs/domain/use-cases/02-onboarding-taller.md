@@ -54,7 +54,7 @@ Decisiones: [ADR-012](../../architecture/adr/ADR-012-onboarding-self-service.md)
 
 - **Actor**: `owner`. Ningún otro rol puede invitar.
 - **Flujo principal**:
-  1. El `owner` abre "Equipo" → "Invitar usuario".
+  1. El `owner` abre "Equipo" → "Invitar usuario", que abre un **modal** con el formulario (se cierra con "Cancelar", la X o `Esc`, y no mientras se envía).
   2. Ingresa nombre completo, correo, teléfono y rol (`advisor` o `mechanic`).
   3. El sistema envía la invitación al correo y muestra al usuario en la lista con estado "Invitado".
 - **Flujos alternativos**:
