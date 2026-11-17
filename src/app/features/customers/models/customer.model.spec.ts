@@ -1,4 +1,5 @@
 import {
+  formatDate,
   Customer,
   CustomerInput,
   customerToInput,
@@ -86,5 +87,12 @@ describe('customerToInput', () => {
 
   it('does not carry the id', () => {
     expect(customerToInput(customer)).not.toHaveProperty('id');
+  });
+});
+
+describe('formatDate', () => {
+  it('writes the day, a short Spanish month and the year', () => {
+    expect(formatDate('2026-11-12T15:00:00Z')).toBe('12 nov 2026');
+    expect(formatDate('2026-03-01T15:00:00Z')).toBe('1 mar 2026');
   });
 });
