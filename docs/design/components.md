@@ -105,7 +105,7 @@ Definir el catálogo de componentes base que viven en `shared/components/`. Cada
 <app-icon name="check" class="text-success-600" />
 ```
 
-Iconos registrados hoy: `check`, `chevron-down`, `eye`, `eye-off`, `info`, `loader-circle` (spinner de `app-button`) y `x`.
+Iconos registrados hoy: `check`, `chevron-down`, `eye`, `eye-off`, `info`, `key-round`, `loader-circle` (spinner de `app-button`), `lock-open` y `x`.
 
 #### `app-tooltip`
 
@@ -138,6 +138,29 @@ La validación está en `@shared/utils/password.validator.ts` (`passwordValidato
 **Propósito**: campo de texto largo.
 
 **Inputs**: mismos que `app-input` + `rows` (default: 4), `maxLength`.
+
+#### `app-search-box`
+
+**Propósito**: campo de búsqueda con espera, para las listas con búsqueda (clientes, vehículos…).
+
+**Inputs**:
+
+- `label`: `string` (default: `Buscar`). Cada lista nombra su búsqueda ("Buscar cliente").
+- `placeholder`, `hint`: `string`.
+- `initial`: `string`. Texto con el que arranca (p. ej. la búsqueda guardada en la URL).
+
+**Output**: `search` emite el texto **sin espacios sobrantes** 300 ms después de la última tecla, y solo si cambió respecto a lo último emitido (también emite `''` cuando se borra el campo). Quien lo usa hace la búsqueda y descarta las respuestas que llegan desordenadas.
+
+**Ejemplo**:
+
+```html
+<app-search-box
+  label="Buscar vehículo"
+  placeholder="Placa o VIN"
+  [initial]="query()"
+  (search)="onSearch($event)"
+/>
+```
 
 #### `app-select`
 
@@ -397,10 +420,13 @@ this.toast.showUpdate('Hay una actualización', () => location.reload());
 
 **Comportamiento**:
 
-- Si `keyCode` es `null`, no muestra nada.
-- Si tiene valor, muestra la clave oculta (`•••••`) con un botón de ojo.
-- Al tocar el ojo, revela la clave.
+- Si `keyCode` es `null`, no muestra nada (quien lo usa decide qué mostrar para "sin clave"; la tarjeta de vehículo pone un candado abierto con "Sin clave").
+- Si tiene valor, muestra un icono de llave y la clave oculta (`•••••`) con un botón de ojo.
+- Al tocar el ojo, revela la clave; otro toque la oculta.
 - El estado (revelada/oculta) es local al componente.
+- La clave se oculta por comodidad (que no se lea por encima del hombro), no por seguridad: todos los roles la ven ([D-DS-17](./decisions.md)).
+
+**Accesibilidad**: el botón se llama "Mostrar clave" u "Ocultar clave" y expone `aria-pressed`; mientras está oculta, los lectores de pantalla oyen "Clave oculta" en lugar de los puntos.
 
 **Ejemplo**:
 
