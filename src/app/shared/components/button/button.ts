@@ -1,11 +1,13 @@
 import { Component, computed, input, output } from '@angular/core';
 import { cn } from '../../utils/cn';
+import { Icon } from '../icon/icon';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'link';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 @Component({
   selector: 'app-button',
+  imports: [Icon],
   templateUrl: './button.html',
 })
 export class Button {

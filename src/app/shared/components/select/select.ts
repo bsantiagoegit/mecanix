@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { cn } from '../../utils/cn';
+import { Icon } from '../icon/icon';
 
 export interface SelectOption {
   value: string;
@@ -48,6 +49,7 @@ const TYPEAHEAD_RESET_MS = 600;
     '(document:pointerdown)': 'onDocumentPointerDown($event)',
     '(window:resize)': 'close()',
   },
+  imports: [Icon],
   templateUrl: './select.html',
 })
 export class Select implements ControlValueAccessor {

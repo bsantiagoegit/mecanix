@@ -9,6 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { cn } from '../../utils/cn';
+import { Icon } from '../icon/icon';
 
 let nextId = 0;
 
@@ -26,6 +27,7 @@ export type ModalSize = 'sm' | 'md' | 'lg';
  */
 @Component({
   selector: 'app-modal',
+  imports: [Icon],
   templateUrl: './modal.html',
 })
 export class Modal {

@@ -30,17 +30,11 @@
     <span class="truncate" [class.text-fg-muted]="!selected()">
       {{ selected()?.label ?? placeholder() }}
     </span>
-    <svg
-      class="h-4 w-4 shrink-0 text-fg-muted transition-transform"
+    <app-icon
+      name="chevron-down"
+      class="text-fg-muted transition-transform"
       [class.rotate-180]="isOpen()"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-    </svg>
+    />
   </button>
 
   @if (isOpen() && position(); as pos) {
@@ -73,15 +67,7 @@
             aria-hidden="true"
           >
             @if (option.value === value()) {
-              <svg
-                class="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                viewBox="0 0 24 24"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
+              <app-icon name="check" />
             }
           </span>
           <span class="truncate" [class.font-medium]="option.value === value()">{{

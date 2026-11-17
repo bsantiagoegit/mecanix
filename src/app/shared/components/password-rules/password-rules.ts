@@ -1,5 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 import { PASSWORD_RULES, checkPassword } from '../../utils/password.validator';
+import { Icon } from '../icon/icon';
 
 /**
  * Lista de lo que debe tener una contraseña, con cada regla marcada como cumplida o pendiente
@@ -8,6 +9,7 @@ import { PASSWORD_RULES, checkPassword } from '../../utils/password.validator';
  */
 @Component({
   selector: 'app-password-rules',
+  imports: [Icon],
   templateUrl: './password-rules.html',
 })
 export class PasswordRules {

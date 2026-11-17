@@ -1,4 +1,5 @@
 import { Component, ElementRef, inject, input, signal, viewChild } from '@angular/core';
+import { Icon } from '../icon/icon';
 
 interface TooltipPosition {
   top: number | null;
@@ -24,6 +25,7 @@ const WIDTH = 288;
     '(document:pointerdown)': 'onDocumentPointerDown($event)',
     '(window:resize)': 'hide()',
   },
+  imports: [Icon],
   templateUrl: './tooltip.html',
 })
 export class Tooltip {
