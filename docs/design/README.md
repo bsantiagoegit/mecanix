@@ -13,7 +13,7 @@
 
 Define el sistema de diseño del frontend: tokens, configuración de Tailwind, componentes base, variantes, responsive, accesibilidad y convenciones.
 
-**No incluye** la implementación de los componentes (va en el código). **No incluye** iconos (Lucide). **No incluye** animaciones complejas (Fase 2).
+**No incluye** la implementación de los componentes (va en el código). **No incluye** el catálogo de iconos (Lucide, ver `app-icon`). **No incluye** animaciones complejas (Fase 2).
 
 ---
 
@@ -38,7 +38,7 @@ Define el sistema de diseño del frontend: tokens, configuración de Tailwind, c
 5. **Mobile-first**. Solo 3 breakpoints (sm, md, lg).
 6. **Dark mode es MVP**. 3 estados: Claro / Oscuro / Sistema (D-DS-16).
 7. **Componentes base en `shared/components/`**. Sin librería externa.
-8. **Iconos con Lucide**.
+8. **Iconos con Lucide** (`@lucide/angular`) a través de `app-icon`.
 9. **Accesibilidad mínima garantizada** (contraste AA, focus, touch targets 44px).
 10. **`cn()` helper** para clases condicionales.
 

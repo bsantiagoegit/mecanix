@@ -154,7 +154,7 @@ Definir los requisitos mínimos de accesibilidad del sistema.
 
 ```html
 <button aria-label="Eliminar cliente">
-  <lucide-icon name="trash" />
+  <app-icon name="trash" />
 </button>
 ```
 

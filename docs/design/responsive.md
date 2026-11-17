@@ -145,7 +145,7 @@ Definir la estrategia responsive de la aplicación. Mobile-first con 3 breakpoin
 
 ```html
 <button class="min-h-11 min-w-11 p-2">
-  <lucide-icon name="x" />
+  <app-icon name="x" [size]="20" />
 </button>
 ```
 
