@@ -33,6 +33,8 @@ CREATE POLICY customers_update_advisor_owner ON customers
 -- Sin DELETE. Soft delete = UPDATE deleted_at, y solo lo hace el owner (trigger, D-RLS-13).
 ```
 
+**Funciones `SECURITY INVOKER`**: `create_vehicle` (alta atómica del vehículo y su propiedad) y `search_vehicles` (búsqueda con el propietario actual) no abren ningún acceso nuevo, porque corren con los permisos de quien llama y las policies siguen aplicando: `create_vehicle` solo funciona para `owner` y `advisor` (la propia función lo comprueba para dar un error claro, y la policy de INSERT lo exige además), y `search_vehicles` solo devuelve lo que el usuario ya podía leer. El nombre del propietario sale de `customers_public`, así que el `mechanic` lo ve sin acceder a `customers`. Ver [vehículos](../../data-model/tables/02-customers-vehicles.md#6-vehicles).
+
 **Soft delete y SELECT**: la policy de SELECT **no** filtra `deleted_at`. Postgres valida la fila nueva de un `UPDATE` contra las policies de SELECT; con `AND deleted_at IS NULL` el `UPDATE ... SET deleted_at` fallaba con `new row violates row-level security policy`. Los registros borrados se excluyen en las consultas (`.is('deleted_at', null)`). Misma regla para `vehicles`.
 
 **Nota sobre mechanic**: RLS no puede ocultar columnas, así que se separa por filas: la tabla es solo para `owner` y `advisor`, y el `mechanic` consulta la vista `customers_public`, que expone únicamente el nombre (ver [`../views.md`](../views.md)). Antes (v1.0) la policy dejaba leer a cualquier miembro y la separación dependía de que la app consultara la vista.

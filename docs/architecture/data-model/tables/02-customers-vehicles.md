@@ -95,7 +95,52 @@ CREATE INDEX idx_vehicles_vin ON vehicles(workshop_id, vin)
 CREATE INDEX idx_vehicles_workshop_active ON vehicles(workshop_id) WHERE deleted_at IS NULL;
 ```
 
-> **Nota sobre `key_code`**: la clave del vehículo (código numérico o alfanumérico para el inmovilizador). Nullable: solo se llena si `has_key = true`. Es del vehículo, no de la orden. Todos los roles activos del taller pueden verla (ver [D-DS-17](../../../design/decisions.md)).
+> **Nota sobre `key_code`**: la clave del vehículo (código numérico o alfanumérico para el inmovilizador). **Obligatoria si y solo si `has_key = true`**: con `has_key = false` es `NULL`. Es del vehículo, no de la orden. Todos los roles activos del taller pueden verla (ver [D-DS-17](../../../design/decisions.md)).
+
+**Normalización** (trigger `trg_vehicles_normalize`, `BEFORE INSERT OR UPDATE`): recorta espacios, deja `NULL` los opcionales vacíos (`color`, `vin`, `transmission`, `notes`, `key_code`), pone el `vin` en mayúsculas y **normaliza la placa**: mayúsculas y con guion (`pba1234` y `pba 1234` se guardan como `PBA-1234`; `ab123c` como `AB-123C`). Si la placa no tiene un formato reconocible se deja tal cual y el `CHECK` la rechaza. Con `has_key = false` **limpia `key_code`** en lugar de rechazarlo (UC-VEH-04). Como el índice `idx_vehicles_plate` se evalúa sobre el valor normalizado, la placa es única por taller **sin distinguir mayúsculas ni guiones**. Corre también para `service_role`.
+
+**Restricciones** (se evalúan sobre el valor ya normalizado; mismas reglas que el formulario, ver [UC de vehículos](../../../domain/use-cases/04-vehiculos.md)):
+
+| Constraint                          | Regla                                                                                   |
+| ----------------------------------- | --------------------------------------------------------------------------------------- |
+| `vehicles_license_plate_valid`      | Placa ecuatoriana: `ABC-1234`, `ABC-123` (antigua) o moto `AB-123C`                     |
+| `vehicles_make_valid`               | de 1 a 60 caracteres                                                                    |
+| `vehicles_model_valid`              | de 1 a 60 caracteres                                                                    |
+| `vehicles_color_valid`              | `NULL`, o hasta 30 caracteres                                                           |
+| `vehicles_vin_valid`                | `NULL`, o 17 caracteres `A-Z0-9` sin `I`, `O` ni `Q` (ISO 3779; sin dígito verificador) |
+| `vehicles_notes_valid`              | `NULL`, o hasta 500 caracteres                                                          |
+| `vehicles_key_code_valid`           | `NULL`, o hasta 50 caracteres                                                           |
+| `vehicles_key_code_matches_has_key` | `has_key = (key_code IS NOT NULL)`: con clave, la clave es obligatoria                  |
+| `vehicles_year_valid`               | de 1900 al año actual + 1 (ya existía)                                                  |
+| `vehicles_transmission_valid`       | `NULL`, o `manual`, `automatic`, `cvt` u `other` (ya existía)                           |
+
+**Datos anteriores**: al aplicar la migración, un vehículo con `has_key = true` y sin `key_code` pasó a `has_key = false` (la clave no se puede inventar, y como la interfaz de vehículos no existía, solo podían ser datos de demostración). El seed ahora trae claves.
+
+**Soft delete solo del owner**: ver `trg_vehicles_protect_soft_delete` en [clientes](#5-customers) y [D-RLS-13](../../security/decisions.md).
+
+#### Funciones de vehículos
+
+Las dos son **`SECURITY INVOKER`**: las policies de RLS siguen aplicando, así que no abren ningún acceso nuevo (ver [policies](../../security/policies/02-customers-vehicles.md)).
+
+**`create_vehicle(p_workshop_id, p_customer_id, p_license_plate, p_make, p_model, p_year, p_color, p_vin, p_transmission, p_has_key DEFAULT true, p_key_code, p_notes) RETURNS vehicles`** (UC-VEH-01)
+
+- Crea el vehículo **y** su propiedad actual (`vehicle_ownerships`, `started_at = now()`) en una sola transacción: o se crean los dos o ninguno. Hacerlo en dos llamadas desde la app dejaría un vehículo huérfano si la segunda fallara.
+- Devuelve el vehículo creado, ya normalizado.
+- Errores: `not_authenticated` e `insufficient_privilege` (`42501`: el que llama no es `owner` ni `advisor` del taller, así que un `mechanic` no crea), `customer_not_found` (`P0002`: el cliente no existe, está eliminado o es de otro taller) y las violaciones de las restricciones de arriba (placa repetida: `23505` sobre `idx_vehicles_plate`).
+
+**`search_vehicles(p_workshop_id, p_query DEFAULT NULL, p_limit DEFAULT 20, p_offset DEFAULT 0)`** (UC-VEH-02)
+
+```sql
+RETURNS TABLE (id uuid, license_plate text, make text, model text, year int, vin text,
+               has_key boolean, key_code text, owner_id uuid, owner_first_name text, owner_last_name text)
+```
+
+- Compara el texto con la placa y con el VIN **sin espacios ni guiones**, sin distinguir mayúsculas y en cualquier parte (`pba 12` encuentra `PBA-1234`). Máximo 50 caracteres; `%` y `_` se tratan como texto. Sin texto devuelve todos.
+- Solo vehículos no eliminados de `p_workshop_id`. Si el usuario no es miembro de ese taller devuelve cero filas; sin sesión lanza `not_authenticated`; `anon` no puede ejecutarla.
+- Trae el **propietario actual** (`vehicle_ownerships.ended_at IS NULL`) uniendo `customers_public`, que es lo único que el `mechanic` puede leer de un cliente: nombre y apellido, sin contacto. Un vehículo sin propietario actual sale con los tres campos `owner_*` en `NULL`.
+- Todos los roles reciben `key_code` ([D-DS-17](../../../design/decisions.md)).
+- Orden estable por placa e `id`; `p_limit` entre 1 y 100 y `p_offset` a 0 como mínimo.
+- Es `SECURITY INVOKER` (a diferencia de `search_customers`) porque no necesita aplicar una regla de roles propia: RLS ya decide qué ve cada uno.
 
 ---
 

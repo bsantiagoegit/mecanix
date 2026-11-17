@@ -152,6 +152,7 @@ CREATE TRIGGER trg_work_orders_warranty BEFORE UPDATE ON work_orders
 ## Triggers de clientes y soft delete
 
 - `normalize_customer()` (`trg_customers_normalize`, `BEFORE INSERT OR UPDATE` en `customers`): recorta espacios, deja `NULL` los opcionales vacíos y guarda `identification` en mayúsculas. Ver [clientes](./tables/02-customers-vehicles.md).
+- `normalize_vehicle()` (`trg_vehicles_normalize`, `BEFORE INSERT OR UPDATE` en `vehicles`): recorta espacios, deja `NULL` los opcionales vacíos, pone el VIN en mayúsculas, normaliza la placa (mayúsculas y con guion: `pba1234` → `PBA-1234`) y limpia `key_code` cuando `has_key = false`. Ver [vehículos](./tables/02-customers-vehicles.md#6-vehicles).
 - `protect_soft_delete()` (`trg_customers_protect_soft_delete` y `trg_vehicles_protect_soft_delete`, `BEFORE UPDATE OF deleted_at`): solo el `owner` del taller puede cambiar `deleted_at` (eliminar o restaurar). Aplica solo al rol `authenticated`; lanza `only_owner_can_delete` (`ERRCODE 42501`, que la app trata como falta de permiso).
 
 ```sql
