@@ -1,0 +1,101 @@
+<div class="flex flex-col gap-1.5">
+  @if (label()) {
+    <label [id]="selectId + '-label'" class="text-sm font-medium text-fg" (click)="focusTrigger()">
+      {{ label() }}
+      @if (required()) {
+        <span class="text-danger-500">*</span>
+      }
+    </label>
+  }
+
+  <button
+    #trigger
+    type="button"
+    role="combobox"
+    [id]="selectId"
+    [class]="triggerClasses()"
+    [disabled]="isDisabled()"
+    aria-haspopup="listbox"
+    [attr.aria-expanded]="isOpen()"
+    [attr.aria-controls]="listboxId"
+    [attr.aria-activedescendant]="isOpen() && activeIndex() >= 0 ? optionId(activeIndex()) : null"
+    [attr.aria-labelledby]="label() ? selectId + '-label' : null"
+    [attr.aria-label]="label() ? null : ariaLabel()"
+    [attr.aria-required]="required() || null"
+    [attr.aria-invalid]="!!error()"
+    [attr.aria-describedby]="error() ? selectId + '-error' : null"
+    (click)="toggle()"
+    (keydown)="onKeydown($event)"
+  >
+    <span class="truncate" [class.text-fg-muted]="!selected()">
+      {{ selected()?.label ?? placeholder() }}
+    </span>
+    <svg
+      class="h-4 w-4 shrink-0 text-fg-muted transition-transform"
+      [class.rotate-180]="isOpen()"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+
+  @if (isOpen() && position(); as pos) {
+    <ul
+      #panel
+      role="listbox"
+      [id]="listboxId"
+      [attr.aria-labelledby]="label() ? selectId + '-label' : null"
+      [attr.aria-label]="label() ? null : ariaLabel()"
+      class="fixed z-[60] overflow-auto rounded-md border border-border bg-surface py-1 text-fg shadow-lg"
+      [style.top.px]="pos.top"
+      [style.bottom.px]="pos.bottom"
+      [style.left.px]="pos.left"
+      [style.minWidth.px]="pos.width"
+      [style.maxHeight.px]="pos.maxHeight"
+    >
+      @for (option of options(); track option.value; let i = $index) {
+        <li
+          role="option"
+          [id]="optionId(i)"
+          [attr.aria-selected]="option.value === value()"
+          [attr.aria-disabled]="option.disabled || null"
+          [class]="optionClasses(option, i)"
+          (pointerdown)="$event.preventDefault()"
+          (click)="onOptionClick(i)"
+          (mousemove)="onOptionHover(i)"
+        >
+          <span
+            class="flex h-4 w-4 shrink-0 items-center justify-center text-primary-600"
+            aria-hidden="true"
+          >
+            @if (option.value === value()) {
+              <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            }
+          </span>
+          <span class="truncate" [class.font-medium]="option.value === value()">{{
+            option.label
+          }}</span>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (hint() && !error()) {
+    <p class="text-xs text-fg-muted">{{ hint() }}</p>
+  }
+  @if (error()) {
+    <p [id]="selectId + '-error'" class="text-xs text-danger-600" role="alert">{{ error() }}</p>
+  }
+</div>
