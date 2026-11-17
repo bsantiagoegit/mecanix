@@ -21,6 +21,7 @@
 | Ver todos los clientes            | ✅    | ✅      | ⚠️ solo nombre      |
 | Editar cliente                    | ✅    | ✅      | ❌                  |
 | Eliminar cliente (soft)           | ✅    | ❌      | ❌                  |
+| Registrar vehículo                | ✅    | ✅      | ❌                  |
 | Ver vehículos                     | ✅    | ✅      | ✅                  |
 | Editar vehículo                   | ✅    | ✅      | ❌                  |
 | Crear orden (draft)               | ✅    | ✅      | ❌                  |
