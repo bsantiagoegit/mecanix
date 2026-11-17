@@ -160,8 +160,8 @@ describe('RLS: customers, vehicles, vehicle_ownerships', () => {
     });
 
     it('advisor crea; mechanic no', async () => {
-      const sql = `INSERT INTO vehicles (workshop_id, license_plate, make, model, year)
-                   VALUES ($1, 'ZZZ-0001', 'Ford', 'Fiesta', 2015)`;
+      const sql = `INSERT INTO vehicles (workshop_id, license_plate, make, model, year, has_key)
+                   VALUES ($1, 'ZZZ-0001', 'Ford', 'Fiesta', 2015, false)`;
       await withRollback(advisorA, async () => {
         expect((await advisorA.query(sql, [WORKSHOP_A])).rowCount).toBe(1);
       });
@@ -171,8 +171,8 @@ describe('RLS: customers, vehicles, vehicle_ownerships', () => {
     it('la placa es única por taller y reutilizable tras soft delete', async () => {
       // El owner es quien elimina (soft delete); el asesor ya no puede.
       await withRollback(ownerA, async () => {
-        const dup = `INSERT INTO vehicles (workshop_id, license_plate, make, model, year)
-                     VALUES ($1, 'PBA-1234', 'Ford', 'Fiesta', 2015)`;
+        const dup = `INSERT INTO vehicles (workshop_id, license_plate, make, model, year, has_key)
+                     VALUES ($1, 'PBA-1234', 'Ford', 'Fiesta', 2015, false)`;
         await ownerA.query('SAVEPOINT s');
         await expect(ownerA.query(dup, [WORKSHOP_A])).rejects.toThrow(/duplicate key/i);
         await ownerA.query('ROLLBACK TO SAVEPOINT s');
@@ -187,16 +187,16 @@ describe('RLS: customers, vehicles, vehicle_ownerships', () => {
         await advisorA.query('SAVEPOINT s');
         await expect(
           advisorA.query(
-            `INSERT INTO vehicles (workshop_id, license_plate, make, model, year)
-             VALUES ($1, 'YYY-1', 'A', 'B', 1800)`,
+            `INSERT INTO vehicles (workshop_id, license_plate, make, model, year, has_key)
+             VALUES ($1, 'YYY-123', 'A', 'B', 1800, false)`,
             [WORKSHOP_A],
           ),
         ).rejects.toThrow(/vehicles_year_valid/);
         await advisorA.query('ROLLBACK TO SAVEPOINT s');
         await expect(
           advisorA.query(
-            `INSERT INTO vehicles (workshop_id, license_plate, make, model, year, transmission)
-             VALUES ($1, 'YYY-2', 'A', 'B', 2020, 'robot')`,
+            `INSERT INTO vehicles (workshop_id, license_plate, make, model, year, transmission, has_key)
+             VALUES ($1, 'YYY-124', 'A', 'B', 2020, 'robot', false)`,
             [WORKSHOP_A],
           ),
         ).rejects.toThrow(/vehicles_transmission_valid/);
