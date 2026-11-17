@@ -1,21 +1,19 @@
 import { Component, effect, inject, signal } from '@angular/core';
-import {
-  AbstractControl,
-  FormBuilder,
-  ReactiveFormsModule,
-  ValidationErrors,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthFacade, AuthService, Role } from '@core/auth';
 import { InvitationAcceptError } from '@core/errors';
 import { Button } from '@shared/components/button/button';
 import { Card } from '@shared/components/card/card';
 import { Input } from '@shared/components/input/input';
+import { PasswordRules } from '@shared/components/password-rules/password-rules';
+import { Tooltip } from '@shared/components/tooltip/tooltip';
+import {
+  passwordErrorMessage,
+  passwordValidator,
+  passwordsMatchValidator,
+} from '@shared/utils/password.validator';
 import { firstValueFrom } from 'rxjs';
-
-/** Debe coincidir con `minimum_password_length` de supabase/config.toml. */
-const MIN_PASSWORD_LENGTH = 6;
 
 const ROLE_LABELS: Record<Role, string> = {
   owner: 'dueño',
@@ -23,19 +21,13 @@ const ROLE_LABELS: Record<Role, string> = {
   mechanic: 'mecánico',
 };
 
-function passwordsMatch(group: AbstractControl): ValidationErrors | null {
-  const password = group.get('password')?.value;
-  const confirm = group.get('confirmPassword')?.value;
-  return password === confirm ? null : { passwordMismatch: true };
-}
-
 /**
  * UC-WS-04: el invitado abrió el enlace del correo (ya tiene sesión) y confirma la invitación:
  * elige su contraseña y entra al taller.
  */
 @Component({
   selector: 'app-accept-invitation-page',
-  imports: [ReactiveFormsModule, Button, Card, Input],
+  imports: [ReactiveFormsModule, Button, Card, Input, PasswordRules, Tooltip],
   templateUrl: './accept-invitation-page.html',
 })
 export class AcceptInvitationPage {
@@ -56,10 +48,10 @@ export class AcceptInvitationPage {
 
   readonly form = this.fb.group(
     {
-      password: ['', [Validators.required, Validators.minLength(MIN_PASSWORD_LENGTH)]],
+      password: ['', [Validators.required, passwordValidator]],
       confirmPassword: ['', Validators.required],
     },
-    { validators: passwordsMatch },
+    { validators: passwordsMatchValidator },
   );
 
   constructor() {
@@ -108,7 +100,8 @@ export class AcceptInvitationPage {
     const control = this.form.get(field);
     if (!control?.touched) return '';
     if (control.errors?.['required']) return 'Este campo es obligatorio';
-    if (control.errors?.['minlength']) return `Mínimo ${MIN_PASSWORD_LENGTH} caracteres`;
+    if (control.errors?.['password'])
+      return passwordErrorMessage(control.errors['password'].missing);
     if (field === 'confirmPassword' && this.form.errors?.['passwordMismatch']) {
       return 'Las contraseñas no coinciden';
     }

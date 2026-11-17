@@ -58,7 +58,11 @@
           [revealable]="true"
           formControlName="password"
           [error]="fieldError('password')"
-        />
+        >
+          <app-tooltip labelHelp ariaLabel="Requisitos de la contraseña">
+            <app-password-rules [value]="form.controls.password.value" />
+          </app-tooltip>
+        </app-input>
 
         <app-input
           type="password"

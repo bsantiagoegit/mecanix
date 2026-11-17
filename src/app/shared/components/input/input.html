@@ -1,11 +1,14 @@
 <div class="flex flex-col gap-1">
   @if (label()) {
-    <label [for]="inputId" class="text-sm font-medium text-fg">
-      {{ label() }}
-      @if (required()) {
-        <span class="text-danger-500">*</span>
-      }
-    </label>
+    <div class="flex items-center gap-1.5">
+      <label [for]="inputId" class="text-sm font-medium text-fg">
+        {{ label() }}
+        @if (required()) {
+          <span class="text-danger-500">*</span>
+        }
+      </label>
+      <ng-content select="[labelHelp]" />
+    </div>
   }
 
   <div class="relative">

@@ -58,7 +58,7 @@ Cargadas con `loadChildren` bajo `/auth` (ver [`auth.routes.ts`](./auth.routes.t
 
 ## Flujo de registro
 
-1. `RegisterPage` valida nombre, email, contraseña (mínimo 6, igual que `minimum_password_length` de `supabase/config.toml`) y su confirmación, y llama a `AuthFacade.register()`. El email usa `emailValidator` (`@shared/utils`): el de Angular más un dominio con extensión (`ana@example` no pasa), y `trimOnChange` quita los espacios al escribir o pegar.
+1. `RegisterPage` valida nombre, email, contraseña (mínimo 8 con mayúscula, minúscula y número, con `passwordValidator` de `@shared/utils`, igual que `minimum_password_length` y `password_requirements` de `supabase/config.toml`; un tooltip "i" junto a la etiqueta lista las reglas y marca las cumplidas) y su confirmación, y llama a `AuthFacade.register()`. El email usa `emailValidator` (`@shared/utils`): el de Angular más un dominio con extensión (`ana@example` no pasa), y `trimOnChange` quita los espacios al escribir o pegar.
 2. `AuthService.register` crea la cuenta en Supabase Auth con `full_name` en el metadata; el trigger `handle_new_auth_user` crea la fila de `users`. La confirmación de email está activada (`enable_confirmations = true`), así que no se abre sesión; si Supabase abriera una, se cierra.
 3. Con éxito, la página dice que se envió un correo de confirmación. Con error, muestra un mensaje legible (email ya registrado, contraseña débil o genérico).
 4. El usuario abre el enlace del correo: Supabase abre sesión y la app lo lleva a `/onboarding/create-workshop` (cuenta sin taller). Si abre `/auth/login?confirmed=1` sin sesión, `LoginPage` avisa que el correo quedó confirmado.
@@ -94,8 +94,9 @@ El estado de ambas pantallas es local (signals): no hay slice de NgRx.
 1. El invitado abre el enlace del correo. Supabase valida el token, confirma el correo y vuelve a `/auth/accept-invitation` con una sesión abierta (`detectSessionInUrl`).
 2. `AuthService` resuelve la sesión: sin membresía activa, consulta `get_pending_invitation()` y la guarda en `AuthSession.invitation` (taller y rol). Se persiste con el resto de la sesión para que recargar la página no lo mande a crear un taller.
 3. `AcceptInvitationPage` muestra el taller y el rol, y pide la contraseña. Al enviar: guarda la contraseña (`AuthService.setPassword`, es `updateUser`), activa la membresía con `accept_invitation()` y vuelve a resolver la sesión; con taller, entra a `/dashboard`.
-4. La contraseña se guarda **una sola vez**: si aceptar falla y el usuario reintenta, no se vuelve a guardar, porque Supabase rechaza fijar la misma contraseña.
-5. Si la invitación ya no existe (la cancelaron), se sincroniza la sesión y, al no tener invitación ni taller, el usuario queda en `/onboarding/create-workshop`.
+4. El campo de contraseña lleva la misma regla y el mismo tooltip que el registro y la recuperación.
+5. La contraseña se guarda **una sola vez**: si aceptar falla y el usuario reintenta, no se vuelve a guardar, porque Supabase rechaza fijar la misma contraseña.
+6. Si la invitación ya no existe (la cancelaron), se sincroniza la sesión y, al no tener invitación ni taller, el usuario queda en `/onboarding/create-workshop`.
 
 ## Tests
 
