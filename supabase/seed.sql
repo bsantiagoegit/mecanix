@@ -58,10 +58,10 @@ INSERT INTO customers (id, workshop_id, first_name, last_name, phone, email, ide
   ('ca000000-0000-4000-8000-000000000002', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Carla',  'Compradora', '0991000002', NULL, NULL, NULL),
   ('cb000000-0000-4000-8000-000000000001', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'Bruno',  'Cliente B', '0992000001', 'bruno@example.com', '0100000001', 'Calle 2, Cuenca');
 
-INSERT INTO vehicles (id, workshop_id, license_plate, make, model, year, color, transmission) VALUES
-  ('fa000000-0000-4000-8000-000000000001', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'PBA-1234', 'Chevrolet', 'Spark', 2018, 'Rojo', 'manual'),
-  ('fa000000-0000-4000-8000-000000000002', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'PBA-5678', 'Kia', 'Rio', 2020, 'Gris', 'automatic'),
-  ('fb000000-0000-4000-8000-000000000001', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'ABC-0001', 'Toyota', 'Yaris', 2019, 'Blanco', 'manual');
+INSERT INTO vehicles (id, workshop_id, license_plate, make, model, year, color, transmission, has_key, key_code) VALUES
+  ('fa000000-0000-4000-8000-000000000001', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'PBA-1234', 'Chevrolet', 'Spark', 2018, 'Rojo', 'manual', true, '4821'),
+  ('fa000000-0000-4000-8000-000000000002', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'PBA-5678', 'Kia', 'Rio', 2020, 'Gris', 'automatic', false, NULL),
+  ('fb000000-0000-4000-8000-000000000001', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'ABC-0001', 'Toyota', 'Yaris', 2019, 'Blanco', 'manual', true, '7733');
 
 INSERT INTO vehicle_ownerships (id, workshop_id, vehicle_id, customer_id) VALUES
   ('0a000000-0000-4000-8000-000000000001', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'fa000000-0000-4000-8000-000000000001', 'ca000000-0000-4000-8000-000000000001'),
