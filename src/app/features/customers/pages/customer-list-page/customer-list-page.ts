@@ -1,4 +1,5 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthFacade } from '@core/auth';
 import { WorkshopFacade } from '@core/workshops';
 import { Button } from '@shared/components/button/button';
@@ -18,12 +19,14 @@ import { CustomersService } from '../../services/customers.service';
  */
 @Component({
   selector: 'app-customer-list-page',
-  imports: [Button, Card, CustomerCard, CustomerDialog, CustomerSearch, Skeleton],
+  imports: [Button, Card, CustomerCard, CustomerDialog, CustomerSearch, RouterLink, Skeleton],
   providers: [CustomerFormState, CustomerDialogState],
   templateUrl: './customer-list-page.html',
 })
 export class CustomerListPage {
   private readonly customers = inject(CustomersService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly workshops = inject(WorkshopFacade);
   readonly dialog = inject(CustomerDialogState);
   readonly form = this.dialog.form;
@@ -31,6 +34,10 @@ export class CustomerListPage {
   /** Filas del esqueleto mientras carga. */
   readonly skeletonRows = [1, 2, 3, 4, 5, 6];
   readonly auth = inject(AuthFacade);
+
+  /** Búsqueda guardada en la URL (`?q=`): al volver del detalle la lista queda como estaba. */
+  /** Con `withComponentInputBinding`, si la URL no trae `?q=` el router entrega `undefined`. */
+  readonly q = input<string | undefined>('');
 
   /** Texto buscado (ya sin espacios sobrantes). Vacío lista todos. */
   readonly query = signal('');
@@ -57,9 +64,13 @@ export class CustomerListPage {
     this.dialog.onSaved = () => this.retry();
     effect(() => {
       const id = this.workshops.activeId();
+      const initialQuery = (this.q() ?? '').trim();
       if (id && id !== this.loadedWorkshopId) {
         this.loadedWorkshopId = id;
-        void this.load(id, this.query());
+        untracked(() => {
+          this.query.set(initialQuery);
+          void this.load(id, initialQuery);
+        });
       }
     });
   }
@@ -67,6 +78,13 @@ export class CustomerListPage {
   onSearch(text: string): void {
     if (text === this.query()) return;
     this.query.set(text);
+    // La búsqueda queda en la URL (sin añadir al historial) para poder volver a ella.
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { q: text || null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
     const workshopId = this.workshops.activeId();
     if (workshopId) void this.load(workshopId, text);
   }

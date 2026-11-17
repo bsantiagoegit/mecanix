@@ -1,0 +1,166 @@
+<div class="max-w-3xl mx-auto flex flex-col gap-6">
+  <a
+    routerLink="/customers"
+    [queryParams]="backParams()"
+    class="text-sm text-primary-600 hover:underline"
+  >
+    ← Volver a clientes
+  </a>
+
+  @switch (state()) {
+    @case ('loading') {
+      <div role="status" aria-busy="true" class="flex flex-col gap-6">
+        <span class="sr-only">Cargando cliente</span>
+        <div aria-hidden="true">
+          <app-skeleton width="50%" height="2rem" />
+        </div>
+        <app-card>
+          <div class="flex flex-col gap-4" aria-hidden="true">
+            @for (row of skeletonRows; track row) {
+              <app-skeleton width="60%" />
+            }
+          </div>
+        </app-card>
+      </div>
+    }
+
+    @case ('not-found') {
+      <app-card padding="lg">
+        <div role="alert" class="flex flex-col items-start gap-3">
+          <h1 class="text-lg font-semibold text-fg">Cliente no encontrado</h1>
+          <p class="text-sm text-fg-muted">Puede que ya no esté disponible.</p>
+          <a
+            routerLink="/customers"
+            [queryParams]="backParams()"
+            class="text-sm text-primary-600 hover:underline"
+          >
+            Ir a la lista de clientes
+          </a>
+        </div>
+      </app-card>
+    }
+
+    @case ('error') {
+      <app-card padding="lg">
+        <div role="alert" class="flex flex-col items-start gap-3">
+          <p class="text-sm text-danger-700">
+            No se pudo cargar el cliente. Revisa tu conexión e inténtalo de nuevo.
+          </p>
+          <app-button variant="secondary" size="sm" (clicked)="retry()">Reintentar</app-button>
+        </div>
+      </app-card>
+    }
+
+    @default {
+      @if (customer(); as customer) {
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <h1 class="text-2xl font-bold text-fg">{{ fullName() }}</h1>
+          @if (canManage()) {
+            <app-button variant="secondary" (clicked)="dialog.openEdit(customer.id)">
+              Editar
+            </app-button>
+          }
+        </div>
+
+        @if (canManage()) {
+          <app-card>
+            <h2 class="mb-3 text-base font-semibold text-fg">Datos de contacto</h2>
+            <dl class="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+              <div>
+                <dt class="text-xs text-fg-muted">Celular</dt>
+                <dd class="text-sm text-fg">{{ customer.phone || '—' }}</dd>
+              </div>
+              <div>
+                <dt class="text-xs text-fg-muted">Correo electrónico</dt>
+                <dd class="text-sm text-fg break-all">{{ customer.email || '—' }}</dd>
+              </div>
+              <div>
+                <dt class="text-xs text-fg-muted">Cédula</dt>
+                <dd class="text-sm text-fg">{{ customer.identification || '—' }}</dd>
+              </div>
+              <div>
+                <dt class="text-xs text-fg-muted">Dirección</dt>
+                <dd class="text-sm text-fg">{{ customer.address || '—' }}</dd>
+              </div>
+            </dl>
+          </app-card>
+        }
+
+        <app-card>
+          <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-base font-semibold text-fg">Vehículos</h2>
+            @if (vehiclesState() === 'ready' && vehicles().length > 0) {
+              <app-button
+                variant="ghost"
+                size="sm"
+                [ariaExpanded]="historyOpen()"
+                ariaControls="vehicle-history"
+                (clicked)="toggleHistory()"
+              >
+                {{ historyOpen() ? 'Ocultar historial' : 'Historial de vehículos' }}
+              </app-button>
+            }
+          </div>
+
+          @switch (vehiclesState()) {
+            @case ('loading') {
+              <div role="status" aria-busy="true" class="flex flex-col gap-3 py-2">
+                <span class="sr-only">Cargando vehículos</span>
+                @for (row of skeletonRows; track row) {
+                  <div aria-hidden="true"><app-skeleton width="45%" /></div>
+                }
+              </div>
+            }
+            @case ('error') {
+              <div role="alert" class="flex flex-col items-start gap-3 py-2">
+                <p class="text-sm text-danger-700">
+                  No se pudieron cargar los vehículos. Inténtalo de nuevo.
+                </p>
+                <app-button variant="secondary" size="sm" (clicked)="retryVehicles()">
+                  Reintentar
+                </app-button>
+              </div>
+            }
+            @default {
+              @if (current().length > 0) {
+                <app-customer-vehicle-list [vehicles]="current()" label="Vehículos actuales" />
+              } @else if (vehicles().length === 0) {
+                <p class="py-2 text-sm text-fg-muted">Aún no tiene vehículos.</p>
+              } @else {
+                <p class="py-2 text-sm text-fg-muted">No tiene vehículos actuales.</p>
+              }
+
+              @if (historyOpen()) {
+                <section id="vehicle-history" class="mt-4 border-t border-border pt-4">
+                  <h3 class="mb-1 text-sm font-semibold text-fg">Historial de vehículos</h3>
+                  <app-customer-vehicle-list
+                    [vehicles]="vehicles()"
+                    label="Historial de vehículos"
+                    [showPeriod]="true"
+                  />
+                </section>
+              }
+            }
+          }
+        </app-card>
+      }
+    }
+  }
+
+  @if (canManage()) {
+    <app-customer-dialog
+      [(open)]="dialog.isOpen"
+      [title]="dialog.title()"
+      [view]="dialog.view()"
+      [initial]="dialog.editInitial()"
+      submitLabel="Guardar cambios"
+      [isSubmitting]="form.isSubmitting()"
+      [error]="form.error()"
+      [phoneWarning]="form.phoneWarning()"
+      [identificationConflict]="form.conflict()"
+      (submitted)="dialog.submit($event)"
+      (phoneChecked)="dialog.checkPhone($event)"
+      (retry)="dialog.retryEdit()"
+    />
+  }
+</div>
