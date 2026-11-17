@@ -51,6 +51,13 @@
           class="text-sm text-fg-muted hover:text-fg"
           >Clientes</a
         >
+        <a
+          routerLink="/vehicles"
+          routerLinkActive="text-fg font-semibold"
+          ariaCurrentWhenActive="page"
+          class="text-sm text-fg-muted hover:text-fg"
+          >Vehículos</a
+        >
         @if (auth.role() === 'owner') {
           <a
             routerLink="/team"

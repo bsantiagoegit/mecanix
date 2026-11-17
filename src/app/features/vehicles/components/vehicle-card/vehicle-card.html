@@ -1,0 +1,27 @@
+<div class="flex min-w-0 flex-col gap-0.5">
+  <p class="text-sm font-semibold text-fg">{{ vehicle().licensePlate }}</p>
+  <p class="text-sm text-fg-muted">
+    {{ vehicle().make }} {{ vehicle().model }} · {{ vehicle().year }}
+  </p>
+  @if (vehicle().vin; as vin) {
+    <p class="text-xs text-fg-muted">VIN {{ vin }}</p>
+  }
+  <p class="text-sm text-fg-muted">
+    @if (ownerName(); as name) {
+      {{ name }}
+    } @else {
+      Sin propietario actual
+    }
+  </p>
+</div>
+
+<div class="shrink-0">
+  @if (vehicle().hasKey && vehicle().keyCode) {
+    <app-key-display [keyCode]="vehicle().keyCode" size="sm" />
+  } @else {
+    <span class="inline-flex items-center gap-1.5 text-xs text-fg-muted">
+      <app-icon name="lock-open" [size]="14" />
+      Sin clave
+    </span>
+  }
+</div>

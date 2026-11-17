@@ -30,6 +30,11 @@ export const routes: Routes = [
           import('./features/customers/customers.routes').then((m) => m.CUSTOMER_ROUTES),
       },
       {
+        path: 'vehicles',
+        loadChildren: () =>
+          import('./features/vehicles/vehicles.routes').then((m) => m.VEHICLE_ROUTES),
+      },
+      {
         path: 'team',
         canActivate: [roleGuard('owner')],
         loadChildren: () =>
