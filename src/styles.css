@@ -135,6 +135,19 @@
     @apply outline-none ring-2 ring-primary-500 ring-offset-2;
   }
 
+  /* Tailwind 4 deja los botones con el cursor por defecto: todo lo accionable muestra la mano. */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  summary,
+  select:not(:disabled),
+  label[for] {
+    cursor: pointer;
+  }
+  button:disabled,
+  [aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+
   @media (min-width: 1024px) {
     ::-webkit-scrollbar {
       width: 8px;
