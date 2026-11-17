@@ -87,17 +87,40 @@ Definir el catálogo de componentes base que viven en `shared/components/`. Cada
 
 #### `app-select`
 
-**Propósito**: dropdown de selección.
+**Propósito**: desplegable de selección. **Reemplaza al `<select>` nativo**: el panel de opciones de un `<select>` lo dibuja el sistema operativo (en macOS, Windows, Android e iOS se ve distinto y no se puede estilizar), así que `app-select` dibuja el suyo con Tailwind para que se vea igual en todas las plataformas. No se usa `<select>` en las pantallas.
 
 **Inputs**:
 
-- `label`: `string`.
-- `options`: `Array<{ value: string; label: string }>`.
-- `placeholder`: `string`.
-- `error`: `string`.
-- `disabled`: `boolean`.
+- `options`: `Array<{ value: string; label: string; disabled?: boolean }>` (`SelectOption`).
+- `label`: `string`. Sin etiqueta visible, pasar `ariaLabel` (p. ej. `Rol de Ana Pérez` en una fila).
+- `placeholder`: `string` (default: `Selecciona una opción`).
+- `hint`, `error`: `string`.
+- `required`, `disabled`: `boolean`.
+- `size`: `'sm' | 'md'` (default: `'md'`; `sm` para filas y barras).
 
-**Model**: `value` (`model<string | null>()`).
+**Valor**: es un `ControlValueAccessor` (funciona con `formControlName` / `formControl`) y también suelto con `[value]` y `(valueChange)` (`model<string | null>`). Al cerrarse marca el control como `touched`.
+
+**Comportamiento**:
+
+- Es el patrón ARIA «select-only combobox»: un `<button role="combobox">` con `aria-expanded`, `aria-controls` y `aria-activedescendant`, y un `<ul role="listbox">` con `role="option"` y `aria-selected`. El foco se queda en el botón.
+- El panel es `position: fixed`: no lo recorta un contenedor con scroll (por ejemplo el cuerpo de un modal). Se abre hacia abajo y, si no cabe, hacia arriba; se cierra al desplazarse o cambiar el tamaño de la ventana.
+- La opción elegida lleva una marca (✓); las deshabilitadas no se pueden elegir ni recibir el foco con las flechas.
+
+**Teclado**: `Enter`, `Espacio` o flechas abren; flechas, `Inicio` y `Fin` mueven; `Enter` o `Espacio` eligen; `Esc` cierra **sin cerrar el modal que lo contenga**; `Tab` cierra; escribir una letra salta a la opción que empieza así.
+
+**Ejemplo**:
+
+```html
+<app-select label="Rol" formControlName="role" [options]="roleOptions" />
+
+<app-select
+  size="sm"
+  [ariaLabel]="'Rol de ' + name"
+  [options]="roleOptions"
+  [value]="role"
+  (valueChange)="change($event)"
+/>
+```
 
 #### `app-checkbox`
 

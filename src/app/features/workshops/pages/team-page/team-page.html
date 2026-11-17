@@ -53,18 +53,7 @@
             formControlName="phone"
             [error]="fieldError('phone')"
           />
-          <div class="flex flex-col gap-1.5">
-            <label for="invite-role" class="text-sm font-medium text-fg">Rol</label>
-            <select
-              id="invite-role"
-              formControlName="role"
-              class="h-11 w-full px-3 rounded-md border border-border bg-surface text-base text-fg focus:outline-none focus:ring-2 focus:border-primary-500 focus:ring-primary-500/20"
-            >
-              @for (role of invitableRoles; track role) {
-                <option [value]="role">{{ roleLabels[role] }}</option>
-              }
-            </select>
-          </div>
+          <app-select label="Rol" formControlName="role" [options]="roleOptions" />
         </div>
         <div class="flex justify-end">
           <app-button type="submit" [loading]="isInviting()">Enviar invitación</app-button>
@@ -114,19 +103,15 @@
               </span>
 
               @if (isInvitable(member.role)) {
-                <select
-                  class="h-9 rounded-md border border-border bg-surface px-2 text-sm text-fg"
-                  [attr.aria-label]="'Rol de ' + member.fullName"
+                <app-select
+                  class="w-36"
+                  size="sm"
+                  [ariaLabel]="'Rol de ' + member.fullName"
+                  [options]="roleOptions"
                   [value]="member.role"
                   [disabled]="busyUserId() !== null"
-                  (change)="onRoleChange(member, $any($event.target).value)"
-                >
-                  @for (role of invitableRoles; track role) {
-                    <option [value]="role" [selected]="role === member.role">
-                      {{ roleLabels[role] }}
-                    </option>
-                  }
-                </select>
+                  (valueChange)="onRoleChange(member, $event ?? '')"
+                />
               } @else {
                 <span class="text-sm text-fg-muted">{{ roleLabels[member.role] }}</span>
               }

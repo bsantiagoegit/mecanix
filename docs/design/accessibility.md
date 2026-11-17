@@ -110,7 +110,7 @@ Definir los requisitos mínimos de accesibilidad del sistema.
 
 - `Tab` / `Shift+Tab`: navegar.
 - `Enter` / `Space`: activar.
-- `Escape`: cerrar modales/dropdowns.
+- `Escape`: cerrar modales/dropdowns. `app-select` consume el `Esc` cuando está abierto, así que dentro de un modal solo cierra el desplegable y el modal sigue abierto hasta el siguiente `Esc`.
 
 **Trampa de foco**: en modales y bottom sheets, el foco debe quedarse dentro. `app-modal` usa `<dialog>` nativo, que ya lo garantiza (sin `@angular/cdk`); un componente que no sea un diálogo nativo debería usar `cdkTrapFocus` si se llega a añadir esa dependencia (requiere ADR).
 

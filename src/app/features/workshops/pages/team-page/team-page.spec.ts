@@ -82,12 +82,22 @@ describe('TeamPage', () => {
     expect(element.querySelectorAll('app-skeleton').length).toBe(0);
   });
 
+  it('uses the shared select, not the native one, for each member role', async () => {
+    const { fixture, element } = setup();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(element.querySelector('select')).toBeNull();
+    expect(
+      element.querySelector('[role="combobox"][aria-label="Rol de Ana Pérez"]'),
+    ).not.toBeNull();
+  });
+
   it('shows the owner without role controls and no cancel button', async () => {
     const { fixture, element } = setup([owner]);
     await fixture.whenStable();
     fixture.detectChanges();
     expect(element.textContent).toContain('Dueño');
-    expect(element.querySelector('select[aria-label="Rol de Dueño"]')).toBeNull();
+    expect(element.querySelector('[aria-label="Rol de Dueño"]')).toBeNull();
     expect(element.textContent).not.toContain('Cancelar invitación');
   });
 
