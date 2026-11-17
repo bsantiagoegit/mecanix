@@ -90,13 +90,13 @@ Los mismos datos y reglas valen al registrar (UC-CUST-01) y al editar (UC-CUST-0
 - **Prioridad**: MVP
 - **Precondiciones**: Usuario autenticado con rol `advisor` u `owner` en el taller activo.
 - **Flujo principal**:
-  1. Advisor navega a "Clientes" y toca "Nuevo cliente": el formulario se abre en una **ventana modal** sobre la lista, sin cambiar de pantalla (o lo crea **inline** desde el flujo de nuevo vehículo o de nueva orden, sin salir de él).
+  1. Advisor navega a "Clientes" y toca "Nuevo cliente": el formulario se abre en una **ventana modal** sobre la lista, sin cambiar de pantalla.
   2. Ingresa todos los datos, que son obligatorios: nombres, apellidos, celular, email, cédula y dirección.
   3. Cada campo se valida al salir de él (celular de 10 dígitos, email con dominio, cédula válida).
   4. Guarda el cliente.
   5. Sistema valida los datos y la unicidad de la cédula en el taller.
   6. Sistema crea la fila en `customers`.
-  7. Sistema cierra el modal, confirma el registro y actualiza la lista (o, si fue inline, devuelve el cliente creado al flujo que lo pidió).
+  7. Sistema cierra el modal, confirma el registro y actualiza la lista. Los otros flujos que necesitan un cliente (nuevo vehículo, nueva orden) **no lo crean por dentro**: lo buscan entre los existentes y, si no está, mandan a esta pantalla.
 - **Flujos alternativos**:
   - **Celular o cédula inválidos**: el sistema marca el campo con el motivo (p. ej. "La cédula debe tener 10 dígitos" o "Cédula inválida: el dígito verificador no coincide") y no guarda.
   - **Cédula duplicada en el taller**: el sistema **bloquea** el guardado, muestra "Ya existe un cliente con esta cédula" y enlaza al cliente existente (nombre y celular) para que el Advisor lo use en lugar de crear otro.
@@ -155,7 +155,7 @@ Los mismos datos y reglas valen al registrar (UC-CUST-01) y al editar (UC-CUST-0
      - Acciones según el rol: "Editar" (Advisor y Owner).
   3. Usuario puede volver a la lista conservando su búsqueda: la lista guarda lo buscado en la URL (`?q=`) y el detalle la recuerda.
 - **Flujos alternativos**:
-  - **Cliente sin vehículos**: estado vacío "Aún no tiene vehículos" con acción "Registrar vehículo" (Advisor y Owner; la acción llega con la feature de vehículos).
+  - **Cliente sin vehículos**: estado vacío "Aún no tiene vehículos" con acción "Registrar vehículo" (Advisor y Owner), que abre el modal de UC-VEH-01 con este cliente ya elegido.
   - **Cliente inexistente, de otro taller o eliminado** (p. ej. un enlace antiguo): el sistema muestra "Cliente no encontrado". No distingue entre "no existe" y "es de otro taller", para no revelar datos de otros talleres.
   - **Mechanic**: ve solo el nombre; las secciones de contacto no aparecen (no se muestran vacías: no existen para su rol).
 - **Reglas de negocio**:
