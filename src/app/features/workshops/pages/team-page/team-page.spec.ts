@@ -118,13 +118,52 @@ describe('TeamPage', () => {
   });
 
   describe('invite form', () => {
-    it('is closed until the button opens it', async () => {
+    it('is closed until the button opens it in a modal', async () => {
       const { fixture, component, element } = setup();
       await fixture.whenStable();
       expect(element.textContent).not.toContain('Enviar invitación');
-      component.toggleForm();
+      component.openForm();
       await fixture.whenStable();
       expect(element.textContent).toContain('Enviar invitación');
+    });
+
+    it('opens as a titled modal and not as a card in the page', async () => {
+      const { fixture, component, element } = setup();
+      await fixture.whenStable();
+      component.openForm();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const dialog = element.querySelector('dialog')!;
+      expect(dialog.open).toBe(true);
+      expect(dialog.textContent).toContain('Invitar usuario');
+      expect(dialog.querySelector('form')).not.toBeNull();
+      expect(element.querySelector('app-card form')).toBeNull();
+    });
+
+    it('opens clean every time and drops an old error', async () => {
+      const { component } = setup();
+      component.form.setValue(valid);
+      component.inviteError.set('algo falló');
+      component.openForm();
+      expect(component.form.getRawValue()).toEqual({
+        fullName: '',
+        email: '',
+        phone: '',
+        role: 'advisor',
+      });
+      expect(component.inviteError()).toBeNull();
+      expect(component.formOpen()).toBe(true);
+    });
+
+    it('closes with Cancelar, but not while an invitation is being sent', async () => {
+      const { component } = setup();
+      component.openForm();
+      component.isInviting.set(true);
+      component.closeForm();
+      expect(component.formOpen()).toBe(true);
+      component.isInviting.set(false);
+      component.closeForm();
+      expect(component.formOpen()).toBe(false);
     });
 
     it('does not call the function with an invalid form', async () => {

@@ -78,7 +78,7 @@ La página actualiza el store (`WorkshopFacade.applyUpdate`), así el nombre y e
 
 `TeamPage` lista a los miembros `active` e `invited` del taller (los `inactive` no se muestran) y permite al `owner`:
 
-- **Invitar**: formulario con nombre, correo, teléfono y rol (`advisor` o `mechanic`). `TeamService.invite` llama a la Edge Function `invite-user` y traduce su respuesta a `InvitationError` (correo ya registrado, no es owner, datos inválidos…). Si va bien, avisa con un toast y recarga la lista.
+- **Invitar**: el botón "Invitar usuario" abre un **modal** (`app-modal`) con un formulario limpio (nombre, correo, teléfono y rol `advisor` o `mechanic`; se cierra con "Cancelar", la X o `Esc`, y no mientras se envía). `TeamService.invite` llama a la Edge Function `invite-user` y traduce su respuesta a `InvitationError` (correo ya registrado, no es owner, datos inválidos…). Si va bien, avisa con un toast y recarga la lista.
 - **Cambiar el rol** de un miembro entre asesor y mecánico (`select` en la fila). El `owner` no se edita.
 - **Cancelar una invitación pendiente**, con confirmación en la propia fila: la membresía pasa a `inactive`.
 

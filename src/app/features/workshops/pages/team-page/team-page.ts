@@ -6,6 +6,7 @@ import { AuthorizationError, InvitationError, InvitationReason } from '@core/err
 import { WorkshopFacade } from '@core/workshops';
 import { Button } from '@shared/components/button/button';
 import { Card } from '@shared/components/card/card';
+import { Modal } from '@shared/components/modal/modal';
 import { Select, SelectOption } from '@shared/components/select/select';
 import { Skeleton } from '@shared/components/skeleton/skeleton';
 import { Input } from '@shared/components/input/input';
@@ -33,7 +34,7 @@ const INVITATION_MESSAGES: Record<InvitationReason, string> = {
 /** UC-WS-03 y UC-WS-05: el `owner` ve a su equipo, invita usuarios y cambia sus roles. */
 @Component({
   selector: 'app-team-page',
-  imports: [ReactiveFormsModule, RouterLink, Button, Card, Input, Select, Skeleton],
+  imports: [ReactiveFormsModule, RouterLink, Button, Card, Input, Modal, Select, Skeleton],
   templateUrl: './team-page.html',
 })
 export class TeamPage {
@@ -87,9 +88,16 @@ export class TeamPage {
     });
   }
 
-  toggleForm(): void {
-    this.formOpen.update((open) => !open);
+  /** Abre el modal con el formulario limpio. */
+  openForm(): void {
+    this.form.reset({ fullName: '', email: '', phone: '', role: 'advisor' });
     this.inviteError.set(null);
+    this.formOpen.set(true);
+  }
+
+  closeForm(): void {
+    if (this.isInviting()) return;
+    this.formOpen.set(false);
   }
 
   async onInvite(): Promise<void> {
