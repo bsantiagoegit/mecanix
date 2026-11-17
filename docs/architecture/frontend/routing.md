@@ -123,7 +123,7 @@ export const customersRoutes: Routes = [
 - `':id'` → detalle
 - `':id/edit'` → edición
 
-> **Nota**: el feature real `customers` no tiene las rutas `new` ni `:id/edit`: registrar y editar son un **modal** de la lista (`CustomerListPage`), solo para `owner` y `advisor`. Ver [`features/customers`](../../../src/app/features/customers/README.md). Las rutas de creación y edición siguen siendo la convención cuando el formulario es largo o necesita su propia pantalla.
+> **Nota**: el feature real `customers` no tiene las rutas `new` ni `:id/edit`: registrar y editar son un **modal** (el mismo en la lista y en el detalle, `/customers/:id`), solo para `owner` y `advisor`. Ver [`features/customers`](../../../src/app/features/customers/README.md). Las rutas de creación y edición siguen siendo la convención cuando el formulario es largo o necesita su propia pantalla.
 
 ---
 

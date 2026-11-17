@@ -150,12 +150,12 @@ Los mismos datos y reglas valen al registrar (UC-CUST-01) y al editar (UC-CUST-0
   1. Usuario abre un cliente desde la búsqueda (UC-CUST-02), desde el detalle de un vehículo o desde una orden.
   2. Sistema muestra:
      - **Datos del cliente**: nombre completo y, para Advisor y Owner, celular, email, cédula y dirección (en un cliente antiguo, los datos que falten se muestran como "—").
-     - **Vehículos actuales** del cliente (propiedades sin fecha de fin), con placa, marca, modelo y año; cada uno enlaza a su detalle.
+     - **Vehículos actuales** del cliente (propiedades sin fecha de fin), con placa, marca, modelo y año; cada uno enlaza a su detalle (cuando exista la feature de vehículos; mientras tanto solo se listan).
      - Acceso al **historial de vehículos** (UC-CUST-05).
      - Acciones según el rol: "Editar" (Advisor y Owner).
-  3. Usuario puede volver a la lista conservando su búsqueda.
+  3. Usuario puede volver a la lista conservando su búsqueda: la lista guarda lo buscado en la URL (`?q=`) y el detalle la recuerda.
 - **Flujos alternativos**:
-  - **Cliente sin vehículos**: estado vacío "Aún no tiene vehículos" con acción "Registrar vehículo" (Advisor y Owner).
+  - **Cliente sin vehículos**: estado vacío "Aún no tiene vehículos" con acción "Registrar vehículo" (Advisor y Owner; la acción llega con la feature de vehículos).
   - **Cliente inexistente, de otro taller o eliminado** (p. ej. un enlace antiguo): el sistema muestra "Cliente no encontrado". No distingue entre "no existe" y "es de otro taller", para no revelar datos de otros talleres.
   - **Mechanic**: ve solo el nombre; las secciones de contacto no aparecen (no se muestran vacías: no existen para su rol).
 - **Reglas de negocio**:
@@ -206,7 +206,7 @@ Los mismos datos y reglas valen al registrar (UC-CUST-01) y al editar (UC-CUST-0
   1. Usuario navega al detalle del cliente y toca "Historial de vehículos".
   2. Sistema lista todos los vehículos que el cliente ha tenido, del más reciente al más antiguo según la fecha de inicio de la propiedad.
   3. Cada vehículo muestra: placa, marca, modelo y año, el periodo (`started_at` a `ended_at`) y una etiqueta "Actual" o "Anterior".
-  4. Usuario toca un vehículo para ver su detalle (UC-VEH-03).
+  4. Usuario toca un vehículo para ver su detalle (UC-VEH-03; llega con la feature de vehículos).
 - **Flujos alternativos**:
   - **Sin vehículos**: estado vacío "Este cliente no ha tenido vehículos".
   - **Vehículo eliminado**: se sigue mostrando en el historial, marcado como eliminado, sin enlace a su detalle.
