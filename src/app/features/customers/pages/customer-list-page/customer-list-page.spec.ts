@@ -348,11 +348,11 @@ describe('CustomerListPage', () => {
           expect(dialog(element).open).toBe(false);
           expect(element.querySelector('app-customer-form')).toBeNull();
 
-          component.openCreate();
+          component.dialog.openCreate();
           await flush();
 
-          expect(component.dialogOpen()).toBe(true);
-          expect(component.editingId()).toBeNull();
+          expect(component.dialog.isOpen()).toBe(true);
+          expect(component.dialog.editingId()).toBeNull();
           expect(dialog(element).open).toBe(true);
           expect(dialog(element).querySelector('h2')?.textContent).toContain('Nuevo cliente');
           expect(element.textContent).toContain('Registrar cliente');
@@ -376,23 +376,23 @@ describe('CustomerListPage', () => {
         const { component, flush, create, update, search, toast, element } = setup();
         await flush();
         const success = vi.spyOn(toast, 'success');
-        component.openCreate();
+        component.dialog.openCreate();
         await flush();
 
-        await component.onSubmit(input);
+        await component.dialog.submit(input);
         await flush();
 
         expect(create).toHaveBeenCalledWith('w1', input);
         expect(update).not.toHaveBeenCalled();
         expect(success).toHaveBeenCalledWith('Cliente registrado');
-        expect(component.dialogOpen()).toBe(false);
+        expect(component.dialog.isOpen()).toBe(false);
         expect(dialog(element).open).toBe(false);
         expect(search).toHaveBeenCalledTimes(2);
       });
 
       it('does not save without an active workshop', async () => {
         const { component, create } = setup({ active: false });
-        await component.onSubmit(input);
+        await component.dialog.submit(input);
         expect(create).not.toHaveBeenCalled();
       });
 
@@ -404,13 +404,13 @@ describe('CustomerListPage', () => {
             .mockRejectedValue(new DuplicateIdentificationError('1713175071', existing)),
         });
         await flush();
-        component.openCreate();
+        component.dialog.openCreate();
         await flush();
 
-        await component.onSubmit(input);
+        await component.dialog.submit(input);
         await flush();
 
-        expect(component.dialogOpen()).toBe(true);
+        expect(component.dialog.isOpen()).toBe(true);
         expect(component.form.conflict()).toEqual({ identification: '1713175071', existing });
         expect(dialog(element).open).toBe(true);
       });
@@ -420,12 +420,12 @@ describe('CustomerListPage', () => {
           create: vi.fn().mockRejectedValue(new Error('network')),
         });
         await flush();
-        component.openCreate();
+        component.dialog.openCreate();
         await flush();
 
-        await component.onSubmit(input);
+        await component.dialog.submit(input);
 
-        expect(component.dialogOpen()).toBe(true);
+        expect(component.dialog.isOpen()).toBe(true);
         expect(component.form.error()).toContain('No se pudo registrar el cliente');
         expect(search).toHaveBeenCalledTimes(1);
       });
@@ -436,9 +436,9 @@ describe('CustomerListPage', () => {
           findByPhone: vi.fn().mockResolvedValue([match]),
         });
         await flush();
-        component.openCreate();
+        component.dialog.openCreate();
 
-        await component.onPhoneChecked('0981112233');
+        await component.dialog.checkPhone('0981112233');
 
         expect(findByPhone).toHaveBeenCalledWith('w1', '0981112233', undefined);
         expect(component.form.phoneWarning()).toEqual({ phone: '0981112233', matches: [match] });
@@ -473,16 +473,16 @@ describe('CustomerListPage', () => {
         const { component, flush, getById, element } = setup();
         await flush();
 
-        await component.openEdit(first);
+        await component.dialog.openEdit(first.id);
         await flush();
 
         expect(getById).toHaveBeenCalledWith('c1');
-        expect(component.dialogOpen()).toBe(true);
-        expect(component.editingId()).toBe('c1');
+        expect(component.dialog.isOpen()).toBe(true);
+        expect(component.dialog.editingId()).toBe('c1');
         expect(dialog(element).open).toBe(true);
         expect(dialog(element).querySelector('h2')?.textContent).toContain('Editar cliente');
         expect(element.textContent).toContain('Guardar cambios');
-        expect(component.editInitial()).toEqual({
+        expect(component.dialog.editInitial()).toEqual({
           firstName: 'Nombre1',
           lastName: 'Apellido1',
           phone: '0990000001',
@@ -495,7 +495,7 @@ describe('CustomerListPage', () => {
       it('shows the customer data in the form fields', async () => {
         const { component, flush, element } = setup();
         await flush();
-        await component.openEdit(first);
+        await component.dialog.openEdit(first.id);
         await flush();
         const values = Array.from(element.querySelectorAll('dialog input')).map(
           (i) => (i as HTMLInputElement).value,
@@ -508,10 +508,10 @@ describe('CustomerListPage', () => {
         const { component, flush, element } = setup({ getById: vi.fn(() => pending.promise) });
         await flush();
 
-        void component.openEdit(first);
+        void component.dialog.openEdit(first.id);
         await flush();
 
-        expect(component.editState()).toBe('loading');
+        expect(component.dialog.view()).toBe('loading');
         expect(dialog(element).textContent).toContain('Cargando cliente');
         expect(dialog(element).querySelectorAll('app-skeleton').length).toBeGreaterThan(0);
         expect(element.querySelector('app-customer-form')).toBeNull();
@@ -522,9 +522,9 @@ describe('CustomerListPage', () => {
           getById: vi.fn().mockResolvedValue(null),
         });
         await flush();
-        await component.openEdit(first);
+        await component.dialog.openEdit(first.id);
         await flush();
-        expect(component.editState()).toBe('not-found');
+        expect(component.dialog.view()).toBe('not-found');
         expect(dialog(element).textContent).toContain('Cliente no encontrado');
       });
 
@@ -532,14 +532,14 @@ describe('CustomerListPage', () => {
         const getById = vi.fn().mockRejectedValueOnce(new Error('x')).mockResolvedValueOnce(full);
         const { component, flush, element } = setup({ getById });
         await flush();
-        await component.openEdit(first);
+        await component.dialog.openEdit(first.id);
         await flush();
-        expect(component.editState()).toBe('error');
+        expect(component.dialog.view()).toBe('error');
         expect(dialog(element).textContent).toContain('Reintentar');
 
-        component.retryEdit();
+        component.dialog.retryEdit();
         await flush();
-        expect(component.editState()).toBe('ready');
+        expect(component.dialog.view()).toBe('ready');
         expect(element.querySelector('app-customer-form')).not.toBeNull();
       });
 
@@ -548,28 +548,28 @@ describe('CustomerListPage', () => {
         const { component, flush } = setup({ getById: vi.fn(() => pending.promise) });
         await flush();
 
-        void component.openEdit(first);
-        component.closeDialog();
+        void component.dialog.openEdit(first.id);
+        component.dialog.close();
         pending.resolve(full);
         await flush();
 
-        expect(component.editInitial()).toBeNull();
+        expect(component.dialog.editInitial()).toBeNull();
       });
 
       it('updates the customer, closes the modal, thanks the user and refreshes the list', async () => {
         const { component, flush, update, create, search, toast, element } = setup();
         await flush();
         const success = vi.spyOn(toast, 'success');
-        await component.openEdit(first);
+        await component.dialog.openEdit(first.id);
         await flush();
 
-        await component.onSubmit({ ...input });
+        await component.dialog.submit({ ...input });
         await flush();
 
         expect(update).toHaveBeenCalledWith('w1', 'c1', input);
         expect(create).not.toHaveBeenCalled();
         expect(success).toHaveBeenCalledWith('Cambios guardados');
-        expect(component.dialogOpen()).toBe(false);
+        expect(component.dialog.isOpen()).toBe(false);
         expect(dialog(element).open).toBe(false);
         expect(search).toHaveBeenCalledTimes(2);
       });
@@ -578,14 +578,14 @@ describe('CustomerListPage', () => {
         const { component, flush, update, toast } = setup();
         await flush();
         const info = vi.spyOn(toast, 'info');
-        await component.openEdit(first);
+        await component.dialog.openEdit(first.id);
         await flush();
 
-        await component.onSubmit({ ...component.editInitial()! });
+        await component.dialog.submit({ ...component.dialog.editInitial()! });
 
         expect(update).not.toHaveBeenCalled();
         expect(info).toHaveBeenCalledWith('No hay cambios que guardar');
-        expect(component.dialogOpen()).toBe(true);
+        expect(component.dialog.isOpen()).toBe(true);
       });
 
       it('switches to "not found" when the customer disappeared while editing', async () => {
@@ -593,13 +593,13 @@ describe('CustomerListPage', () => {
           update: vi.fn().mockRejectedValue(new NotFoundError('customer', 'c1')),
         });
         await flush();
-        await component.openEdit(first);
+        await component.dialog.openEdit(first.id);
         await flush();
 
-        await component.onSubmit({ ...input });
+        await component.dialog.submit({ ...input });
 
-        expect(component.editState()).toBe('not-found');
-        expect(component.dialogOpen()).toBe(true);
+        expect(component.dialog.view()).toBe('not-found');
+        expect(component.dialog.isOpen()).toBe(true);
         expect(search).toHaveBeenCalledTimes(1);
       });
 
@@ -608,13 +608,13 @@ describe('CustomerListPage', () => {
           update: vi.fn().mockRejectedValue(new DuplicateIdentificationError('1713175071', null)),
         });
         await flush();
-        await component.openEdit(first);
+        await component.dialog.openEdit(first.id);
         await flush();
 
-        await component.onSubmit({ ...input });
+        await component.dialog.submit({ ...input });
 
         expect(component.form.conflict()).toEqual({ identification: '1713175071', existing: null });
-        expect(component.dialogOpen()).toBe(true);
+        expect(component.dialog.isOpen()).toBe(true);
       });
 
       it('keeps the modal open with an error when saving fails', async () => {
@@ -622,26 +622,26 @@ describe('CustomerListPage', () => {
           update: vi.fn().mockRejectedValue(new Error('network')),
         });
         await flush();
-        await component.openEdit(first);
+        await component.dialog.openEdit(first.id);
         await flush();
 
-        await component.onSubmit({ ...input });
+        await component.dialog.submit({ ...input });
 
         expect(component.form.error()).toContain('No se pudieron guardar los cambios');
-        expect(component.dialogOpen()).toBe(true);
+        expect(component.dialog.isOpen()).toBe(true);
       });
 
       it('does not count the customer being edited nor the mobile it already had', async () => {
         const { component, flush, findByPhone } = setup();
         await flush();
-        await component.openEdit(first);
+        await component.dialog.openEdit(first.id);
         await flush();
 
-        await component.onPhoneChecked('0981112233');
+        await component.dialog.checkPhone('0981112233');
         expect(findByPhone).toHaveBeenCalledWith('w1', '0981112233', 'c1');
 
         findByPhone.mockClear();
-        await component.onPhoneChecked('0990000001');
+        await component.dialog.checkPhone('0990000001');
         expect(findByPhone).not.toHaveBeenCalled();
       });
     });
@@ -650,7 +650,7 @@ describe('CustomerListPage', () => {
       it('closes with "Cancelar" without saving anything', async () => {
         const { component, flush, create, element } = setup();
         await flush();
-        component.openCreate();
+        component.dialog.openCreate();
         await flush();
 
         const cancel = Array.from(element.querySelectorAll('dialog button')).find((b) =>
@@ -659,20 +659,20 @@ describe('CustomerListPage', () => {
         cancel.click();
         await flush();
 
-        expect(component.dialogOpen()).toBe(false);
+        expect(component.dialog.isOpen()).toBe(false);
         expect(create).not.toHaveBeenCalled();
       });
 
       it('closing with the modal X or Esc also closes it', async () => {
         const { component, flush, element } = setup();
         await flush();
-        component.openCreate();
+        component.dialog.openCreate();
         await flush();
 
         dialog(element).close();
         await flush();
 
-        expect(component.dialogOpen()).toBe(false);
+        expect(component.dialog.isOpen()).toBe(false);
       });
 
       it('opens a clean form every time', async () => {
@@ -680,12 +680,12 @@ describe('CustomerListPage', () => {
           create: vi.fn().mockRejectedValue(new Error('network')),
         });
         await flush();
-        component.openCreate();
-        await component.onSubmit(input);
+        component.dialog.openCreate();
+        await component.dialog.submit(input);
         expect(component.form.error()).not.toBeNull();
 
-        component.closeDialog();
-        component.openCreate();
+        component.dialog.close();
+        component.dialog.openCreate();
 
         expect(component.form.error()).toBeNull();
         expect(component.form.conflict()).toBeNull();
@@ -694,15 +694,15 @@ describe('CustomerListPage', () => {
       it('registering after editing starts empty, not with the edited customer', async () => {
         const { component, flush } = setup();
         await flush();
-        await component.openEdit(customer(1));
+        await component.dialog.openEdit(customer(1).id);
         await flush();
-        component.closeDialog();
+        component.dialog.close();
 
-        component.openCreate();
+        component.dialog.openCreate();
 
-        expect(component.editingId()).toBeNull();
-        expect(component.editInitial()).toBeNull();
-        expect(component.dialogTitle()).toBe('Nuevo cliente');
+        expect(component.dialog.editingId()).toBeNull();
+        expect(component.dialog.editInitial()).toBeNull();
+        expect(component.dialog.title()).toBe('Nuevo cliente');
       });
     });
   });

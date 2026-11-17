@@ -1,0 +1,49 @@
+<app-modal [title]="title()" size="lg" [(isOpen)]="open">
+  @if (open()) {
+    @switch (view()) {
+      @case ('loading') {
+        <div role="status" aria-busy="true" class="flex flex-col gap-4">
+          <span class="sr-only">Cargando cliente</span>
+          @for (field of skeletonFields; track field) {
+            <div class="flex flex-col gap-2" aria-hidden="true">
+              <app-skeleton width="30%" height="0.875rem" />
+              <app-skeleton variant="rect" height="2.75rem" />
+            </div>
+          }
+        </div>
+      }
+      @case ('not-found') {
+        <div role="alert" class="flex flex-col items-start gap-3">
+          <p class="text-sm text-fg">Cliente no encontrado. Puede que ya no esté disponible.</p>
+          <app-button variant="secondary" size="sm" (clicked)="open.set(false)">Cerrar</app-button>
+        </div>
+      }
+      @case ('error') {
+        <div role="alert" class="flex flex-col items-start gap-3">
+          <p class="text-sm text-danger-700">
+            No se pudo cargar el cliente. Revisa tu conexión e inténtalo de nuevo.
+          </p>
+          <app-button variant="secondary" size="sm" (clicked)="retry.emit()">
+            Reintentar
+          </app-button>
+        </div>
+      }
+      @default {
+        <p class="mb-4 text-sm text-fg-muted">Todos los campos son obligatorios.</p>
+        <app-customer-form
+          [initial]="initial()"
+          [submitLabel]="submitLabel()"
+          [cancellable]="true"
+          [isSubmitting]="isSubmitting()"
+          [error]="error()"
+          [phoneWarning]="phoneWarning()"
+          [identificationConflict]="identificationConflict()"
+          (submitted)="submitted.emit($event)"
+          (phoneChecked)="phoneChecked.emit($event)"
+          (existingOpened)="open.set(false)"
+          (cancelled)="open.set(false)"
+        />
+      }
+    }
+  }
+</app-modal>

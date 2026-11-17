@@ -82,6 +82,12 @@
         <p>
           Esa cédula ya pertenece a <strong>{{ existing.fullName }}</strong
           >, teléfono {{ existing.phone }}. Usa ese cliente en lugar de crear otro.
+          <a
+            [routerLink]="['/customers', existing.id]"
+            class="font-medium underline"
+            (click)="existingOpened.emit()"
+            >Ver cliente</a
+          >
         </p>
       } @else {
         <p>Esa cédula ya pertenece a otro cliente del taller.</p>

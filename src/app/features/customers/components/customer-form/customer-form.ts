@@ -1,6 +1,7 @@
 import { Component, computed, effect, inject, input, output, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Button } from '@shared/components/button/button';
 import { Input } from '@shared/components/input/input';
 import { ecuadorCedulaValidator } from '@shared/utils/ecuador-cedula.validator';
@@ -53,7 +54,7 @@ const EMPTY: CustomerInput = {
  */
 @Component({
   selector: 'app-customer-form',
-  imports: [ReactiveFormsModule, Button, Input],
+  imports: [ReactiveFormsModule, RouterLink, Button, Input],
   templateUrl: './customer-form.html',
 })
 export class CustomerForm {
@@ -73,6 +74,8 @@ export class CustomerForm {
   readonly cancelled = output<void>();
   /** El usuario salió del campo de teléfono con un teléfono válido. */
   readonly phoneChecked = output<string>();
+  /** El usuario siguió el enlace al cliente que ya tiene esa cédula: quien muestra el formulario lo cierra. */
+  readonly existingOpened = output<void>();
 
   readonly form = this.fb.group({
     firstName: ['', [Validators.required, Validators.maxLength(120)]],
