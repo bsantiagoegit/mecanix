@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { Router, provideRouter } from '@angular/router';
 import { CustomerInput } from '../../models/customer.model';
 import { CustomerForm } from './customer-form';
 
@@ -12,7 +13,7 @@ const filled: CustomerInput = {
 };
 
 function setup(inputs: Record<string, unknown> = {}) {
-  TestBed.configureTestingModule({ imports: [CustomerForm] });
+  TestBed.configureTestingModule({ imports: [CustomerForm], providers: [provideRouter([])] });
   const fixture = TestBed.createComponent(CustomerForm);
   for (const [name, value] of Object.entries(inputs)) fixture.componentRef.setInput(name, value);
   const submitted: CustomerInput[] = [];
@@ -301,6 +302,37 @@ describe('CustomerForm', () => {
       );
       expect(alerts.some((text) => text?.includes('Luis Gómez'))).toBe(true);
       expect(element.textContent).toContain('0990000001');
+    });
+
+    it('links to the customer that already has it and tells its parent when followed', () => {
+      const { fixture, component, element } = setup();
+      const opened = vi.fn();
+      component.existingOpened.subscribe(opened);
+      component.form.patchValue({ identification: '1710034065' });
+      fixture.componentRef.setInput('identificationConflict', {
+        identification: '1710034065',
+        existing,
+      });
+      fixture.detectChanges();
+
+      const link = element.querySelector<HTMLAnchorElement>('[role="alert"] a')!;
+      expect(link.textContent).toContain('Ver cliente');
+      expect(link.getAttribute('href')).toBe('/customers/c9');
+      // Sin esto la navegación real termina cuando la prueba ya destruyó el inyector.
+      vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      link.click();
+      expect(opened).toHaveBeenCalledTimes(1);
+    });
+
+    it('has no link when the existing customer is unknown', () => {
+      const { fixture, component, element } = setup();
+      component.form.patchValue({ identification: '1710034065' });
+      fixture.componentRef.setInput('identificationConflict', {
+        identification: '1710034065',
+        existing: null,
+      });
+      fixture.detectChanges();
+      expect(element.querySelector('[role="alert"] a')).toBeNull();
     });
 
     it('still warns when the existing customer is unknown', () => {

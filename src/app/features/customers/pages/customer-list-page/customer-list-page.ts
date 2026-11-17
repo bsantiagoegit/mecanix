@@ -3,18 +3,12 @@ import { AuthFacade } from '@core/auth';
 import { WorkshopFacade } from '@core/workshops';
 import { Button } from '@shared/components/button/button';
 import { Card } from '@shared/components/card/card';
-import { Modal } from '@shared/components/modal/modal';
 import { Skeleton } from '@shared/components/skeleton/skeleton';
-import { ToastService } from '@shared/services/toast.service';
 import { CustomerCard } from '../../components/customer-card/customer-card';
-import { CustomerForm } from '../../components/customer-form/customer-form';
+import { CustomerDialog } from '../../components/customer-dialog/customer-dialog';
 import { CustomerSearch } from '../../components/customer-search/customer-search';
-import {
-  CustomerInput,
-  CustomerSummary,
-  customerToInput,
-  isSameInput,
-} from '../../models/customer.model';
+import { CustomerSummary } from '../../models/customer.model';
+import { CustomerDialogState } from '../../services/customer-dialog.state';
 import { CustomerFormState } from '../../services/customer-form.state';
 import { CustomersService } from '../../services/customers.service';
 
@@ -24,19 +18,18 @@ import { CustomersService } from '../../services/customers.service';
  */
 @Component({
   selector: 'app-customer-list-page',
-  imports: [Button, Card, CustomerCard, CustomerForm, CustomerSearch, Modal, Skeleton],
-  providers: [CustomerFormState],
+  imports: [Button, Card, CustomerCard, CustomerDialog, CustomerSearch, Skeleton],
+  providers: [CustomerFormState, CustomerDialogState],
   templateUrl: './customer-list-page.html',
 })
 export class CustomerListPage {
   private readonly customers = inject(CustomersService);
   private readonly workshops = inject(WorkshopFacade);
-  private readonly toast = inject(ToastService);
-  readonly form = inject(CustomerFormState);
+  readonly dialog = inject(CustomerDialogState);
+  readonly form = this.dialog.form;
 
-  /** Filas y campos del esqueleto mientras carga. */
+  /** Filas del esqueleto mientras carga. */
   readonly skeletonRows = [1, 2, 3, 4, 5, 6];
-  readonly skeletonFields = [1, 2, 3, 4];
   readonly auth = inject(AuthFacade);
 
   /** Texto buscado (ya sin espacios sobrantes). Vacío lista todos. */
@@ -47,16 +40,6 @@ export class CustomerListPage {
   readonly isLoadingMore = signal(false);
   readonly loadError = signal<string | null>(null);
   readonly moreError = signal<string | null>(null);
-
-  /** El modal de cliente está abierto (para registrar o para editar). */
-  readonly dialogOpen = signal(false);
-  /** Cliente que se está editando; `null` si el modal es para registrar uno nuevo. */
-  readonly editingId = signal<string | null>(null);
-  /** Datos del cliente a editar, cuando ya se cargaron. */
-  readonly editInitial = signal<CustomerInput | null>(null);
-  /** Carga del cliente a editar: `loading`, `ready`, `not-found` o `error`. */
-  readonly editState = signal<'loading' | 'ready' | 'not-found' | 'error'>('ready');
-  readonly dialogTitle = computed(() => (this.editingId() ? 'Editar cliente' : 'Nuevo cliente'));
 
   /** Registrar y editar clientes es de `owner` y `advisor`; el mecánico no ve los botones. */
   readonly canManage = computed(() => this.auth.hasRole('owner', 'advisor'));
@@ -71,6 +54,7 @@ export class CustomerListPage {
   private loadedWorkshopId: string | null = null;
 
   constructor() {
+    this.dialog.onSaved = () => this.retry();
     effect(() => {
       const id = this.workshops.activeId();
       if (id && id !== this.loadedWorkshopId) {
@@ -108,82 +92,6 @@ export class CustomerListPage {
     }
   }
 
-  /** Abre el modal para registrar, con un formulario limpio. */
-  openCreate(): void {
-    this.form.reset();
-    this.editingId.set(null);
-    this.editInitial.set(null);
-    this.editState.set('ready');
-    this.dialogOpen.set(true);
-  }
-
-  /** Abre el modal para editar: carga el cliente completo (la lista no trae la dirección). */
-  async openEdit(customer: CustomerSummary): Promise<void> {
-    this.form.reset();
-    this.editingId.set(customer.id);
-    this.editInitial.set(null);
-    this.editState.set('loading');
-    this.dialogOpen.set(true);
-    await this.loadEditing(customer.id);
-  }
-
-  retryEdit(): void {
-    const id = this.editingId();
-    if (id) {
-      this.editState.set('loading');
-      void this.loadEditing(id);
-    }
-  }
-
-  closeDialog(): void {
-    this.dialogOpen.set(false);
-  }
-
-  /** Guarda lo escrito: registra o actualiza según el modal; si sale bien, lo cierra y actualiza la lista. */
-  async onSubmit(input: CustomerInput): Promise<void> {
-    const workshopId = this.workshops.activeId();
-    if (!workshopId || this.form.isSubmitting()) return;
-
-    const id = this.editingId();
-    const initial = this.editInitial();
-    if (id && initial && isSameInput(input, initial)) {
-      this.toast.info('No hay cambios que guardar');
-      return;
-    }
-
-    const result = await this.form.save(
-      () =>
-        id
-          ? this.customers.update(workshopId, id, input)
-          : this.customers.create(workshopId, input),
-      id
-        ? 'No se pudieron guardar los cambios. Revisa tu conexión e inténtalo de nuevo.'
-        : 'No se pudo registrar el cliente. Revisa tu conexión e inténtalo de nuevo.',
-    );
-    if (!result.ok) {
-      // El cliente desapareció mientras se editaba: ya no hay nada que guardar.
-      if (result.reason === 'not-found') this.editState.set('not-found');
-      return;
-    }
-
-    this.closeDialog();
-    this.toast.success(id ? 'Cambios guardados' : 'Cliente registrado');
-    this.retry();
-  }
-
-  /** Al salir del celular: aviso (no bloquea) si otros clientes del taller ya lo usan. */
-  async onPhoneChecked(phone: string): Promise<void> {
-    const workshopId = this.workshops.activeId();
-    if (!workshopId) return;
-    const id = this.editingId();
-    // Editando, no cuenta el propio cliente ni el celular que ya tenía.
-    await this.form.checkPhone(
-      workshopId,
-      phone,
-      id ? { excludeId: id, ownPhone: this.editInitial()?.phone } : {},
-    );
-  }
-
   retry(): void {
     const workshopId = this.workshops.activeId();
     if (workshopId) void this.load(workshopId, this.query());
@@ -210,22 +118,6 @@ export class CustomerListPage {
       );
     } finally {
       if (request === this.requestId) this.isLoading.set(false);
-    }
-  }
-
-  private async loadEditing(id: string): Promise<void> {
-    try {
-      const customer = await this.customers.getById(id);
-      // Se cerró el modal o se abrió otro cliente mientras cargaba: se descarta.
-      if (this.editingId() !== id || !this.dialogOpen()) return;
-      if (!customer) {
-        this.editState.set('not-found');
-        return;
-      }
-      this.editInitial.set(customerToInput(customer));
-      this.editState.set('ready');
-    } catch {
-      if (this.editingId() === id) this.editState.set('error');
     }
   }
 }

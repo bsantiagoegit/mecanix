@@ -5,7 +5,7 @@
       <p class="text-sm text-fg-muted mt-1">Las personas que llevan su vehículo a tu taller.</p>
     </div>
     @if (canManage()) {
-      <app-button (clicked)="openCreate()">Nuevo cliente</app-button>
+      <app-button (clicked)="dialog.openCreate()">Nuevo cliente</app-button>
     }
   </div>
 
@@ -44,7 +44,7 @@
                 variant="ghost"
                 size="sm"
                 [ariaLabel]="'Editar a ' + customer.firstName + ' ' + customer.lastName"
-                (clicked)="openEdit(customer)"
+                (clicked)="dialog.openEdit(customer.id)"
               >
                 Editar
               </app-button>
@@ -80,55 +80,19 @@
   </app-card>
 
   @if (canManage()) {
-    <app-modal [title]="dialogTitle()" size="lg" [(isOpen)]="dialogOpen">
-      @if (dialogOpen()) {
-        @switch (editState()) {
-          @case ('loading') {
-            <div role="status" aria-busy="true" class="flex flex-col gap-4">
-              <span class="sr-only">Cargando cliente</span>
-              @for (field of skeletonFields; track field) {
-                <div class="flex flex-col gap-2" aria-hidden="true">
-                  <app-skeleton width="30%" height="0.875rem" />
-                  <app-skeleton variant="rect" height="2.75rem" />
-                </div>
-              }
-            </div>
-          }
-          @case ('not-found') {
-            <div role="alert" class="flex flex-col items-start gap-3">
-              <p class="text-sm text-fg">Cliente no encontrado. Puede que ya no esté disponible.</p>
-              <app-button variant="secondary" size="sm" (clicked)="closeDialog()"
-                >Cerrar</app-button
-              >
-            </div>
-          }
-          @case ('error') {
-            <div role="alert" class="flex flex-col items-start gap-3">
-              <p class="text-sm text-danger-700">
-                No se pudo cargar el cliente. Revisa tu conexión e inténtalo de nuevo.
-              </p>
-              <app-button variant="secondary" size="sm" (clicked)="retryEdit()">
-                Reintentar
-              </app-button>
-            </div>
-          }
-          @default {
-            <p class="mb-4 text-sm text-fg-muted">Todos los campos son obligatorios.</p>
-            <app-customer-form
-              [initial]="editInitial()"
-              [submitLabel]="editingId() ? 'Guardar cambios' : 'Registrar cliente'"
-              [cancellable]="true"
-              [isSubmitting]="form.isSubmitting()"
-              [error]="form.error()"
-              [phoneWarning]="form.phoneWarning()"
-              [identificationConflict]="form.conflict()"
-              (submitted)="onSubmit($event)"
-              (phoneChecked)="onPhoneChecked($event)"
-              (cancelled)="closeDialog()"
-            />
-          }
-        }
-      }
-    </app-modal>
+    <app-customer-dialog
+      [(open)]="dialog.isOpen"
+      [title]="dialog.title()"
+      [view]="dialog.view()"
+      [initial]="dialog.editInitial()"
+      [submitLabel]="dialog.editingId() ? 'Guardar cambios' : 'Registrar cliente'"
+      [isSubmitting]="form.isSubmitting()"
+      [error]="form.error()"
+      [phoneWarning]="form.phoneWarning()"
+      [identificationConflict]="form.conflict()"
+      (submitted)="dialog.submit($event)"
+      (phoneChecked)="dialog.checkPhone($event)"
+      (retry)="dialog.retryEdit()"
+    />
   }
 </div>
