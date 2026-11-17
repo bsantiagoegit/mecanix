@@ -137,7 +137,7 @@ export class CustomerListPage {
   /** Guarda lo escrito: registra o actualiza según el modal; si sale bien, lo cierra y actualiza la lista. */
   async onSubmit(input: CustomerInput): Promise<void> {
     const workshopId = this.workshops.activeId();
-    if (!workshopId) return;
+    if (!workshopId || this.form.isSubmitting()) return;
 
     const id = this.editingId();
     const initial = this.editInitial();

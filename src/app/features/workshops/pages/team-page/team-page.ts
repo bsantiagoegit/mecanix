@@ -84,6 +84,7 @@ export class TeamPage {
   }
 
   async onInvite(): Promise<void> {
+    if (this.isInviting()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -160,7 +161,8 @@ export class TeamPage {
     success: string,
   ): Promise<void> {
     const workshopId = this.workshops.activeId();
-    if (!workshopId) return;
+    // Una sola operación sobre miembros a la vez.
+    if (!workshopId || this.busyUserId()) return;
     this.busyUserId.set(member.userId);
     try {
       await action(workshopId);
