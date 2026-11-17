@@ -1,5 +1,6 @@
 import { Component, computed, forwardRef, input, model, signal } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Icon } from '../icon/icon';
 
 let nextId = 0;
 
@@ -12,6 +13,7 @@ let nextId = 0;
       multi: true,
     },
   ],
+  imports: [Icon],
   templateUrl: './input.html',
 })
 export class Input implements ControlValueAccessor {

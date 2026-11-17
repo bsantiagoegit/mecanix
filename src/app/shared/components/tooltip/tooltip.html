@@ -12,17 +12,7 @@
   (click)="onClick()"
   (keydown)="onKeydown($event)"
 >
-  <svg
-    class="h-4 w-4"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-  >
-    <circle cx="12" cy="12" r="9" />
-    <path stroke-linecap="round" stroke-linejoin="round" d="M12 11v5M12 8h.01" />
-  </svg>
+  <app-icon name="info" />
 </button>
 
 @if (isOpen() && position(); as pos) {
