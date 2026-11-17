@@ -3,3 +3,6 @@ allowBuilds:
   esbuild: true
   lmdb: true
   msgpackr-extract: true
+
+# Al instalar una dependencia se guarda la versión exacta (sin ^ ni ~): las actualizaciones son manuales.
+savePrefix: ''
