@@ -2,7 +2,7 @@
 // El owner invita a un asesor o mecánico: Supabase Auth envía el correo y la
 // membresía queda en `invited`. Contrato en
 // docs/architecture/multi-tenant/workshop-onboarding.md.
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import { createClient } from 'npm:@supabase/supabase-js@2.117.3';
 
 const ALLOWED_ROLES = ['advisor', 'mechanic'] as const;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/;
