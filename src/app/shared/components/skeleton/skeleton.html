@@ -1,0 +1,5 @@
+<span class="flex flex-col gap-2" aria-hidden="true" [style.width]="width()">
+  @for (item of items(); track item) {
+    <span [class]="classes()" [style.width]="'100%'" [style.height]="resolvedHeight()"></span>
+  }
+</span>
