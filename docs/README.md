@@ -15,13 +15,14 @@
 
 ## Áreas de documentación
 
-| Área             | Carpeta                                     | Propósito                                                                                                |
-| ---------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| **Dominio**      | [`domain/`](./domain/README.md)             | Qué construye el sistema (negocio). Glosario, actores, estados, reglas, casos de uso, modelo conceptual. |
-| **Arquitectura** | [`architecture/`](./architecture/README.md) | Cómo se construye (técnico). Modelo relacional, RLS, Storage, ADRs, frontend, estado, PWA.               |
-| **Diseño**       | [`design/`](./design/README.md)             | Sistema de diseño. Tokens, Tailwind, componentes base, responsive, accesibilidad.                        |
-| **Testing**      | [`testing/`](./testing/README.md)           | Estrategia de tests. Unit, integration, E2E, cobertura, herramientas.                                    |
-| **Proceso**      | [`git-workflow.md`](./git-workflow.md)      | Cómo se trabaja con ramas, commits y merges. Historial lineal de `main`.                                 |
+| Área             | Carpeta                                                      | Propósito                                                                                                |
+| ---------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| **Dominio**      | [`domain/`](./domain/README.md)                              | Qué construye el sistema (negocio). Glosario, actores, estados, reglas, casos de uso, modelo conceptual. |
+| **Arquitectura** | [`architecture/`](./architecture/README.md)                  | Cómo se construye (técnico). Modelo relacional, RLS, Storage, ADRs, frontend, estado, PWA.               |
+| **Diseño**       | [`design/`](./design/README.md)                              | Sistema de diseño. Tokens, Tailwind, componentes base, responsive, accesibilidad.                        |
+| **Testing**      | [`testing/`](./testing/README.md)                            | Estrategia de tests. Unit, integration, E2E, cobertura, herramientas.                                    |
+| **Proceso**      | [`git-workflow.md`](./git-workflow.md)                       | Cómo se trabaja con ramas, commits y merges. Historial lineal de `main`.                                 |
+| **Método**       | [`documentation-structure.md`](./documentation-structure.md) | Por qué esta documentación está organizada así y cómo replicarla en otro proyecto multi-tenant.          |
 
 ---
 
