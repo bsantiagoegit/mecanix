@@ -81,3 +81,29 @@ export function isSameInput(a: CustomerInput, b: CustomerInput): boolean {
     x.address === y.address
   );
 }
+
+/**
+ * Un vehículo que el cliente tiene o tuvo (UC-CUST-03 y 05): su propiedad (`vehicle_ownerships`)
+ * junto con los datos del vehículo. `endedAt` en `null` significa que es suyo hoy.
+ */
+export interface CustomerVehicle {
+  ownershipId: string;
+  vehicleId: string;
+  licensePlate: string;
+  make: string;
+  model: string;
+  year: number;
+  /** Desde cuándo es (o fue) suyo, en ISO 8601. */
+  startedAt: string;
+  /** Hasta cuándo; `null` si sigue siéndolo. */
+  endedAt: string | null;
+  /** El vehículo se eliminó del taller: sigue en el historial, sin detalle al que ir. */
+  vehicleDeleted: boolean;
+}
+
+/** Un nombre de mes o día en español, p. ej. «12 nov 2026», para los periodos del historial. */
+export function formatDate(iso: string): string {
+  return new Intl.DateTimeFormat('es-EC', { day: 'numeric', month: 'short', year: 'numeric' })
+    .format(new Date(iso))
+    .replace(/\./g, '');
+}

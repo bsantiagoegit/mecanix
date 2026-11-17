@@ -8,6 +8,7 @@ import {
   CustomerMatch,
   CustomerPage,
   CustomerSummary,
+  CustomerVehicle,
 } from '../models/customer.model';
 import { DuplicateIdentificationError } from '../models/duplicate-identification.error';
 
@@ -28,6 +29,28 @@ interface CustomerFullRow extends CustomerRow {
 
 /** Nombre del índice único de identificación por taller (migración de clientes). */
 const IDENTIFICATION_INDEX = 'idx_customers_identification';
+
+/** Fila de `customers_public`: solo el nombre (lo único que ve el mecánico). */
+interface CustomerNameRow {
+  id: string;
+  first_name: string;
+  last_name: string;
+}
+
+/** Fila de `vehicle_ownerships` con su vehículo embebido. */
+interface OwnershipRow {
+  id: string;
+  started_at: string;
+  ended_at: string | null;
+  vehicle: {
+    id: string;
+    license_plate: string;
+    make: string;
+    model: string;
+    year: number;
+    deleted_at: string | null;
+  };
+}
 
 /** Máximo de coincidencias que se muestran en el aviso de teléfono repetido. */
 const PHONE_MATCH_LIMIT = 5;
@@ -75,6 +98,58 @@ export class CustomersService {
       .maybeSingle<CustomerFullRow>();
     if (error) throw mapSupabaseError(error);
     return data ? this.toCustomer(data) : null;
+  }
+
+  /**
+   * Un cliente por id solo con su nombre, para el `mechanic`: la base de datos no le deja leer
+   * `customers`, sino la vista `customers_public`. `null` si no existe, está eliminado o es de
+   * otro taller.
+   */
+  async getNameById(id: string): Promise<Customer | null> {
+    const { data, error } = await this.supabase
+      .from('customers_public')
+      .select('id, first_name, last_name')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .maybeSingle<CustomerNameRow>();
+    if (error) throw mapSupabaseError(error);
+    return data
+      ? {
+          id: data.id,
+          firstName: data.first_name,
+          lastName: data.last_name,
+          phone: null,
+          email: null,
+          identification: null,
+          address: null,
+        }
+      : null;
+  }
+
+  /**
+   * Los vehículos que el cliente tiene y tuvo (UC-CUST-03 y 05), del más reciente al más antiguo
+   * según el inicio de la propiedad. Incluye los vehículos eliminados, marcados como tales.
+   */
+  async listVehicles(customerId: string): Promise<CustomerVehicle[]> {
+    const { data, error } = await this.supabase
+      .from('vehicle_ownerships')
+      .select(
+        'id, started_at, ended_at, vehicle:vehicles(id, license_plate, make, model, year, deleted_at)',
+      )
+      .eq('customer_id', customerId)
+      .order('started_at', { ascending: false });
+    if (error) throw mapSupabaseError(error);
+    return ((data ?? []) as unknown as OwnershipRow[]).map((row) => ({
+      ownershipId: row.id,
+      vehicleId: row.vehicle.id,
+      licensePlate: row.vehicle.license_plate,
+      make: row.vehicle.make,
+      model: row.vehicle.model,
+      year: row.vehicle.year,
+      startedAt: row.started_at,
+      endedAt: row.ended_at,
+      vehicleDeleted: row.vehicle.deleted_at !== null,
+    }));
   }
 
   /**

@@ -163,6 +163,120 @@ describe('CustomersService', () => {
     await expect(service.search('w1', '')).rejects.toBeInstanceOf(DataError);
   });
 
+  describe('getNameById', () => {
+    it('reads only the name, from customers_public, with no contact data', async () => {
+      const { chain, calls } = query({
+        data: { id: 'c1', first_name: 'Ana', last_name: 'Pérez' },
+        error: null,
+      });
+      from.mockReturnValue(chain);
+
+      const customer = await service.getNameById('c1');
+
+      expect(from).toHaveBeenCalledWith('customers_public');
+      expect(calls['select']).toEqual([['id, first_name, last_name']]);
+      expect(calls['eq']).toEqual([['id', 'c1']]);
+      expect(calls['is']).toEqual([['deleted_at', null]]);
+      expect(customer).toMatchObject({ id: 'c1', firstName: 'Ana', lastName: 'Pérez' });
+      expect(customer).toMatchObject({
+        phone: null,
+        email: null,
+        identification: null,
+        address: null,
+      });
+    });
+
+    it('returns null when it does not exist', async () => {
+      from.mockReturnValue(query({ data: null, error: null }).chain);
+      expect(await service.getNameById('x')).toBeNull();
+    });
+
+    it('throws a mapped error when the query fails', async () => {
+      from.mockReturnValue(query({ data: null, error: { code: '500', message: 'boom' } }).chain);
+      await expect(service.getNameById('c1')).rejects.toBeInstanceOf(DataError);
+    });
+  });
+
+  describe('listVehicles', () => {
+    const ownership = (
+      over: Record<string, unknown> = {},
+      vehicle: Record<string, unknown> = {},
+    ) => ({
+      id: 'o1',
+      started_at: '2026-03-01T10:00:00Z',
+      ended_at: null,
+      vehicle: {
+        id: 'v1',
+        license_plate: 'PBA-1234',
+        make: 'Chevrolet',
+        model: 'Spark',
+        year: 2018,
+        deleted_at: null,
+        ...vehicle,
+      },
+      ...over,
+    });
+
+    it("asks for the customer's ownerships, newest first, with their vehicle", async () => {
+      const { chain, calls } = query({ data: [ownership()], error: null });
+      from.mockReturnValue(chain);
+
+      await service.listVehicles('c1');
+
+      expect(from).toHaveBeenCalledWith('vehicle_ownerships');
+      expect(calls['eq']).toEqual([['customer_id', 'c1']]);
+      expect(calls['order']).toEqual([['started_at', { ascending: false }]]);
+      expect(String(calls['select']?.[0]?.[0])).toContain('vehicle:vehicles(');
+    });
+
+    it('maps current, past and deleted vehicles', async () => {
+      from.mockReturnValue(
+        query({
+          data: [
+            ownership(),
+            ownership(
+              { id: 'o2', ended_at: '2026-06-01T10:00:00Z' },
+              { id: 'v2', license_plate: 'ABC-0001', deleted_at: '2026-07-01T00:00:00Z' },
+            ),
+          ],
+          error: null,
+        }).chain,
+      );
+
+      const vehicles = await service.listVehicles('c1');
+
+      expect(vehicles).toEqual([
+        {
+          ownershipId: 'o1',
+          vehicleId: 'v1',
+          licensePlate: 'PBA-1234',
+          make: 'Chevrolet',
+          model: 'Spark',
+          year: 2018,
+          startedAt: '2026-03-01T10:00:00Z',
+          endedAt: null,
+          vehicleDeleted: false,
+        },
+        expect.objectContaining({
+          ownershipId: 'o2',
+          vehicleId: 'v2',
+          endedAt: '2026-06-01T10:00:00Z',
+          vehicleDeleted: true,
+        }),
+      ]);
+    });
+
+    it('returns an empty list when there are no vehicles', async () => {
+      from.mockReturnValue(query({ data: null, error: null }).chain);
+      expect(await service.listVehicles('c1')).toEqual([]);
+    });
+
+    it('throws a mapped error when the query fails', async () => {
+      from.mockReturnValue(query({ data: null, error: { code: '500', message: 'boom' } }).chain);
+      await expect(service.listVehicles('c1')).rejects.toBeInstanceOf(DataError);
+    });
+  });
+
   describe('getById', () => {
     it('returns the full customer, active and by id', async () => {
       const { chain, calls } = query({ data: fullRow(), error: null });
