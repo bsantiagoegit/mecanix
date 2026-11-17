@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { Router, provideRouter } from '@angular/router';
 import { ToastService } from '@shared/services/toast.service';
 import { initialAuthState } from '@core/auth/store/auth.state';
 import { initialWorkshopState } from '@core/workshops/store/workshop.state';
@@ -64,6 +65,7 @@ function setup(
     getById?: ReturnType<typeof vi.fn>;
     findByPhone?: ReturnType<typeof vi.fn>;
     active?: boolean;
+    q?: string;
   } = {},
 ) {
   const search = options.search ?? vi.fn().mockResolvedValue(page(2));
@@ -74,6 +76,7 @@ function setup(
   TestBed.configureTestingModule({
     imports: [CustomerListPage],
     providers: [
+      provideRouter([]),
       provideTestStore({
         auth: {
           ...initialAuthState,
@@ -90,6 +93,7 @@ function setup(
     ],
   });
   const fixture = TestBed.createComponent(CustomerListPage);
+  if (options.q !== undefined) fixture.componentRef.setInput('q', options.q);
   const flush = async () => {
     await fixture.whenStable();
     fixture.detectChanges();
@@ -129,6 +133,60 @@ describe('CustomerListPage', () => {
   it('does not load anything until there is an active workshop', () => {
     const { search } = setup({ active: false });
     expect(search).not.toHaveBeenCalled();
+  });
+
+  describe('opening a customer', () => {
+    it('links each row to the detail', async () => {
+      const { flush, element } = setup();
+      await flush();
+      const links = [...element.querySelectorAll<HTMLAnchorElement>('ul[aria-label="Clientes"] a')];
+      expect(links.map((a) => a.getAttribute('href'))).toEqual(['/customers/c1', '/customers/c2']);
+    });
+
+    it('carries the search along, so the detail can go back to it', async () => {
+      const { flush, element, component } = setup();
+      await flush();
+      component.onSearch('ana');
+      await flush();
+      const link = element.querySelector<HTMLAnchorElement>('ul[aria-label="Clientes"] a')!;
+      expect(link.getAttribute('href')).toBe('/customers/c1?q=ana');
+    });
+
+    it('starts with no search when the URL has no ?q= (the router then passes undefined)', async () => {
+      const { fixture, search, flush, component } = setup();
+      fixture.componentRef.setInput('q', undefined);
+      await flush();
+      expect(search).toHaveBeenCalledWith('w1', '');
+      expect(component.query()).toBe('');
+    });
+
+    it('starts from the search kept in the URL', async () => {
+      const { search, flush, element, component } = setup({ q: '  ana ' });
+      await flush();
+      expect(search).toHaveBeenCalledWith('w1', 'ana');
+      expect(component.query()).toBe('ana');
+      expect(element.querySelector('input')?.value).toBe('ana');
+    });
+
+    it('writes the search in the URL without adding history entries', async () => {
+      const { flush, component } = setup();
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      await flush();
+      component.onSearch('ana');
+      expect(navigate).toHaveBeenCalledWith(
+        [],
+        expect.objectContaining({
+          queryParams: { q: 'ana' },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        }),
+      );
+      component.onSearch('');
+      expect(navigate).toHaveBeenLastCalledWith(
+        [],
+        expect.objectContaining({ queryParams: { q: null } }),
+      );
+    });
   });
 
   describe('search', () => {

@@ -18,6 +18,8 @@ export const SEARCH_DEBOUNCE_MS = 300;
 export class CustomerSearch {
   readonly placeholder = input('Buscar cliente');
   readonly hint = input('');
+  /** Texto con el que arranca el campo (p. ej. la búsqueda de la que se vuelve del detalle). */
+  readonly initial = input('');
 
   readonly search = output<string>();
 

@@ -12,6 +12,7 @@
   <app-customer-search
     [placeholder]="placeholder()"
     [hint]="byNameOnly() ? 'Como mecánico, la búsqueda es solo por nombre.' : ''"
+    [initial]="query()"
     (search)="onSearch($event)"
   />
 
@@ -38,7 +39,13 @@
       <ul class="divide-y divide-border" aria-label="Clientes" aria-live="polite">
         @for (customer of items(); track customer.id) {
           <li class="p-4 flex items-center justify-between gap-3">
-            <app-customer-card [customer]="customer" />
+            <a
+              [routerLink]="['/customers', customer.id]"
+              [queryParams]="query() ? { q: query() } : null"
+              class="min-w-0 flex-1 rounded-md hover:bg-neutral-50 dark:hover:bg-neutral-900"
+            >
+              <app-customer-card [customer]="customer" />
+            </a>
             @if (canManage()) {
               <app-button
                 variant="ghost"

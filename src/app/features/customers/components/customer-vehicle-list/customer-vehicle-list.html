@@ -1,0 +1,41 @@
+<ul class="divide-y divide-border" [attr.aria-label]="label()">
+  @for (vehicle of vehicles(); track vehicle.ownershipId) {
+    <li class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3">
+      <div class="min-w-0">
+        <p class="text-sm font-medium text-fg">
+          {{ vehicle.licensePlate }}
+          @if (vehicle.vehicleDeleted) {
+            <span
+              class="ml-2 rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-fg-muted dark:bg-neutral-800"
+            >
+              Eliminado
+            </span>
+          }
+        </p>
+        <p class="text-sm text-fg-muted">
+          {{ vehicle.make }} {{ vehicle.model }} · {{ vehicle.year }}
+        </p>
+        @if (showPeriod()) {
+          <p class="text-xs text-fg-muted">
+            Desde {{ formatDate(vehicle.startedAt) }}
+            @if (vehicle.endedAt; as endedAt) {
+              hasta {{ formatDate(endedAt) }}
+            }
+          </p>
+        }
+      </div>
+      @if (showPeriod()) {
+        <span
+          class="rounded-full px-2 py-0.5 text-xs font-medium"
+          [class]="
+            vehicle.endedAt
+              ? 'bg-neutral-100 text-fg-muted dark:bg-neutral-800'
+              : 'bg-success-50 text-success-700'
+          "
+        >
+          {{ vehicle.endedAt ? 'Anterior' : 'Actual' }}
+        </span>
+      }
+    </li>
+  }
+</ul>
