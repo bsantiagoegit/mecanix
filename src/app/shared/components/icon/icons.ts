@@ -4,7 +4,9 @@ import {
   LucideEye,
   LucideEyeOff,
   LucideInfo,
+  LucideKeyRound,
   LucideLoaderCircle,
+  LucideLockOpen,
   LucideX,
 } from '@lucide/angular';
 
@@ -21,7 +23,9 @@ export const APP_ICONS = {
   eye: LucideEye,
   'eye-off': LucideEyeOff,
   info: LucideInfo,
+  'key-round': LucideKeyRound,
   'loader-circle': LucideLoaderCircle,
+  'lock-open': LucideLockOpen,
   x: LucideX,
 } as const;
 

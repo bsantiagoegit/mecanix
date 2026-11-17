@@ -1,0 +1,23 @@
+@if (keyCode(); as code) {
+  <span
+    class="inline-flex items-center gap-1.5 text-fg"
+    [class]="size() === 'sm' ? 'text-xs' : 'text-sm'"
+  >
+    <app-icon name="key-round" [size]="size() === 'sm' ? 14 : 16" class="text-fg-muted" />
+    @if (revealed()) {
+      <span class="font-mono">{{ code }}</span>
+    } @else {
+      <span class="font-mono" aria-hidden="true">•••••</span>
+      <span class="sr-only">Clave oculta</span>
+    }
+    <button
+      type="button"
+      class="flex items-center justify-center rounded p-1 text-fg-muted hover:bg-neutral-100 hover:text-fg dark:hover:bg-neutral-800"
+      [attr.aria-label]="revealed() ? 'Ocultar clave' : 'Mostrar clave'"
+      [attr.aria-pressed]="revealed()"
+      (click)="toggle()"
+    >
+      <app-icon [name]="revealed() ? 'eye-off' : 'eye'" [size]="size() === 'sm' ? 14 : 16" />
+    </button>
+  </span>
+}
