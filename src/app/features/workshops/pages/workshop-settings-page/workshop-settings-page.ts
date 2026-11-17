@@ -81,6 +81,7 @@ export class WorkshopSettingsPage {
   }
 
   async onSubmit(): Promise<void> {
+    if (this.isSaving()) return;
     const workshop = this.workshops.active();
     if (!workshop) return;
     if (this.form.invalid) {

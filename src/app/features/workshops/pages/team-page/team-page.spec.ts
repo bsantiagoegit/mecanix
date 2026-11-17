@@ -136,6 +136,16 @@ describe('TeamPage', () => {
       expect(component.form.getRawValue().email).toBe('');
     });
 
+    it('ignores a second submit while the first invitation is still in flight', async () => {
+      const { fixture, component, team } = setup();
+      await fixture.whenStable();
+      component.form.setValue(valid);
+      const first = component.onInvite();
+      await component.onInvite();
+      await first;
+      expect(team.invite).toHaveBeenCalledTimes(1);
+    });
+
     it.each([
       ['email_already_registered', 'ya tiene una cuenta'],
       ['not_owner', 'Solo el dueño'],
@@ -168,6 +178,15 @@ describe('TeamPage', () => {
       await component.onRoleChange(member(), 'mechanic');
       expect(team.changeRole).toHaveBeenCalledWith('w1', 'u1', 'mechanic');
       expect(team.list).toHaveBeenCalledTimes(2);
+    });
+
+    it('runs one member change at a time', async () => {
+      const { fixture, component, team } = setup();
+      await fixture.whenStable();
+      const first = component.onRoleChange(member(), 'mechanic');
+      await component.onRoleChange(member(), 'mechanic');
+      await first;
+      expect(team.changeRole).toHaveBeenCalledTimes(1);
     });
 
     it('ignores an unchanged or non-invitable role', async () => {

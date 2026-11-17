@@ -107,7 +107,7 @@
                   class="h-9 rounded-md border border-border bg-surface px-2 text-sm text-fg"
                   [attr.aria-label]="'Rol de ' + member.fullName"
                   [value]="member.role"
-                  [disabled]="busyUserId() === member.userId"
+                  [disabled]="busyUserId() !== null"
                   (change)="onRoleChange(member, $any($event.target).value)"
                 >
                   @for (role of invitableRoles; track role) {
@@ -123,7 +123,12 @@
               @if (member.status === 'invited') {
                 @if (confirmingCancel() === member.userId) {
                   <span class="text-sm text-fg">¿Cancelar la invitación?</span>
-                  <app-button size="sm" variant="danger" (clicked)="confirmCancel(member)">
+                  <app-button
+                    size="sm"
+                    variant="danger"
+                    [disabled]="busyUserId() !== null"
+                    (clicked)="confirmCancel(member)"
+                  >
                     Sí, cancelar
                   </app-button>
                   <app-button size="sm" variant="ghost" (clicked)="dismissCancel()">
@@ -133,7 +138,7 @@
                   <app-button
                     size="sm"
                     variant="ghost"
-                    [disabled]="busyUserId() === member.userId"
+                    [disabled]="busyUserId() !== null"
                     (clicked)="askCancel(member)"
                   >
                     Cancelar invitación

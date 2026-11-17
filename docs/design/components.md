@@ -45,6 +45,10 @@ Definir el catálogo de componentes base que viven en `shared/components/`. Cada
 
 - Default, hover, active, focus, disabled, loading.
 
+**Acciones en curso**: mientras una petición está en vuelo, el botón de la acción va con `loading` (muestra un spinner y queda bloqueado) y el manejador de la página sale de inmediato si ya hay una en curso (`if (isSubmitting()) return;`), para que ni un doble clic ni `Enter` repitan la petición. El **spinner es exclusivo de los botones de acción**; para cargar datos se usa el esqueleto (`app-skeleton`).
+
+**Cursor**: todo lo accionable (`button`, `[role=button]`, `select`, `label[for]`) muestra `cursor: pointer` por regla global en `styles.css`, y `not-allowed` si está deshabilitado.
+
 #### `app-input`
 
 **Propósito**: campo de texto.

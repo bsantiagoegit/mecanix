@@ -42,6 +42,7 @@ export class LoginPage {
   }
 
   onSubmit(): void {
+    if (this.auth.isLoading()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

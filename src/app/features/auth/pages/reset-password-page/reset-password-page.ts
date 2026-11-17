@@ -70,6 +70,7 @@ export class ResetPasswordPage {
   }
 
   async onSubmit(): Promise<void> {
+    if (this.isSubmitting()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
