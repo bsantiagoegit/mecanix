@@ -245,6 +245,34 @@ El workflow `.github/workflows/ci.yml` corre en cada Pull Request y en cada push
 
 ---
 
+## Dependencias: versiones exactas y actualización manual
+
+Decisión en [ADR-016](architecture/adr/ADR-016-versiones-exactas.md): las dependencias llevan **versión exacta** (sin `^` ni `~`) y se actualizan **a mano**, una a una.
+
+**Instalar** (con `pnpm`; toda dependencia nueva necesita antes su ADR):
+
+```bash
+pnpm add <paquete>        # dependencia
+pnpm add -D <paquete>     # solo de desarrollo
+```
+
+`savePrefix: ''` en `pnpm-workspace.yaml` hace que `package.json` guarde la versión que se instaló (`"clsx": "2.1.1"`, no `"^2.1.1"`). Comprueba que quedó así y commitea `package.json` y `pnpm-lock.yaml` **juntos**. Si necesitas una versión concreta: `pnpm add <paquete>@<versión>`.
+
+**Actualizar** (nunca por iniciativa propia ni en una rama de funcionalidad; en una rama `chore/` aparte):
+
+1. Mira qué hay: `pnpm outdated` (y `pnpm audit` para avisos de seguridad).
+2. Elige **un** paquete, o un grupo que debe subir junto (Angular y su CLI, NgRx, Vitest y sus plugins). Lee su changelog y las notas de ruptura.
+3. Súbelo a una versión concreta: `pnpm add <paquete>@<versión>` (`-D` si es de desarrollo). Para Angular, usa `ng update` y vuelve a dejar versiones exactas en `package.json` antes de commitear.
+4. Comprueba que solo se movió lo esperado: `git diff package.json pnpm-lock.yaml`.
+5. Corre la suite completa: `pnpm format:check && pnpm typecheck && pnpm test && pnpm test:integration && pnpm build`.
+6. Un commit por paquete o grupo: `chore(deps): bump <paquete> from <a> to <b>`, con lo relevante del changelog en el cuerpo.
+
+**Lo que no hay que hacer**: `pnpm update` o `pnpm up` sin versión concreta (sube todo dentro del rango y reescribe `package.json`), borrar `pnpm-lock.yaml` para "regenerarlo", ni escribir a mano un `^` o `~` en `package.json`.
+
+**Fuera de `package.json`**: las importaciones `npm:` de las Edge Functions (`supabase/functions`) llevan versión exacta, y se actualizan igual. Las GitHub Actions están fijadas por SHA y las propone Dependabot (`.github/dependabot.yml`); es lo único que se actualiza con un bot.
+
+---
+
 ## Prohibido
 
 - Commit o push directo a `main` (el ruleset lo rechaza).
@@ -252,6 +280,7 @@ El workflow `.github/workflows/ci.yml` corre en cada Pull Request y en cada push
 - Commits de merge: `git merge --no-ff`, "Create a merge commit" y "Update with merge commit" en GitHub.
 - Rebasear una rama que otra persona ya tomó como base.
 - Reescribir historial de `main` ya publicado.
+- Dependencias con `^` o `~` en `package.json`, `pnpm update` sin versión concreta o borrar `pnpm-lock.yaml` (ver [Dependencias](#dependencias-versiones-exactas-y-actualización-manual)).
 
 ---
 

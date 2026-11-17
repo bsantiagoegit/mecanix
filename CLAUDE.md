@@ -22,6 +22,7 @@ Instrucciones para Claude Code en este repo. La fuente de verdad ampliada vive e
 - NO inventar términos: usa `docs/domain/glossary.md`.
 - NO modificar la base de datos sin actualizar `docs/architecture/data-model/`.
 - NO añadir dependencias sin un ADR en `docs/architecture/adr/`.
+- Las dependencias van con **versión exacta** (sin `^` ni `~`) y se actualizan **a mano**, nunca de forma automática ([ADR-016](docs/architecture/adr/ADR-016-versiones-exactas.md)). `pnpm add` ya guarda la versión exacta; no uses `pnpm update` ni `ng update` sin que te lo pidan.
 - NO crear commits de merge ni commitear/pushear directo a `main` (protegida por ruleset): rama corta + Pull Request integrado con Rebase and merge (ver `docs/git-workflow.md`). Antes de publicar una rama o integrar, confirmar con el usuario.
 - NO usar NgRx para estado local — usa signals. NgRx solo para estado global.
 - NO llamar a Supabase desde componentes — usa data services.
