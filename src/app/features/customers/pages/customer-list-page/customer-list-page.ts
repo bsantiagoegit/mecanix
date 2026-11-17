@@ -4,6 +4,7 @@ import { WorkshopFacade } from '@core/workshops';
 import { Button } from '@shared/components/button/button';
 import { Card } from '@shared/components/card/card';
 import { Modal } from '@shared/components/modal/modal';
+import { Skeleton } from '@shared/components/skeleton/skeleton';
 import { ToastService } from '@shared/services/toast.service';
 import { CustomerCard } from '../../components/customer-card/customer-card';
 import { CustomerForm } from '../../components/customer-form/customer-form';
@@ -23,7 +24,7 @@ import { CustomersService } from '../../services/customers.service';
  */
 @Component({
   selector: 'app-customer-list-page',
-  imports: [Button, Card, CustomerCard, CustomerForm, CustomerSearch, Modal],
+  imports: [Button, Card, CustomerCard, CustomerForm, CustomerSearch, Modal, Skeleton],
   providers: [CustomerFormState],
   templateUrl: './customer-list-page.html',
 })
@@ -32,6 +33,10 @@ export class CustomerListPage {
   private readonly workshops = inject(WorkshopFacade);
   private readonly toast = inject(ToastService);
   readonly form = inject(CustomerFormState);
+
+  /** Filas y campos del esqueleto mientras carga. */
+  readonly skeletonRows = [1, 2, 3, 4, 5, 6];
+  readonly skeletonFields = [1, 2, 3, 4];
   readonly auth = inject(AuthFacade);
 
   /** Texto buscado (ya sin espacios sobrantes). Vacío lista todos. */

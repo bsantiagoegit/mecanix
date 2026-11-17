@@ -52,7 +52,7 @@ El enlace "Clientes" del encabezado lo ven los tres roles; el botón "Nuevo clie
 - **Espera al escribir**: `CustomerSearch` emite el texto (sin espacios sobrantes) 300 ms después de la última tecla y solo si cambió.
 - **Respuestas desordenadas**: cada búsqueda lleva un número de petición; si llega la respuesta de una búsqueda que ya quedó atrás (o de un "cargar más" anterior), se descarta.
 - **Fallos**: un error al cargar se muestra como error con "Reintentar", nunca como "no hay clientes". Si falla "cargar más" se conserva lo ya cargado y se ofrece reintentar.
-- **Estados**: cargando, vacío del taller ("Aún no hay clientes"), vacío de la búsqueda ("No se encontraron clientes para «…»"), error y lista.
+- **Estados**: cargando (esqueleto de filas), vacío del taller ("Aún no hay clientes"), vacío de la búsqueda ("No se encontraron clientes para «…»"), error y lista.
 
 El estado es local a la página (signals): no hay slice de NgRx porque no es estado global.
 
@@ -61,7 +61,7 @@ El estado es local a la página (signals): no hay slice de NgRx porque no es est
 Registrar y editar usan **el mismo modal** (`app-modal`, ver [componentes](../../../../docs/design/components.md)) y el mismo formulario, en `CustomerListPage`. Solo existen para `owner` y `advisor`:
 
 - **Registrar**: el botón "Nuevo cliente" de arriba lo abre con un formulario limpio ("Registrar cliente").
-- **Editar**: el botón "Editar" de cada fila lo abre titulado "Editar cliente". La lista no trae la dirección, así que primero se carga el cliente completo (`getById`) y el modal muestra "Cargando cliente…"; si no existe más o no se puede cargar, muestra "Cliente no encontrado" o el error con "Reintentar". Se descarta la respuesta si el modal se cerró o se abrió otro cliente mientras cargaba. Cuando exista el detalle del cliente, también podrá abrir este modal.
+- **Editar**: el botón "Editar" de cada fila lo abre titulado "Editar cliente". La lista no trae la dirección, así que primero se carga el cliente completo (`getById`) y el modal muestra un esqueleto del formulario ("Cargando cliente" para lectores de pantalla); si no existe más o no se puede cargar, muestra "Cliente no encontrado" o el error con "Reintentar". Se descarta la respuesta si el modal se cerró o se abrió otro cliente mientras cargaba. Cuando exista el detalle del cliente, también podrá abrir este modal.
 - **Al guardar con éxito** el modal se cierra, se avisa con un toast ("Cliente registrado" o "Cambios guardados") y se actualiza la lista. Si falla, se queda abierto con lo escrito. Editando, si no hay cambios (comparando ya normalizado) no se llama al servidor y se avisa. Se cierra con "Cancelar", la X o `Esc` (se descarta lo escrito); un clic fuera **no** lo cierra.
 
 `CustomerForm` es presentacional y lo usan los dos. **Todos los campos son obligatorios** y se validan con utilidades globales de `@shared/utils`, las mismas que usan otros formularios de la app:

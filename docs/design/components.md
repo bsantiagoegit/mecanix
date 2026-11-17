@@ -276,6 +276,10 @@ this.toast.showUpdate('Hay una actualización', () => location.reload());
 <app-skeleton variant="text" [count]="3" />
 ```
 
+**Regla de uso**: es el único indicador de carga de **datos** (listas, fichas, formularios que esperan al servidor); el spinner queda solo en los botones de acción. El esqueleto copia la forma del contenido que llega (filas, campos) para que la página no salte. Es decorativo (`aria-hidden`), así que el bloque va envuelto en un contenedor con `role="status"`, `aria-busy="true"` y un texto `sr-only` ("Cargando clientes") para los lectores de pantalla. Solo pulsa si el usuario acepta movimiento (`motion-safe`).
+
+**Dónde se usa hoy**: lista de clientes, formulario de edición de cliente (mientras llega el cliente), página de equipo y la verificación del enlace de restablecer contraseña.
+
 #### `app-empty-state`
 
 **Propósito**: estado vacío.

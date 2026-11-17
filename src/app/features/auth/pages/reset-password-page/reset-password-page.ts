@@ -12,6 +12,7 @@ import { PasswordRecoveryError } from '@core/errors';
 import { Button } from '@shared/components/button/button';
 import { Card } from '@shared/components/card/card';
 import { Input } from '@shared/components/input/input';
+import { Skeleton } from '@shared/components/skeleton/skeleton';
 import { ToastService } from '@shared/services/toast.service';
 import { firstValueFrom } from 'rxjs';
 
@@ -33,7 +34,7 @@ type LinkState = 'checking' | 'ready' | 'invalid';
  */
 @Component({
   selector: 'app-reset-password-page',
-  imports: [ReactiveFormsModule, RouterLink, Button, Card, Input],
+  imports: [ReactiveFormsModule, RouterLink, Button, Card, Input, Skeleton],
   templateUrl: './reset-password-page.html',
 })
 export class ResetPasswordPage {

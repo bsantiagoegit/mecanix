@@ -123,6 +123,7 @@ describe('CustomerListPage', () => {
     const pending = deferred<CustomerPage>();
     const { element } = setup({ search: vi.fn(() => pending.promise) });
     expect(element.textContent).toContain('Cargando clientes');
+    expect(element.querySelectorAll('app-skeleton').length).toBeGreaterThan(0);
   });
 
   it('does not load anything until there is an active workshop', () => {
@@ -512,6 +513,7 @@ describe('CustomerListPage', () => {
 
         expect(component.editState()).toBe('loading');
         expect(dialog(element).textContent).toContain('Cargando cliente');
+        expect(dialog(element).querySelectorAll('app-skeleton').length).toBeGreaterThan(0);
         expect(element.querySelector('app-customer-form')).toBeNull();
       });
 

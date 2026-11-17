@@ -71,6 +71,17 @@ describe('TeamPage', () => {
     expect(element.textContent).toContain('Invitado');
   });
 
+  it('shows a skeleton, not a spinner, while the team loads', async () => {
+    const { fixture, element } = setup();
+    fixture.detectChanges();
+    expect(element.querySelector('[role="status"]')?.textContent).toContain('Cargando equipo');
+    expect(element.querySelectorAll('app-skeleton').length).toBeGreaterThan(0);
+    expect(element.querySelector('.animate-spin')).toBeNull();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(element.querySelectorAll('app-skeleton').length).toBe(0);
+  });
+
   it('shows the owner without role controls and no cancel button', async () => {
     const { fixture, element } = setup([owner]);
     await fixture.whenStable();
