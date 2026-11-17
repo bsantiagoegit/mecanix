@@ -6,6 +6,7 @@ import { AuthorizationError, InvitationError, InvitationReason } from '@core/err
 import { WorkshopFacade } from '@core/workshops';
 import { Button } from '@shared/components/button/button';
 import { Card } from '@shared/components/card/card';
+import { Skeleton } from '@shared/components/skeleton/skeleton';
 import { Input } from '@shared/components/input/input';
 import { ToastService } from '@shared/services/toast.service';
 import { emailValidator } from '@shared/utils/email.validator';
@@ -31,10 +32,13 @@ const INVITATION_MESSAGES: Record<InvitationReason, string> = {
 /** UC-WS-03 y UC-WS-05: el `owner` ve a su equipo, invita usuarios y cambia sus roles. */
 @Component({
   selector: 'app-team-page',
-  imports: [ReactiveFormsModule, RouterLink, Button, Card, Input],
+  imports: [ReactiveFormsModule, RouterLink, Button, Card, Input, Skeleton],
   templateUrl: './team-page.html',
 })
 export class TeamPage {
+  /** Filas del esqueleto mientras carga el equipo. */
+  readonly skeletonRows = [1, 2, 3];
+
   private readonly fb = inject(FormBuilder);
   private readonly team = inject(TeamService);
   private readonly toast = inject(ToastService);

@@ -17,7 +17,18 @@
 
   <app-card padding="none">
     @if (isLoading()) {
-      <p class="p-6 text-sm text-fg-muted" role="status">Cargando clientes…</p>
+      <div role="status" aria-busy="true" class="divide-y divide-border">
+        <span class="sr-only">Cargando clientes</span>
+        @for (row of skeletonRows; track row) {
+          <div class="p-4 flex items-center justify-between gap-3" aria-hidden="true">
+            <div class="min-w-0 flex-1 flex flex-col gap-2">
+              <app-skeleton width="45%" />
+              <app-skeleton width="30%" height="0.75rem" />
+            </div>
+            <app-skeleton width="4.5rem" height="2rem" variant="rect" />
+          </div>
+        }
+      </div>
     } @else if (loadError(); as message) {
       <div class="p-6 flex flex-col items-start gap-3" role="alert">
         <p class="text-sm text-danger-700">{{ message }}</p>
@@ -73,7 +84,15 @@
       @if (dialogOpen()) {
         @switch (editState()) {
           @case ('loading') {
-            <p class="text-sm text-fg-muted" role="status">Cargando cliente…</p>
+            <div role="status" aria-busy="true" class="flex flex-col gap-4">
+              <span class="sr-only">Cargando cliente</span>
+              @for (field of skeletonFields; track field) {
+                <div class="flex flex-col gap-2" aria-hidden="true">
+                  <app-skeleton width="30%" height="0.875rem" />
+                  <app-skeleton variant="rect" height="2.75rem" />
+                </div>
+              }
+            </div>
           }
           @case ('not-found') {
             <div role="alert" class="flex flex-col items-start gap-3">

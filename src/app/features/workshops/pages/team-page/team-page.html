@@ -75,7 +75,18 @@
 
   <app-card padding="none">
     @if (isLoading()) {
-      <p class="p-6 text-sm text-fg-muted">Cargando equipo…</p>
+      <div role="status" aria-busy="true" class="divide-y divide-border">
+        <span class="sr-only">Cargando equipo</span>
+        @for (row of skeletonRows; track row) {
+          <div class="flex items-center justify-between gap-3 p-4" aria-hidden="true">
+            <div class="min-w-0 flex-1 flex flex-col gap-2">
+              <app-skeleton width="40%" />
+              <app-skeleton width="55%" height="0.75rem" />
+            </div>
+            <app-skeleton width="5rem" height="2.25rem" variant="rect" />
+          </div>
+        }
+      </div>
     } @else if (loadError(); as message) {
       <p role="alert" class="p-6 text-sm text-danger-700">{{ message }}</p>
     } @else {
