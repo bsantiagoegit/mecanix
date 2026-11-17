@@ -33,4 +33,23 @@ describe('Button', () => {
       expect(inner().getAttribute('aria-label')).toBe('Editar a Ana Pérez');
     });
   });
+  describe('ariaExpanded and ariaControls', () => {
+    const inner = () => fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+
+    it('sets none by default', () => {
+      expect(inner().hasAttribute('aria-expanded')).toBe(false);
+      expect(inner().hasAttribute('aria-controls')).toBe(false);
+    });
+
+    it('puts them on the real button, including a closed state', async () => {
+      fixture.componentRef.setInput('ariaExpanded', false);
+      fixture.componentRef.setInput('ariaControls', 'panel');
+      await fixture.whenStable();
+      expect(inner().getAttribute('aria-expanded')).toBe('false');
+      expect(inner().getAttribute('aria-controls')).toBe('panel');
+      fixture.componentRef.setInput('ariaExpanded', true);
+      await fixture.whenStable();
+      expect(inner().getAttribute('aria-expanded')).toBe('true');
+    });
+  });
 });
