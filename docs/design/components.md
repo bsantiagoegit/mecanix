@@ -81,6 +81,32 @@ Definir el catálogo de componentes base que viven en `shared/components/`. Cada
 />
 ```
 
+#### `app-icon`
+
+**Propósito**: icono de [Lucide](https://lucide.dev/icons/) por nombre ([ADR-015](../architecture/adr/ADR-015-iconos-lucide.md)). Es la única forma de poner un icono: **no se pegan `<svg>` en las plantillas**.
+
+**Inputs**:
+
+- `name`: `AppIconName` (obligatorio). Tipo derivado del registro `APP_ICONS` (`shared/components/icon/icons.ts`): un nombre que no existe no compila.
+- `size`: `number` en píxeles (default: `16`).
+- `strokeWidth`: `number` (default: `2`).
+- `title`: `string | null`. Sin él, el icono es decorativo (`aria-hidden`); con él, se anuncia.
+
+**Color**: hereda el del texto (`currentColor`), así que se colorea con las clases `text-*` del contenedor o del propio `app-icon`.
+
+**Accesibilidad**: el nombre accesible lo lleva el botón o enlace que contiene el icono (`aria-label`), no el icono.
+
+**Añadir un icono**: importarlo de `@lucide/angular` (las clases se llaman `Lucide` + nombre, p. ej. `LucidePencil`) y registrarlo en `APP_ICONS` con su nombre en kebab-case. Solo se empaquetan los registrados.
+
+**Ejemplo**:
+
+```html
+<button type="button" aria-label="Cerrar"><app-icon name="x" [size]="20" /></button>
+<app-icon name="check" class="text-success-600" />
+```
+
+Iconos registrados hoy: `check`, `chevron-down`, `eye`, `eye-off`, `info`, `loader-circle` (spinner de `app-button`) y `x`.
+
 #### `app-tooltip`
 
 **Propósito**: botón "i" que muestra un recuadro de ayuda. El contenido se proyecta (texto o componente).
@@ -337,7 +363,7 @@ this.toast.showUpdate('Hay una actualización', () => location.reload());
 
 **Inputs**:
 
-- `icon`: `string` (nombre de icono Lucide).
+- `icon`: `AppIconName` (nombre de un icono registrado en `icons.ts`, ver `app-icon`).
 - `title`: `string`.
 - `message`: `string`.
 - `actionLabel`: `string`.

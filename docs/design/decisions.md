@@ -83,9 +83,9 @@ Los componentes UI base viven en `shared/components/`. Cada uno standalone, con 
 
 ## D-DS-09: Iconos con Lucide
 
-Usar **Lucide** como librería de iconos.
+Usar **Lucide** como librería de iconos, con el paquete `@lucide/angular` (el anterior `lucide-angular` está deprecado) detrás del componente `app-icon`. Ver [ADR-015](../architecture/adr/ADR-015-iconos-lucide.md).
 
-**Razón**: consistente, tree-shakeable, Angular-friendly, gratis, MIT.
+**Razón**: consistente, tree-shakeable, Angular-friendly, gratis, ISC.
 
 **Alternativa descartada: Font Awesome**
 
@@ -93,7 +93,7 @@ Usar **Lucide** como librería de iconos.
 - Tree-shaking requiere configuración SVG+JS manual [citation:1].
 - Estilo visual más pesado que no encaja con Tailwind.
 - Brands (WhatsApp, email) se resuelven con SVGs inline.
-- Licencia triple (CC BY 4.0 + SIL OFL 1.1 + MIT) vs MIT simple de Lucide.
+- Licencia triple (CC BY 4.0 + SIL OFL 1.1 + MIT) vs ISC simple de Lucide.
 
 ---
 

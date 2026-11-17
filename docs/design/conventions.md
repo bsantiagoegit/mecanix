@@ -250,7 +250,7 @@ Los colores de la paleta funcional (primary-_, success-_, etc.) son los mismos e
   type="button"
   class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-primary-500 text-white text-sm font-medium transition-colors duration-150 hover:bg-primary-600 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
 >
-  <lucide-icon name="save" size="16" />
+  <app-icon name="save" />
   Guardar
 </button>
 ```
