@@ -1,31 +1,23 @@
 import { Component, inject } from '@angular/core';
-import {
-  AbstractControl,
-  FormBuilder,
-  ReactiveFormsModule,
-  ValidationErrors,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthFacade } from '@core/auth';
 import { Button } from '@shared/components/button/button';
 import { Card } from '@shared/components/card/card';
 import { Input } from '@shared/components/input/input';
+import { PasswordRules } from '@shared/components/password-rules/password-rules';
+import { Tooltip } from '@shared/components/tooltip/tooltip';
 import { emailValidator } from '@shared/utils/email.validator';
 import { trimOnChange } from '@shared/utils/trim-on-change';
-
-/** Debe coincidir con `minimum_password_length` de supabase/config.toml. */
-const MIN_PASSWORD_LENGTH = 6;
-
-function passwordsMatch(group: AbstractControl): ValidationErrors | null {
-  const password = group.get('password')?.value;
-  const confirm = group.get('confirmPassword')?.value;
-  return password === confirm ? null : { passwordMismatch: true };
-}
+import {
+  passwordErrorMessage,
+  passwordValidator,
+  passwordsMatchValidator,
+} from '@shared/utils/password.validator';
 
 @Component({
   selector: 'app-register-page',
-  imports: [ReactiveFormsModule, RouterLink, Button, Card, Input],
+  imports: [ReactiveFormsModule, RouterLink, Button, Card, Input, PasswordRules, Tooltip],
   templateUrl: './register-page.html',
 })
 export class RegisterPage {
@@ -36,10 +28,10 @@ export class RegisterPage {
     {
       fullName: ['', [Validators.required, Validators.maxLength(120)]],
       email: ['', [Validators.required, emailValidator]],
-      password: ['', [Validators.required, Validators.minLength(MIN_PASSWORD_LENGTH)]],
+      password: ['', [Validators.required, passwordValidator]],
       confirmPassword: ['', Validators.required],
     },
-    { validators: passwordsMatch },
+    { validators: passwordsMatchValidator },
   );
 
   constructor() {
@@ -64,9 +56,8 @@ export class RegisterPage {
     if (!control?.touched) return '';
     if (control.errors?.['required']) return 'Este campo es obligatorio';
     if (control.errors?.['email']) return 'Email inválido';
-    if (control.errors?.['minlength']) {
-      return `Mínimo ${MIN_PASSWORD_LENGTH} caracteres`;
-    }
+    if (control.errors?.['password'])
+      return passwordErrorMessage(control.errors['password'].missing);
     if (field === 'confirmPassword' && this.form.errors?.['passwordMismatch']) {
       return 'Las contraseñas no coinciden';
     }

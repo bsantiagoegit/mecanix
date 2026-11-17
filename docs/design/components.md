@@ -67,6 +67,8 @@ Definir el catálogo de componentes base que viven en `shared/components/`. Cada
 
 **Model**: `value` (`model<string>()`).
 
+**Ayuda junto a la etiqueta**: el contenido con el atributo `labelHelp` se proyecta a la derecha de la etiqueta, p. ej. un `app-tooltip` (solo con `label`).
+
 **Ejemplo con revealable**:
 
 ```html
@@ -78,6 +80,32 @@ Definir el catálogo de componentes base que viven en `shared/components/`. Cada
   hint="Solo si el vehículo tiene inmovilizador"
 />
 ```
+
+#### `app-tooltip`
+
+**Propósito**: botón "i" que muestra un recuadro de ayuda. El contenido se proyecta (texto o componente).
+
+**Inputs**: `ariaLabel`: `string` (default: `Más información`).
+
+**Comportamiento**: se abre al pasar el ratón, al enfocarlo con el teclado y al tocarlo (el toque lo fija abierto, porque en el móvil no hay hover). Se cierra al salir, con `Esc` (que **no** cierra el modal que lo contenga) y al tocar fuera. Es `role="tooltip"` enlazado con `aria-describedby`; el recuadro es `fixed`, se abre hacia arriba (hacia abajo si no hay lugar) y se mantiene dentro de la pantalla.
+
+#### `app-password-rules`
+
+**Propósito**: lista de lo que debe tener una contraseña, con cada regla marcada como cumplida o pendiente según lo escrito (✓ y texto para lectores de pantalla). Sale de `PASSWORD_RULES` en `@shared/utils/password.validator`, las mismas reglas que valida el formulario.
+
+**Inputs**: `value`: `string | null`.
+
+**Uso**: dentro de un tooltip junto a la etiqueta de la contraseña:
+
+```html
+<app-input type="password" label="Contraseña" formControlName="password" [revealable]="true">
+  <app-tooltip labelHelp ariaLabel="Requisitos de la contraseña">
+    <app-password-rules [value]="form.controls.password.value" />
+  </app-tooltip>
+</app-input>
+```
+
+La validación está en `@shared/utils/password.validator.ts` (`passwordValidator`, `passwordsMatchValidator`, `passwordErrorMessage`): mínimo 8 caracteres, mayúscula, minúscula y número, igual que `config.toml` de Supabase. Solo va donde se **crea** una contraseña (registro, restablecer, aceptar invitación), no en el inicio de sesión.
 
 #### `app-textarea`
 

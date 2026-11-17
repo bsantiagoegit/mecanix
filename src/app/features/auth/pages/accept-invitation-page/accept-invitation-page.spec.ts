@@ -49,7 +49,7 @@ function setup(
   };
 }
 
-const valid = { password: 'secreto123', confirmPassword: 'secreto123' };
+const valid = { password: 'Secreto123', confirmPassword: 'Secreto123' };
 
 describe('AcceptInvitationPage', () => {
   it('shows the workshop, the role and a greeting', async () => {
@@ -72,7 +72,7 @@ describe('AcceptInvitationPage', () => {
     const { component } = setup();
     component.form.setValue({ password: '123', confirmPassword: '456' });
     component.form.markAllAsTouched();
-    expect(component.fieldError('password')).toBe('Mínimo 6 caracteres');
+    expect(component.fieldError('password')).toBe('Mínimo 8 caracteres');
     expect(component.fieldError('confirmPassword')).toBe('Las contraseñas no coinciden');
   });
 
@@ -81,7 +81,7 @@ describe('AcceptInvitationPage', () => {
     component.form.setValue(valid);
     await component.onSubmit();
 
-    expect(setPassword).toHaveBeenCalledWith('secreto123');
+    expect(setPassword).toHaveBeenCalledWith('Secreto123');
     expect(acceptInvitation).toHaveBeenCalled();
     expect(setPassword.mock.invocationCallOrder[0]).toBeLessThan(
       acceptInvitation.mock.invocationCallOrder[0],

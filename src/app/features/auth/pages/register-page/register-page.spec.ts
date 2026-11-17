@@ -25,8 +25,8 @@ function setup(auth: Partial<typeof initialAuthState> = {}) {
 const valid = {
   fullName: ' Ana Pérez ',
   email: 'ana@example.com',
-  password: 'secreto1',
-  confirmPassword: 'secreto1',
+  password: 'Secreto12',
+  confirmPassword: 'Secreto12',
 };
 
 describe('RegisterPage', () => {
@@ -46,7 +46,7 @@ describe('RegisterPage', () => {
     expect(dispatch).toHaveBeenCalledWith(
       AuthActions.register({
         email: 'ana@example.com',
-        password: 'secreto1',
+        password: 'Secreto12',
         fullName: 'Ana Pérez',
       }),
     );
@@ -75,17 +75,43 @@ describe('RegisterPage', () => {
 
   it('rejects mismatched passwords', () => {
     const { component, dispatch } = setup();
-    component.form.setValue({ ...valid, confirmPassword: 'otra-clave' });
+    component.form.setValue({ ...valid, confirmPassword: 'Otra-clave1' });
     component.onSubmit();
     expect(component.fieldError('confirmPassword')).toBe('Las contraseñas no coinciden');
     expect(dispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: '[Auth] Register' }));
+  });
+
+  it.each([
+    ['Secreto1', null],
+    ['secreto12', 'Falta una letra mayúscula'],
+    ['SECRETO12', 'Falta una letra minúscula'],
+    ['Secretoss', 'Falta un número'],
+    ['Secre1', 'Mínimo 8 caracteres'],
+  ])('validates the password rules: "%s"', (password, message) => {
+    const { component } = setup();
+    component.form.setValue({ ...valid, password, confirmPassword: password });
+    component.form.markAllAsTouched();
+    expect(component.fieldError('password')).toBe(message ?? '');
+  });
+
+  it('explains the password rules in a tooltip beside the password label only', () => {
+    const { fixture } = setup();
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelectorAll('app-tooltip').length).toBe(1);
+    expect(el.querySelector('app-tooltip')?.closest('app-input')?.textContent).toContain(
+      'Contraseña',
+    );
+    expect(el.querySelector('app-tooltip button')?.getAttribute('aria-label')).toBe(
+      'Requisitos de la contraseña',
+    );
   });
 
   it('rejects short passwords and invalid emails', () => {
     const { component } = setup();
     component.form.setValue({ ...valid, password: '123', confirmPassword: '123', email: 'x' });
     component.form.markAllAsTouched();
-    expect(component.fieldError('password')).toBe('Mínimo 6 caracteres');
+    expect(component.fieldError('password')).toBe('Mínimo 8 caracteres');
     expect(component.fieldError('email')).toBe('Email inválido');
   });
 

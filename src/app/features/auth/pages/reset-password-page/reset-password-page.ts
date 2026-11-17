@@ -1,29 +1,21 @@
 import { Component, effect, inject, signal } from '@angular/core';
-import {
-  AbstractControl,
-  FormBuilder,
-  ReactiveFormsModule,
-  ValidationErrors,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthFacade, AuthService } from '@core/auth';
 import { PasswordRecoveryError } from '@core/errors';
 import { Button } from '@shared/components/button/button';
 import { Card } from '@shared/components/card/card';
 import { Input } from '@shared/components/input/input';
+import { PasswordRules } from '@shared/components/password-rules/password-rules';
+import { Tooltip } from '@shared/components/tooltip/tooltip';
 import { Skeleton } from '@shared/components/skeleton/skeleton';
 import { ToastService } from '@shared/services/toast.service';
+import {
+  passwordErrorMessage,
+  passwordValidator,
+  passwordsMatchValidator,
+} from '@shared/utils/password.validator';
 import { firstValueFrom } from 'rxjs';
-
-/** Debe coincidir con `minimum_password_length` de supabase/config.toml. */
-const MIN_PASSWORD_LENGTH = 6;
-
-function passwordsMatch(group: AbstractControl): ValidationErrors | null {
-  const password = group.get('password')?.value;
-  const confirm = group.get('confirmPassword')?.value;
-  return password === confirm ? null : { passwordMismatch: true };
-}
 
 /** `checking`: aún se comprueba el enlace · `ready`: se puede elegir la contraseña · `invalid`: enlace caducado o usado. */
 type LinkState = 'checking' | 'ready' | 'invalid';
@@ -34,7 +26,7 @@ type LinkState = 'checking' | 'ready' | 'invalid';
  */
 @Component({
   selector: 'app-reset-password-page',
-  imports: [ReactiveFormsModule, RouterLink, Button, Card, Input, Skeleton],
+  imports: [ReactiveFormsModule, RouterLink, Button, Card, Input, PasswordRules, Skeleton, Tooltip],
   templateUrl: './reset-password-page.html',
 })
 export class ResetPasswordPage {
@@ -52,10 +44,10 @@ export class ResetPasswordPage {
 
   readonly form = this.fb.group(
     {
-      password: ['', [Validators.required, Validators.minLength(MIN_PASSWORD_LENGTH)]],
+      password: ['', [Validators.required, passwordValidator]],
       confirmPassword: ['', Validators.required],
     },
-    { validators: passwordsMatch },
+    { validators: passwordsMatchValidator },
   );
 
   constructor() {
@@ -98,7 +90,8 @@ export class ResetPasswordPage {
     const control = this.form.get(field);
     if (!control?.touched) return '';
     if (control.errors?.['required']) return 'Este campo es obligatorio';
-    if (control.errors?.['minlength']) return `Mínimo ${MIN_PASSWORD_LENGTH} caracteres`;
+    if (control.errors?.['password'])
+      return passwordErrorMessage(control.errors['password'].missing);
     if (field === 'confirmPassword' && this.form.errors?.['passwordMismatch']) {
       return 'Las contraseñas no coinciden';
     }

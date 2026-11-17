@@ -9,7 +9,7 @@ import { Subject, of, throwError } from 'rxjs';
 import { provideTestStore } from '../../../../../testing/utils/store';
 import { ResetPasswordPage } from './reset-password-page';
 
-const valid = { password: 'nueva-clave', confirmPassword: 'nueva-clave' };
+const valid = { password: 'Nueva-clave1', confirmPassword: 'Nueva-clave1' };
 
 function setup(
   options: {
@@ -86,7 +86,7 @@ describe('ResetPasswordPage', () => {
     const { component } = setup();
     component.form.setValue({ password: '123', confirmPassword: '456' });
     component.form.markAllAsTouched();
-    expect(component.fieldError('password')).toBe('Mínimo 6 caracteres');
+    expect(component.fieldError('password')).toBe('Mínimo 8 caracteres');
     expect(component.fieldError('confirmPassword')).toBe('Las contraseñas no coinciden');
   });
 
@@ -96,7 +96,7 @@ describe('ResetPasswordPage', () => {
     s.component.form.setValue(valid);
     await s.component.onSubmit();
 
-    expect(s.recoverPassword).toHaveBeenCalledWith('nueva-clave');
+    expect(s.recoverPassword).toHaveBeenCalledWith('Nueva-clave1');
     expect(success).toHaveBeenCalledWith('Contraseña actualizada');
     expect(s.dispatch).toHaveBeenCalledWith(AuthActions.restoreSession());
   });

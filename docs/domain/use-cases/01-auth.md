@@ -14,4 +14,6 @@
 
 **UC-AUTH-03**: quien olvidó su contraseña ingresa su email y recibe un enlace de un solo uso que caduca en una hora. El sistema responde igual exista o no la cuenta, para no revelar qué correos están registrados. Al abrir el enlace, la persona elige una contraseña nueva (distinta de la actual) y entra a la app; las demás sesiones de la cuenta se cierran. Si el enlace caducó o ya se usó, puede pedir otro.
 
+**Regla de contraseña** (UC-AUTH-03, UC-AUTH-07 y aceptar una invitación): al menos 8 caracteres, con una letra mayúscula, una minúscula y un número. La validan la app (`passwordValidator`, con un tooltip "i" junto a la etiqueta que lista las reglas y marca las que ya se cumplen) y Supabase Auth (`minimum_password_length` y `password_requirements` en `config.toml`), que debe coincidir con la app. El inicio de sesión no la aplica ni muestra el tooltip: ahí se escribe una contraseña que ya existe, quizá creada con una regla anterior.
+
 **UC-AUTH-07**: una persona crea su cuenta con nombre completo, email y contraseña. El email debe confirmarse con el enlace que se envía al correo. La cuenta **no da acceso a ningún taller por sí sola**: quien se registra crea su propio taller (UC-WS-08) y queda como `owner`. Los asesores y mecánicos no usan este registro: entran por invitación del `owner` (UC-WS-03 / UC-WS-04).
